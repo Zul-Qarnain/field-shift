@@ -1,10 +1,10 @@
 "use client";
 
-import { Suspense, useMemo } from "react";
+import { Suspense } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
-import { CalendarDays, Droplets, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
+import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
 import { FARMS, getFarm } from "@/lib/data";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
@@ -69,7 +69,6 @@ function FieldView({ farmId }: { farmId: string }) {
   const { lang } = useLang();
   const later = f.onset.shiftDays > 0;
   const m = f.metrics;
-  const rainSeries = useMemo(() => Array.from({ length: 9 }, (_, i) => 40 + Math.sin(i) * 6 - i * 0.4), [farmId]);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">

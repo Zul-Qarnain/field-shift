@@ -22,6 +22,18 @@ export function MapLive({ pack }: { pack: FarmPack }) {
   const [open, setOpen] = useState(false);
   const [active, setActive] = useState<Set<string>>(new Set(["truecolor"]));
 
+  const addTrueColor = (map: MlMap) => {
+    if (map.getSource("gibs")) return;
+    map.addSource("gibs", {
+      type: "raster",
+      tiles: ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/2026-09-20/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg"],
+      tileSize: 256,
+      maxzoom: 8,
+      attribution: "NASA GIBS",
+    });
+    map.addLayer({ id: "gibs-layer", type: "raster", source: "gibs", paint: { "raster-opacity": 0.9 } }, "field-fill");
+  };
+
   useEffect(() => {
     if (!container.current || mapRef.current) return;
     const map = new MlMap({
@@ -44,18 +56,6 @@ export function MapLive({ pack }: { pack: FarmPack }) {
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pack.id]);
-
-  const addTrueColor = (map: MlMap) => {
-    if (map.getSource("gibs")) return;
-    map.addSource("gibs", {
-      type: "raster",
-      tiles: ["https://gibs.earthdata.nasa.gov/wmts/epsg3857/best/VIIRS_NOAA20_CorrectedReflectance_TrueColor/default/2026-09-20/GoogleMapsCompatible_Level9/{z}/{y}/{x}.jpg"],
-      tileSize: 256,
-      maxzoom: 8,
-      attribution: "NASA GIBS",
-    });
-    map.addLayer({ id: "gibs-layer", type: "raster", source: "gibs", paint: { "raster-opacity": 0.9 } }, "field-fill");
-  };
 
   const toggle = (id: string) => {
     setActive((prev) => {

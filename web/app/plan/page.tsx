@@ -2,7 +2,7 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, Copy, Droplets, Flame, Leaf, Shield, Sprout } from "lucide-react";
+import { Check, Copy, Droplets, Leaf, Shield, Sprout } from "lucide-react";
 import { CROPS, getFarm } from "@/lib/data";
 import {
   DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,

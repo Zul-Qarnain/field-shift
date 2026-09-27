@@ -1,4 +1,4 @@
-import { Panel, TierBadge } from "@/components/ui";
+import { TierBadge } from "@/components/ui";
 import type { Tier } from "@/lib/data";
 
 const DATASETS: { name: string; tier: Tier; role: string; res: string; temporal: string; url: string; license: string }[] = [

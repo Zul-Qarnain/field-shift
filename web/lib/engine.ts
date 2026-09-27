@@ -81,7 +81,6 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
   const wSoil = 0.2 + (priorities.soilHealth / 100) * 0.5;
   const wStab = 0.15 + (priorities.stability / 100) * 0.35;
   const wRisk = 0.1 + (priorities.riskSafety / 100) * 0.3;
-  const wSum = wWater + wSoil + wStab + wRisk;
 
   const results: RotationResult[] = seqs.map((crops, idx) => {
     const seasonScores = crops.map((c, i) => scoreCropSeason(c, pack, order[i], sc));

@@ -5,7 +5,6 @@ import {
 import { CROPS, FARMS } from "@/lib/data";
 
 const ALL = new Set(CROPS.map((c) => c.id));
-const seasonOf = Object.fromEntries(CROPS.map((c) => [c.id, c.season]));
 
 describe("rotation engine — hard constraints", () => {
   for (const pack of FARMS) {
