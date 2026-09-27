@@ -1,0 +1,44 @@
+# Local environment / secrets
+.env
+.env.*
+*.key
+*.pem
+credentials*
+.cache/
+
+# OS + editor + session scratch
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/
+*.log
+tmp/
+scratch/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.mypy_cache/
+.venv/
+venv/
+node_modules/
+
+# Runtime data caches (regenerated; fixtures that judges see stay committed)
+cache/*
+!cache/.gitkeep
+
+# ---------------------------------------------------------------------------
+# NEVER ignore these — NASA submission requires them public (Build-Guide 1054,
+# 1068, 1091; strategy 242). Adding them here risks nomination removal.
+# docs/AI_USE.md
+# docs/prompts_used.md
+# src/agents/prompts/
+# LICENSE
+# README.md
+# ---------------------------------------------------------------------------
+
+# Local CLI config (permissions, MCP) — not part of the submission
+.qoder/
+
+# Playwright MCP session scratch
+.playwright-mcp/
