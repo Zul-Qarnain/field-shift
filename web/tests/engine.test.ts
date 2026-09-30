@@ -4,11 +4,12 @@ import {
   type Penalty,
 } from "@/lib/engine";
 import { CROPS, FARMS, type Crop } from "@/lib/data";
+import { toBnDigits } from "@/lib/i18n";
 
 const ALL = new Set(CROPS.map((c) => c.id));
 const pool = (...ids: string[]) => new Set(ids);
 const key = (r: { crops: Crop[] }) => r.crops.map((c) => c.id).join(">");
-const penaltyStart = (r: { penalties: Penalty[] }, prefix: string) => r.penalties.find((p) => p.rule.startsWith(prefix));
+const penaltyStart = (r: { penalties: Penalty[] }, prefix: string) => r.penalties.find((p) => p.rule.en.startsWith(prefix));
 
 describe("rotation engine — calendar and sequence rules", () => {
   for (const pack of FARMS) {
@@ -67,7 +68,7 @@ describe("rotation engine — calendar and sequence rules", () => {
     const idle = penaltyStart(results[0], "Idle fallow");
     expect(idle).toBeDefined();
     expect(idle!.amount).toBeGreaterThan(0);
-    expect(results[0].risks.some((r) => r.includes("Idle season"))).toBe(true);
+    expect(results[0].risks.some((r) => r.en.includes("Idle season"))).toBe(true);
   });
 
   it("empty crop pool yields no rotations", () => {
@@ -111,7 +112,7 @@ describe("rotation engine — irrigation and onset", () => {
       return base.total - shifted.total;
     };
     expect(drop("aman>wheat>mungbean")).toBeGreaterThan(drop("aman>mustard>sesame"));
-    expect(penaltyStart(lateList.find((r) => key(r) === "aman>wheat>mungbean")!, "Late monsoon onset")!.rule).toContain("+8 days");
+    expect(penaltyStart(lateList.find((r) => key(r) === "aman>wheat>mungbean")!, "Late monsoon onset")!.rule.en).toContain("+8 days");
   });
 
   it("the onset penalty grows with the delay on the same plan", () => {
@@ -131,7 +132,7 @@ describe("rotation engine — irrigation and onset", () => {
     const shortGain = score(["aman", "mustard", "sesame"], -8) - score(["aman", "mustard", "sesame"], 4);
     expect(longGain).toBeGreaterThan(0);
     expect(longGain).toBeGreaterThan(shortGain);
-    expect(generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: -8 }, pool("aman", "mustard", "jute"))[0].why.join(" "))
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: -8 }, pool("aman", "mustard", "jute"))[0].why.map((w) => w.en).join(" "))
       .toContain("widens the growing window");
   });
 });
@@ -177,11 +178,55 @@ describe("rotation engine — determinism and scoring", () => {
     for (const pack of FARMS) {
       for (const r of generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, tempDeltaC: 2 }, ALL)) {
         for (const p of r.penalties) {
-          expect(p.rule.length).toBeGreaterThan(5);
-          expect(p.source.length).toBeGreaterThan(5);
+          expect(p.rule.en.length).toBeGreaterThan(5);
+          expect(p.source.en.length).toBeGreaterThan(5);
           expect(p.amount).toBeGreaterThanOrEqual(0);
         }
       }
+    }
+  });
+});
+
+describe("bilingual explanations", () => {
+  const latinize = (s: string) => s.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
+  const digits = (s: string) => latinize(s).match(/\d+(?:\.\d+)?/g) ?? [];
+
+  it("gives every reason, risk and penalty rule a Bangla twin carrying the same numbers", () => {
+    for (const pack of FARMS) {
+      for (const r of generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, tempDeltaC: 2, onsetShiftDays: 7 }, ALL)) {
+        const texts = [...r.why, ...r.risks, ...r.penalties.flatMap((p) => [p.rule, p.source])];
+        expect(texts.length).toBeGreaterThan(3);
+        for (const text of texts) {
+          expect(text.en.length).toBeGreaterThan(5);
+          expect(text.bn.length).toBeGreaterThan(5);
+          expect(/[\u0980-\u09FF]/.test(text.bn)).toBe(true);
+          expect(digits(text.bn)).toEqual(digits(text.en));
+        }
+      }
+    }
+  });
+
+  it("quotes the same onset shift in both languages on the same plan", () => {
+    const pack = FARMS.find((f) => f.id === "rajshahi-07")!;
+    const sc = { ...DEFAULT_SCENARIO, onsetShiftDays: 15 };
+    const plan = generateRotations(pack, DEFAULT_PRIORITIES, sc, pool("aman", "wheat", "mungbean"))[0];
+    const shift = effectiveOnsetShift(pack, sc);
+    const en = plan.why.map((w) => w.en).join(" ");
+    const bn = plan.why.map((w) => w.bn).join(" ");
+    expect(digits(en)).toEqual(digits(bn));
+    expect(en).toContain(`+${shift} days`);
+    expect(bn).toContain(`+${toBnDigits(shift)} দিন`);
+  });
+
+  it("writes the advisory and the SMS in Bengali digits in Bangla, Latin in English", () => {
+    for (const pack of FARMS) {
+      const best = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)[0];
+      const bn = advisoryText(pack, best, "bn");
+      expect(bn).toMatch(/[০-৯]/);
+      expect(bn).not.toMatch(/[0-9]/);
+      expect(smsText(pack, best, "bn")).not.toMatch(/[0-9]/);
+      expect(smsText(pack, best, "en")).toMatch(/[0-9]/);
+      expect(advisoryText(pack, best, "en")).toMatch(/[0-9]/);
     }
   });
 });

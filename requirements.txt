@@ -1,6 +1,15 @@
-# Python dependencies for src/acquire/ and tests/ (venv: /workspace/fs-venv, Python 3.13).
-# src/acquire/salinity.py reads the committed SRDI CSV and the geoBoundaries geojson with the
-# standard library only (csv/json/urllib); shapely does the point-in-polygon.
-
-shapely==2.1.2   # geoBoundaries ADM3/ADM2 point-in-polygon in src/acquire/salinity.py
-pytest==9.1.1    # dev only — tests/test_salinity.py
+# Python 3.13. Pinned to the versions the pipeline was developed and run against.
+# Core acquisition + science (src/acquire, src/compute, scripts/build_packs.py)
+requests>=2.32,<3
+pandas>=2.2
+numpy>=2.0
+scipy>=1.13
+# src/acquire/salinity.py needs only shapely plus the standard library (csv/json/urllib): it reads
+# the committed SRDI CSV and the cached geoBoundaries geojson, and its ADM3/ADM2 point-in-polygon
+# answers "which upazila is this farm in".
+shapely>=2.0
+# CHIRPS cross-check reader (reads the .nc files the reviewer downloaded into /workspace/fs-cache/chirps)
+xarray>=2024.1
+netCDF4>=1.6
+# Tests
+pytest>=8.0

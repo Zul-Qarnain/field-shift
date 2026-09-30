@@ -1,5 +1,6 @@
 import { readFileSync } from "node:fs";
 import { describe, expect, it } from "vitest";
+import { toBnDigits } from "@/lib/i18n";
 import {
   CROPS,
   FARMS,
@@ -196,7 +197,7 @@ describe("engine salinity penalty", () => {
     for (const f of FARMS.filter((x) => !x.salinity.cited)) {
       for (const c of CROPS.filter((x) => x.salt)) expect(salinityPenalty(f, c)).toBeNull();
       for (const r of generateRotations(f, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)) {
-        expect(r.penalties.some((p) => p.rule.startsWith("Soil salinity"))).toBe(false);
+        expect(r.penalties.some((p) => p.rule.en.startsWith("Soil salinity"))).toBe(false);
       }
     }
   });
@@ -209,12 +210,15 @@ describe("engine salinity penalty", () => {
     }
   });
 
-  it("names the crop and the percent lost, and carries both sources", () => {
+  it("names the crop and the percent lost in both languages, and carries both sources", () => {
     const p = salinityPenalty(farm("khulna-09"), rice)!;
-    expect(p.rule).toBe("Soil salinity (SRDI 2010, dry season) — Rice (Boro) loses ~42% yield");
-    expect(p.source).toContain("SRDI (2010) Saline Soils of Bangladesh, Appendix-2 p.31 — Khulna/Dumuria");
-    expect(p.source).toContain("FAO Irrigation & Drainage Paper 29 Rev.1");
-    expect(p.source).toContain("ESTIMATE");
+    expect(p.rule.en).toBe("Soil salinity (SRDI 2010, dry season) — Rice (Boro) loses ~42% yield");
+    expect(p.rule.bn).toBe(`মাটির লবণাক্ততা (SRDI ২০১০, শুষ্ক মৌসুম) — ${crop("boro").name_bn}-এর ফলন প্রায় ${toBnDigits(42)}% কমে`);
+    expect(p.source.en).toContain("SRDI (2010) Saline Soils of Bangladesh, Appendix-2 p.31 — Khulna/Dumuria");
+    expect(p.source.en).toContain("FAO Irrigation & Drainage Paper 29 Rev.1");
+    expect(p.source.en).toContain("ESTIMATE");
+    expect(p.source.bn).toContain("FAO Irrigation & Drainage Paper 29 Rev.1");
+    expect(p.source.bn).toContain(toBnDigits("68.3")); // the same saline share, in Bangla digits
     expect(p.amount).toBeGreaterThan(0);
   });
 
@@ -239,15 +243,23 @@ describe("engine salinity penalty", () => {
     }
   });
 
-  it("lists the penalty in Why and flags uncited crops as a risk", () => {
+  it("lists the penalty in Why and flags uncited crops as a risk, in both languages", () => {
     const top = generateRotations(farm("khulna-09"), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)[0];
-    expect(top.why.join(" ")).toContain("Soil salinity (SRDI 2010, dry season)");
-    expect(top.why.join(" ")).toContain("Dumuria");
-    expect(top.risks.filter((r) => r.includes("salt tolerance not cited")).length).toBeGreaterThan(0);
-    expect(top.risks.join(" ")).toContain("not cited");
-    // the same crop list on a farm outside the survey raises no salt talk at all
+    const why = top.why.map((w) => w.en).join(" ");
+    const whyBn = top.why.map((w) => w.bn).join(" ");
+    expect(why).toContain("Soil salinity (SRDI 2010, dry season)");
+    expect(why).toContain("Dumuria");
+    expect(whyBn).toContain("মাটির লবণাক্ততা");
+    expect(whyBn).toContain(toBnDigits(6.7)); // the same points figure, Bangla digits
+    const risks = top.risks.map((r) => r.en).join(" ");
+    expect(top.risks.filter((r) => r.en.includes("salt tolerance not cited")).length).toBeGreaterThan(0);
+    expect(top.risks.some((r) => r.bn.includes("লবণ-সহনশীলতার উদ্ধৃত মান নেই"))).toBe(true);
+    expect(risks).toContain("not cited");
+    // the same crop list on a farm outside the survey raises no salt talk at all, in either language
     const plain = generateRotations(farm("rangpur-21"), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)[0];
-    expect(plain.why.join(" ") + plain.risks.join(" ")).not.toContain("salinity");
+    const plainAll = [...plain.why, ...plain.risks].map((x) => x.en + x.bn).join(" ");
+    expect(plainAll).not.toContain("salinity");
+    expect(plainAll).not.toContain("লবণাক্ত");
   });
 
   it("the ranking on the two coastal farms responds to the salt penalty", () => {
@@ -267,7 +279,7 @@ describe("engine salinity penalty", () => {
       const a = generateRotations(f, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL);
       const b = generateRotations(f, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL);
       expect(JSON.stringify(a.map((r) => r.penalties))).toBe(JSON.stringify(b.map((r) => r.penalties)));
-      for (const r of a) for (const p of r.penalties.filter((x) => x.rule.startsWith("Soil salinity"))) {
+      for (const r of a) for (const p of r.penalties.filter((x) => x.rule.en.startsWith("Soil salinity"))) {
         expect(p.amount).toBe(Math.round(p.amount * 10) / 10);
       }
     }

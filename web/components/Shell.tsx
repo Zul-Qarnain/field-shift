@@ -5,7 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Sprout, CalendarRange, BookOpen, Database, Search } from "lucide-react";
 import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
-import { t } from "@/lib/i18n";
+import { fmtNum, t } from "@/lib/i18n";
 import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
 
 const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] = [
@@ -71,7 +71,7 @@ function SearchBox() {
                 <span className="font-semibold">{farmName(f, lang)}</span>
                 <span className="ml-2 text-ink-low">{districtName(f, lang)}, {divisionName(f, lang)}</span>
               </span>
-              <span className="text-xs text-ink-low font-mono">{f.lat.toFixed(2)}°N {f.lon.toFixed(2)}°E</span>
+              <span className="text-xs text-ink-low font-mono">{fmtNum(f.lat.toFixed(2), lang)}°N {fmtNum(f.lon.toFixed(2), lang)}°E</span>
             </Link>
           ))}
         </div>
@@ -146,7 +146,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
             <SearchBox />
             <span className="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs text-ink-mid sm:flex">
               <span className="h-1.5 w-1.5 rounded-full bg-amber" />
-              fixture
+              {t("src_fixture", lang)}
             </span>
             <LangToggle />
           </header>
