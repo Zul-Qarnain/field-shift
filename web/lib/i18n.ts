@@ -34,7 +34,10 @@ const STRINGS = {
   open_link: { en: "Open ↗", bn: "খুলুন ↗" },
   coming_soon: { en: "coming soon", bn: "শীঘ্রই আসছে" },
   english_only_note: { en: "Detailed definitions are in English for now.", bn: "বিস্তারিত সংজ্ঞা আপাতত ইংরেজিতে।" },
-  english_only_table_note: { en: "The dataset roles below stay in English for now.", bn: "নিচের ডেটাসেটের ভূমিকা আপাতত ইংরেজিতেই লেখা।" },
+  english_only_table_note: {
+    en: "Dataset and product names, versions, file paths and ISO retrieval dates stay in English — they are citations, not interface text. Roles, resolutions and status lines follow the language you picked.",
+    bn: "ডেটাসেট ও পণ্যের নাম, সংস্করণ, ফাইলের পথ ও ISO সংগ্রহের তারিখ ইংরেজিতেই থাকে — এগুলো উদ্ধৃতি, ইন্টারফেসের লেখা নয়। ভূমিকা, রেজোলিউশন ও অবস্থার লেখা আপনার বাছাই করা ভাষায় আসে।",
+  },
   generated_fixtures: {
     en: "Climate numbers come from the NASA POWER packs (cross-checked with CHIRPS); soil moisture, NDVI, soil and crop traits are still deterministic demo fixtures.",
     bn: "জলবায়ুর সংখ্যাগুলো NASA POWER প্যাক থেকে আসে (CHIRPS দিয়ে যাচাই করা); মাটির আর্দ্রতা, NDVI, মাটি ও ফসলের বৈশিষ্ট্য এখনও নির্ধারিত ডেমো ফিক্সচার।",
@@ -245,8 +248,8 @@ const STRINGS = {
     bn: "ইন্টারফেস যে সংজ্ঞাগুলো ব্যবহার করে, সব এখানে খুলে বলা হয়েছে। সাহিত্যে onset-এর একাধিক সংজ্ঞা আছে — আমাদের সংজ্ঞা কোনটি, আর আজ কতটা হিসাব হচ্ছে বনাম কতটা পরিকল্পনায় আছে, সেটাই এই পাতার কাজ।",
   },
   demo_build_note: {
-    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against CHIRPS. The rest of the numbers on these pages — soil moisture, NDVI, soil, water availability, crop traits, irrigation access — are still sample fixtures.",
-    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, CHIRPS দিয়ে যাচাই করা। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, মাটি, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার।",
+    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against CHIRPS; the soil-salinity penalty reads SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2. The rest of the numbers on these pages — soil moisture, NDVI, SoilGrids soil properties, water availability, crop traits, irrigation access — are still sample fixtures, and the onset outlook is a model built offline, never computed in the browser.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, CHIRPS দিয়ে যাচাই করা; মাটির লবণাক্ততার জরিমানা SRDI (২০১০) \"Saline Soils of Bangladesh\"-এর Appendix-2 থেকে পড়া। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, SoilGrids-এর মাটির বৈশিষ্ট্য, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার, আর বর্ষার শুরুর পূর্বাভাসটি অফলাইনে তৈরি মডেল, ব্রাউজারে হিসাব হয় না।",
   },
   method_footnote: {
     en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation is planned and does not exist yet.",
@@ -254,12 +257,24 @@ const STRINGS = {
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
-    en: "Every dataset Field Shift is designed to use, its role, and how it would be accessed. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled open non-space layer. NASA POWER has now been retrieved — daily series for the six demo farms and all 64 district centroids; every other dataset below is still a plan and its values remain demo fixtures. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
-    bn: "Field Shift যে সব ডেটাসেট ব্যবহারের জন্য তৈরি, তার ভূমিকা ও কীভাবে তা পাওয়া যাবে — সব এখানে। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। NASA POWER এখন সংগৃহীত — ছয়টি ডেমো খামার ও ৬৪টি জেলা কেন্দ্রের জন্য দৈনিক ধারা; নিচের বাকি সব ডেটাসেট এখনও পরিকল্পনা, তাদের মান ডেমো ফিক্সচার। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
+    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), CHIRPS v2.0 as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the build-time ML outlook. Everything marked NOT YET RETRIEVED is still a plan — the app renders those values from demo fixtures. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
+    bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের ভূমিকা এবং থাকলে সংগ্রহের তারিখ। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি, লবণাক্ততা, সীমানা ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। সত্যিই সংগ্রহ করা হয়েছে ও দেখা মানগুলো চালাচ্ছে: NASA POWER (৭০ বিন্দু), স্বাধীন যাচাই হিসেবে CHIRPS v2.0, মাটির লবণাক্ততার জন্য SRDI ২০১০ ও FAO-29, জেলা বিন্দু ও উপজেলা মিলের জন্য geoBoundaries, এবং অফলাইনে তৈরি ML পূর্বাভাসের ফিচার হিসেবে NOAA PSL ONI/DMI। যা NOT YET RETRIEVED চিহ্নে আছে তা এখনও পরিকল্পনা — অ্যাপ সেসব মান ডেমো ফিক্সচার থেকে দেখায়। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
+  },
+  status_retrieved: {
+    en: "RETRIEVED {date} · {detail}",
+    bn: "সংগ্রহ হয়েছে {date} · {detail}",
+  },
+  status_live: {
+    en: "LIVE IN THE APP · {detail}",
+    bn: "অ্যাপে লাইভ · {detail}",
+  },
+  status_planned: {
+    en: "NOT YET RETRIEVED · {detail}",
+    bn: "এখনও সংগ্রহ করা হয়নি · {detail}",
   },
   data_footnote: {
-    en: "This list is hand-maintained, not generated from a manifest — except the NASA POWER row, whose retrieval date, parameters and covered range are read from the built data packs. Everything else here is still unretrieved, and the in-app provenance drawer labels those values as fixtures.",
-    bn: "এই তালিকা হাতে রক্ষণাবেক্ষণ করা, কোনো ম্যানিফেস্ট থেকে তৈরি নয় — শুধু NASA POWER সারিটি ছাড়া, যার সংগ্রহের তারিখ, প্যারামিটার ও সময়সীমা তৈরি ডেটা প্যাক থেকে পড়া হয়। বাকি সব ডেটা এখনও সংগৃহীত হয়নি; অ্যাপের উৎস-ড্রয়ারে সেসব মান ফিক্সচার হিসেবেই চিহ্নিত।",
+    en: "The rows are hand-written, not generated from a manifest — but every retrieval date, point count, version and covered range is read from the committed artifacts: web/public/data/packs/index.json and the farm packs, web/public/data/onset_outlook.json, and web/public/data/salinity.json. Rebuilding those files changes this table. The in-app provenance drawer labels every unretrieved value as a fixture.",
+    bn: "সারিগুলো হাতে লেখা, কোনো ম্যানিফেস্ট থেকে তৈরি নয় — তবে প্রতিটি সংগ্রহের তারিখ, বিন্দুর সংখ্যা, সংস্করণ ও সময়সীমা কমিট করা ফাইল থেকে পড়া: web/public/data/packs/index.json ও ফার্ম প্যাক, web/public/data/onset_outlook.json এবং web/public/data/salinity.json। ওই ফাইলগুলো নতুন করে তৈরি করলে এই টেবিলও বদলাবে। অ্যাপের উৎস-ড্রয়ারে সংগ্রহ-হওয়া নয় এমন প্রতিটি মান ফিক্সচার হিসেবেই চিহ্নিত।",
   },
   th_dataset: { en: "Dataset", bn: "ডেটাসেট" },
   th_role: { en: "Role in the decision", bn: "সিদ্ধান্তে ভূমিকা" },

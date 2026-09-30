@@ -53,9 +53,9 @@ dry spell, so the answer is simply "the first day we allowed".
 |---|---|---|---|---|
 | farm-12 | Tangail | 35/45 = **78 %** | 8/43 = 19 % | 22.4 |
 | rajshahi-07 | Rajshahi | 23/45 = **51 %** | 0/43 = 0 % | 21.7 |
-| barishal-03 | Barishal | 28/45 = **62 %** | 3/43 = 7 % | 27.8 |
-| khulna-09 | Khulna | 25/45 = **56 %** | 3/43 = 7 % | 25.9 |
-| rangpur-21 | Rangpur | 37/45 = **82 %** | 3/43 = 7 % | 22.6 |
+| barishal-03 | Barishal | 28/45 = **62 %** | 3/42 = 7 % | 27.8 |
+| khulna-09 | Khulna | 25/45 = **56 %** | 3/45 = 7 % | 25.9 |
+| rangpur-21 | Rangpur | 37/45 = **82 %** | 3/44 = 7 % | 22.6 |
 | sylhet-15 | Sylhet | 40/45 = **89 %** | 5/44 = 11 % | 17.2 |
 
 Across the 64 district packs the rejected rule censored **50–91 %** of years; v2 brings the median
@@ -181,7 +181,7 @@ evidence that heat has eased — `quality.tempMaxHomogeneity` states the test re
 
 * No onset shift is established; the app shows the era figure from whichever product survives its
   own homogeneity test, names that product, and prints the other product's figure beside it — and
-  because that figure fails its era test at five of the six farms, the engine is handed **0** and the
+  because that figure fails its era test at all six demo farms (p = 0.157–0.978), the engine is handed **0** and the
   headline, advisory, SMS, plan page and Why list all say so (§5).
 * No SMAP soil moisture: `metrics.rootZoneWetnessMonthly` is POWER **GWETROOT** (modelled root-zone
   wetness), labelled in the pack and the UI.
@@ -197,10 +197,10 @@ evidence that heat has eased — `quality.tempMaxHomogeneity` states the test re
 ```bash
 /workspace/fs-venv/bin/python -m src.acquire.districts      # 64 ADM2 centroids -> bd_districts.csv
 /workspace/fs-venv/bin/python scripts/build_packs.py         # POWER + CHIRPS -> 70 packs (~70 s)
-/workspace/fs-venv/bin/python -m pytest -q                   # 108 tests; no network required
+/workspace/fs-venv/bin/python -m pytest -q                   # 182 tests; no network required
 ```
 
-The web layer is checked separately: `cd web && npx vitest run` (183 tests, including the onset
+The web layer is checked separately: `cd web && npx vitest run` (495 tests, including the onset
 significance rule and the A1 guarantees re-run against the real packs), `npx tsc --noEmit`,
 `npx eslint .`.
 
