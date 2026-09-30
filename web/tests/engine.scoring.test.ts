@@ -24,25 +24,25 @@ describe("rotation engine — sequence constraints", () => {
     const pack = FARMS[0];
     const cereal = top(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence("aman", "wheat", "mungbean"));
     expect(cereal).toHaveLength(1);
-    expect(cereal[0].penalties.some((p) => p.rule.startsWith("Same-family sequence (cereal after cereal)"))).toBe(true);
+    expect(cereal[0].penalties.some((p) => p.rule.en.startsWith("Same-family sequence (cereal after cereal)"))).toBe(true);
 
     const legume = top(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence("aman", "lentil", "mungbean"));
-    expect(legume[0].penalties.some((p) => p.rule.startsWith("Same-family sequence (legume after legume)"))).toBe(true);
+    expect(legume[0].penalties.some((p) => p.rule.en.startsWith("Same-family sequence (legume after legume)"))).toBe(true);
 
     const mixed = top(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence("aman", "lentil", "sesame"));
     expect(mixed).toHaveLength(1);
-    expect(mixed[0].penalties.some((p) => p.rule.startsWith("Same-family sequence"))).toBe(false);
+    expect(mixed[0].penalties.some((p) => p.rule.en.startsWith("Same-family sequence"))).toBe(false);
 
     for (const rotation of top(pack)) {
       const repeats = rotation.crops.some((c, i) => i > 0 && c.family === rotation.crops[i - 1].family && c.family !== "none");
-      expect(rotation.penalties.some((p) => p.rule.startsWith("Same-family sequence"))).toBe(repeats);
+      expect(rotation.penalties.some((p) => p.rule.en.startsWith("Same-family sequence"))).toBe(repeats);
     }
   });
 
-  it("Aman → Boro and Aman → Wheat are valid plans on the farms whose calendar allows them", () => {
+  it("puts Boro above wheat where the irrigation is, and still generates both", () => {
     const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
     const plans = top(rangpur, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence("aman", "boro", "wheat", "mungbean"));
-    expect(plans.map((r) => cropKey(r.crops))).toEqual(["aman>wheat>mungbean", "aman>boro>mungbean"]);
+    expect(plans.map((r) => cropKey(r.crops))).toEqual(["aman>boro>mungbean", "aman>wheat>mungbean"]);
     expect(plans[0].total).toBeGreaterThan(plans[1].total);
   });
 
@@ -69,7 +69,7 @@ describe("rotation engine — score invariants", () => {
         expect(rotation.total).toBe(Math.round(rotation.total * 10) / 10);
         expect(rotation.components.map((c) => c.key)).toEqual([...KEYS]);
         expect(rotation.why.length).toBeGreaterThanOrEqual(3);
-        expect(rotation.why[0]).toContain("Water adequacy");
+        expect(rotation.why[0].en).toContain("Water adequacy");
       }
     }
   });
@@ -176,7 +176,8 @@ describe("rotation engine — priorities and scenarios", () => {
     expect(base.filter((w, i) => w !== late[i]).length).toBeGreaterThanOrEqual(2);
     expect(new Set(late).size).toBeGreaterThanOrEqual(2);
     expect(base.filter((w, i) => w !== dry[i]).length).toBeGreaterThanOrEqual(2);
-    expect(base.filter((w, i) => w !== winners({ ...DEFAULT_PRIORITIES, water: 0 })[i]).length).toBeGreaterThanOrEqual(1);
+    expect(base.filter((w, i) => w !== winners(DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, rainfallPct: -20 })[i]).length).toBeGreaterThanOrEqual(2);
+    expect(base.filter((w, i) => w !== winners({ ...DEFAULT_PRIORITIES, water: 100 })[i]).length).toBeGreaterThanOrEqual(1);
   });
 
   it("moves water adequacy and thermal fit in the direction of the scenario", () => {
@@ -207,7 +208,7 @@ describe("rotation engine — priorities and scenarios", () => {
       expect(component(rotation, "s3").value).toBe(1);
       const worse = outside.find((r) => r.id === rotation.id)!;
       expect(component(worse, "s3").value).toBeLessThan(1);
-      expect(worse.why.join(" ")).toContain("corrected to 4");
+      expect(worse.why.map((w) => w.en).join(" ")).toContain("corrected to 4");
     }
   });
 });
@@ -236,7 +237,7 @@ describe("rotation engine — food & income (S8)", () => {
     const best = top(rangpur)[0];
     expect(component(best, "s8").value * component(best, "s8").weight)
       .toBeGreaterThan(Math.max(...best.components.filter((c) => c.key !== "s8").map((c) => c.value * c.weight)));
-    expect(best.why.join(" ")).toContain("Food & income");
+    expect(best.why.map((w) => w.en).join(" ")).toContain("Food & income");
   });
 
   it("is driven mostly by the Stable harvest slider", () => {
@@ -286,7 +287,7 @@ describe("rotation engine — varied and plausible plans", () => {
       const rank = (key: string) => results.findIndex((r) => cropKey(r.crops) === key);
       expect(cropKey(results[0].crops)).not.toContain("boro");
       expect(rank("aman>lentil>sesame")).toBeLessThan(rank("aman>boro>fallow"));
-      expect(results[0].penalties.some((p) => p.rule.startsWith("Flood exposure"))).toBe(true);
+      expect(results[0].penalties.some((p) => p.rule.en.startsWith("Flood exposure"))).toBe(true);
     }
   });
 
@@ -301,12 +302,75 @@ describe("rotation engine — varied and plausible plans", () => {
     const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
     const rankOfBoro = (p: Priorities) => top(rangpur, p).findIndex((r) => r.crops.some((c) => c.id === "boro")) + 1;
     const thrifty = rankOfBoro({ water: 100, soilHealth: 50, stability: 0, riskSafety: 50 });
+    const waterFirst = rankOfBoro({ ...DEFAULT_PRIORITIES, water: 100 });
     const middle = rankOfBoro(DEFAULT_PRIORITIES);
     const productive = rankOfBoro({ water: 0, soilHealth: 50, stability: 100, riskSafety: 50 });
-    expect(thrifty).toBeGreaterThan(middle);
-    expect(middle).toBeGreaterThan(productive);
-    expect(productive).toBeLessThanOrEqual(10);
+    expect(thrifty).toBeGreaterThan(waterFirst);
+    expect(waterFirst).toBeGreaterThan(middle);
+    // Rangpur is Boro country: at neutral priorities the top plan is already a Boro rotation, so the
+    // "food first" corner is a tie at #1 rather than a further climb.
+    expect(middle).toBe(productive);
+    expect(productive).toBe(1);
   });
+});
+
+describe("rotation engine — the irrigated north can choose Boro", () => {
+  const byId = (id: string) => FARMS.find((f) => f.id === id)!;
+  const rankOfBoroPlan = (results: RotationResult[]) =>
+    results.findIndex((r) => cropKey(r.crops).startsWith("aman>boro>")) + 1;
+
+  for (const water of [0, 25]) {
+    for (const stability of [75, 100]) {
+      it(`Water saving ${water} + Stable harvest ${stability}: an Aman → Boro → * plan leads the irrigated north and stays top 3 on both`, () => {
+        const ranks = ["rangpur-21", "farm-12"].map((id) =>
+          rankOfBoroPlan(top(byId(id), { ...DEFAULT_PRIORITIES, water, stability })),
+        );
+        expect(Math.min(...ranks)).toBe(1);
+        for (const rank of ranks) expect(rank).toBeLessThanOrEqual(3);
+      });
+    }
+  }
+
+  it("keeps Boro off the top spot at the dry Barind and the coastal farms on default priorities", () => {
+    for (const id of ["rajshahi-07", "khulna-09", "barishal-03"]) {
+      expect(cropKey(top(byId(id))[0].crops)).not.toContain("boro");
+    }
+  });
+
+  it("keeps at least four distinct first choices across the six farms", () => {
+    expect(new Set(FARMS.map((f) => cropKey(top(f)[0].crops))).size).toBeGreaterThanOrEqual(4);
+  });
+
+  it("never puts Boro first when Water saving is maxed", () => {
+    for (const f of FARMS) {
+      expect(cropKey(top(f, { ...DEFAULT_PRIORITIES, water: 100 })[0].crops)).not.toContain("boro");
+    }
+  });
+
+  it("prices a calendar-forced fallow below a fallow the year still had room to fill", () => {
+    const rangpur = byId("rangpur-21");
+    const forced = top(rangpur, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: 15 }, sequence("aman", "boro", "fallow"))[0];
+    const chosen = top(rangpur, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence("aman", "mustard", "fallow"))[0];
+    const idle = (r: RotationResult) => r.penalties.find((p) => p.rule.en.startsWith("Idle fallow"))!;
+    expect(idle(chosen).amount).toBe(4);
+    expect(idle(forced).amount).toBeGreaterThan(0);
+    expect(idle(forced).amount).toBeLessThan(idle(chosen).amount);
+    expect(idle(forced).rule.en).toMatch(/% of a crop window still free/);
+  });
+
+  it("discounts the staple axis where the season cannot cover the crop's water need", () => {
+    const s8of = (r: RotationResult) => component(r, "s8").value;
+    const irrigated = top(byId("rangpur-21"));
+    const saline = top(byId("khulna-09"));
+    const plan = "aman>boro>mungbean";
+    expect(s8of(find(irrigated, plan)!)).toBeGreaterThan(s8of(find(saline, plan)!));
+    // Two rice seasons beat one idle season on the staple axis, wherever the water allows it.
+    expect(s8of(find(irrigated, plan)!)).toBeGreaterThan(s8of(find(irrigated, "aman>boro>fallow")!));
+  });
+
+  function find(results: RotationResult[], key: string) {
+    return results.find((r) => cropKey(r.crops) === key);
+  }
 });
 
 describe("rotation engine — confidence, penalties, and advisory copy", () => {
@@ -339,12 +403,12 @@ describe("rotation engine — confidence, penalties, and advisory copy", () => {
   it("records a flood penalty on the flood-prone farm and skips it on the dry tract", () => {
     const flood = top(FARMS[2]);
     const dry = top(FARMS[1]);
-    expect(flood.every((r) => r.penalties.some((p) => p.rule.startsWith("Flood exposure")))).toBe(true);
-    expect(dry.every((r) => r.penalties.every((p) => !p.rule.startsWith("Flood exposure")))).toBe(true);
+    expect(flood.every((r) => r.penalties.some((p) => p.rule.en.startsWith("Flood exposure")))).toBe(true);
+    expect(dry.every((r) => r.penalties.every((p) => !p.rule.en.startsWith("Flood exposure")))).toBe(true);
     const acidicFarm = FARMS.find((f) => f.id === "sylhet-15")!;
     expect(acidicFarm.soil.ph).toBeLessThan(5.8);
     const acidic = top(acidicFarm);
-    expect(acidic.every((r) => r.risks.some((risk) => risk.includes("soil pH")))).toBe(true);
+    expect(acidic.every((r) => r.risks.some((risk) => risk.en.includes("soil pH")))).toBe(true);
   });
 
   it("resilience reads all three seasons, not only Aman flood", () => {
@@ -388,8 +452,8 @@ describe("rotation engine — confidence, penalties, and advisory copy", () => {
   it("explains the calendar and the onset penalty in the Why list", () => {
     const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
     const plan = top(rangpur, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: 15 }, sequence("aman", "wheat", "mungbean"))[0];
-    expect(plan.why.join(" ")).toContain("365-day calendar");
-    expect(plan.why.join(" ")).toContain("Late onset (+11 days)");
-    expect(plan.risks.some((r) => r.includes("Late onset"))).toBe(true);
+    expect(plan.why.map((w) => w.en).join(" ")).toContain("365-day calendar");
+    expect(plan.why.map((w) => w.en).join(" ")).toContain("Late onset (+11 days)");
+    expect(plan.risks.some((r) => r.en.includes("Late onset"))).toBe(true);
   });
 });

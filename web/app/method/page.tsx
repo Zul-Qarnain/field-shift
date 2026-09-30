@@ -15,7 +15,7 @@ const DEFINITIONS = [
   },
   {
     term: "Water adequacy (S1)",
-    body: "Per season: a smooth logistic of the supply−demand margin, 1/(1+exp(−(supply − demand)/0.15)), so a bigger safety margin scores slightly higher and nothing ties exactly at 1.0. Aman supply is usable rainfall only; dry-season supply is usable rainfall plus this farm's demo irrigation access. In this build both sides come from the demo fixture.",
+    body: "Per season: a smooth logistic of the supply−demand margin, 1/(1+exp(−(supply − demand)/0.2)), so a bigger safety margin scores slightly higher and nothing ties exactly at 1.0. Aman supply is usable rainfall only; dry-season supply is usable rainfall plus this farm's demo irrigation access, capped at 1.5. In this build both sides come from the demo fixture.",
   },
   {
     term: "Irrigation reliance (S7)",
@@ -23,7 +23,7 @@ const DEFINITIONS = [
   },
   {
     term: "Food & income (S8)",
-    body: "Each season's yield value graded by the water that season can actually deliver, averaged over the three seasons and scaled to a 0–1 score: a crop this farm cannot water earns little. This is the component the Stable harvest slider mostly drives, and the reason irrigated farms can prefer Boro, wheat, maize or potato over low-demand pulses. ESTIMATE — the yieldValue table is a hand-set demo ranking of food and income per season (the idea is BBS yield × farm price), not a cited figure; it is not calibrated against household income.",
+    body: "Two axes, both averaged over the three seasons and put on a 0–1 scale by dividing by 0.8. The income axis is each season's yieldValue graded by that season's water-reliability margin (the same logistic as S1), so a crop this farm cannot water earns little. The staple axis is each season's stapleIndex graded by the share of the crop's water need the season can actually cover — full while rain plus the farm's irrigation access meet the demand, then cut at 1.5 per unit of shortfall, because a crop that misses water at the wrong time loses more than the missing share of its harvest. Reliability margin and delivered share are deliberately different questions: the first is priced again in S1, S6 and S7, the second only here. This is the component the Stable harvest slider mostly drives, and the reason a well-irrigated northern farm can put Boro above a cash-crop or pulse sequence once the farmer says food first, while a farm that cannot cover the water need still falls back to frugal pulses. ESTIMATE — yieldValue and stapleIndex are hand-set demo rankings (the idea is BBS yield × farm price for income, and the share of the household's own food base for staple), not cited figures; STAPLE_GAIN 0.3 and the 1.5 shortfall rate are a demo calibration chosen to reproduce the rotations Bangladeshi farms actually run on irrigated northern land, not fitted against a household-expenditure survey.",
   },
   {
     term: "Soil health balance (S4)",
@@ -31,7 +31,7 @@ const DEFINITIONS = [
   },
   {
     term: "Same-family sequence & idle fallow",
-    body: "Crops of the same botanical family may follow each other (Aman → Boro and Aman → Wheat are real Bangladesh patterns), but each repeat costs soil-health points and a listed penalty — cereal after cereal the most, legume after legume the least. A fallow season is legal and uses no water, and is charged an idle-land penalty for bare soil and lost residue. ESTIMATE — these coefficients are a demo calibration, not fitted against observed yield or pest data.",
+    body: "Crops of the same botanical family may follow each other (Aman → Boro and Aman → Wheat are real Bangladesh patterns), but each repeat costs soil-health points and a listed penalty — cereal after cereal the most, legume after legume the least. A fallow season is legal and uses no water, and is charged up to 4 points for bare soil and lost residue — but the charge is scaled by how much of the year was genuinely still free for a crop (days left over the shortest pre-monsoon duration plus a turnaround). A pre-kharif fallow after a long Boro and Aman, where barely 80 days are left, is the normal turnaround rather than neglect, and is charged less; an idle season on a farm that had a whole season spare is charged in full. ESTIMATE — these coefficients are a demo calibration, not fitted against observed yield or pest data.",
   },
   {
     term: "Late-onset terminal heat",

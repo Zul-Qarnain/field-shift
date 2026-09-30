@@ -11,8 +11,8 @@ The current build computes for real — deterministic constraint filtering and w
 - **Field Analysis** — rainfall-onset shift (the two-era Mann-Whitney test is planned; the values shown are sample data), temperature/heat trends, SMAP soil moisture, NDVI greenness, SoilGrids soil (labeled as modeled), and a per-dataset provenance drawer with retrieval status.
 - **Crop Planning** — a deterministic engine ranks rotations from your crop pool and priorities: hard constraints first (one crop per season, and the sequence must fit a 365-day calendar of crop durations, 10-day turnarounds and the onset shift), then eight weighted scores — water adequacy, thermal fit, soil compatibility, soil-health balance, diversity & break, resilience, low irrigation reliance, and food & income. Common Bangladesh sequences such as Aman → Boro are legal and cost soil-health points for repeating a crop family; the pool also includes Aus rice and an idle Fallow season. What-if scenarios re-rank live: drier (−10 % / −20 % rainfall), hotter (+1 °C / +2 °C) and later monsoon onset (+7 / +15 days). Advisory sentence + ≤160-character SMS in Bangla and English.
 - **Method & Data** — every definition and threshold, marked computed vs planned, plus the dataset list with id/version. Sensitivity results and retrieval dates are planned, not computed.
-- **Estimates are labeled** — per-farm irrigation access, crop durations and traits, and the food & income values are hand-set demo numbers marked `ESTIMATE` in the code and in the UI, pending citation.
-- **Bangla UI** — district, division, farm, crop, score-label, heading and button text switch language, and the advisory/SMS are generated in Bangla. The engine's reason, risk and penalty sentences are written in English today; the "Why" drawer says so when Bangla is on.
+- **Estimates are labeled** — per-farm irrigation access, crop durations and traits, and the income and staple-food values behind food & income are hand-set demo numbers marked `ESTIMATE` in the code and in the UI, pending citation.
+- **Bangla UI** — district, division, farm, crop, soil texture, farm context, score labels, headings, chart legends and tooltips, button text and every number (Bengali digits) switch language; the advisory, the SMS and the engine's reason, risk and penalty sentences are generated in both languages with the same numbers in each. Dataset names and version ids stay in English.
 
 ## Architecture (summary)
 
@@ -23,7 +23,7 @@ Static-first by design: pre-event Python (`src/acquire`, `src/compute` — **pla
 ```bash
 cd web
 npm ci
-npm test        # 92 Vitest unit tests: engine constraints & scoring, determinism, data contracts
+npm test        # 115 Vitest unit tests: engine constraints & scoring, determinism, bilingual output, data contracts
 npm run dev     # http://localhost:3000
 npm run build   # production build (type-checked)
 ```

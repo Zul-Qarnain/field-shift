@@ -3,12 +3,13 @@
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { FarmPack } from "@/lib/data";
+import { onsetRule } from "@/lib/data";
+import { useLang } from "@/lib/lang";
+import { dayMonthLabel, fmtNum, monthLabel, t, tf } from "@/lib/i18n";
 
-const MONTHS = ["Jun", "Jul", "Aug", "Sep"];
-const doyToDate = (doy: number) => {
-  const d = new Date(2024, 0, doy);
-  return d.toLocaleString("en", { month: "short", day: "numeric" });
-};
+/** Days of year where these months begin, used only to place the axis ticks. */
+const ERA_TICKS = [160, 185, 215, 248];
+const SEASON_MONTHS = [7, 8, 9, 10, 11, 0, 1, 2, 3];
 
 function smooth(era: number[], from: number, to: number) {
   const xs: number[] = [];
@@ -22,6 +23,7 @@ function smooth(era: number[], from: number, to: number) {
 }
 
 export function OnsetDistribution({ pack }: { pack: FarmPack }) {
+  const { lang } = useLang();
   const { eraA, eraB } = pack.onset;
   const from = Math.min(...eraA, ...eraB) - 20;
   const to = Math.max(...eraA, ...eraB) + 20;
@@ -32,17 +34,15 @@ export function OnsetDistribution({ pack }: { pack: FarmPack }) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pack.id]);
 
-  const ticks = MONTHS.map((m) => {
-    const day = { Jun: 160, Jul: 185, Aug: 215, Sep: 248 }[m as "Jun" | "Jul" | "Aug" | "Sep"];
-    return day;
-  });
+  const eraOld = fmtNum("2001–2012", lang);
+  const eraNew = fmtNum("2013–2025", lang);
 
   return (
     <div>
       <div className="flex items-center gap-4 pb-2 text-[11px] text-ink-mid">
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-water" /> 2001–2012</span>
-        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-lime" /> 2013–2025</span>
-        <span className="ml-auto font-mono text-ink-low">p = {pack.onset.pValue.toFixed(3)} · Mann-Whitney</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-water" /> {eraOld}</span>
+        <span className="flex items-center gap-1.5"><span className="h-2 w-2 rounded-sm bg-lime" /> {eraNew}</span>
+        <span className="ml-auto font-mono text-ink-low">p = {fmtNum(pack.onset.pValue.toFixed(3), lang)} · {t("chart_mann_whitney", lang)}</span>
       </div>
       <ResponsiveContainer width="100%" height={170}>
         <AreaChart data={data} margin={{ top: 4, right: 6, bottom: 0, left: -22 }}>
@@ -57,30 +57,34 @@ export function OnsetDistribution({ pack }: { pack: FarmPack }) {
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#1e2f4d" strokeDasharray="3 5" vertical={false} />
-          <XAxis dataKey="doy" type="number" domain={[from, to]} ticks={ticks} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" />
+          <XAxis dataKey="doy" type="number" domain={[from, to]} ticks={ERA_TICKS} tickFormatter={(v) => fmtNum(v as number, lang)} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" />
           <YAxis hide />
           <ReferenceLine x={pack.onset.historicalMedianDOY} stroke="#4ea8de" strokeDasharray="4 4" />
           <ReferenceLine x={pack.onset.currentMedianDOY} stroke="#d4f94e" strokeDasharray="4 4" />
           <Tooltip
             contentStyle={{ background: "#16243d", border: "1px solid #1e2f4d", borderRadius: 8, fontSize: 12 }}
-            labelFormatter={(v) => doyToDate(v as number)}
-            formatter={(val, name) => [((val as number) * 100).toFixed(1) + "% of season", name === "current" ? "2013–2025" : "2001–2012"]}
+            labelFormatter={(v) => dayMonthLabel(v as number, lang)}
+            formatter={(val, name) => [`${fmtNum(((val as number) * 100).toFixed(1), lang)}% ${t("chart_pct_season", lang)}`, name === "current" ? eraNew : eraOld]}
           />
           <Area dataKey="historical" stroke="#4ea8de" strokeWidth={1.5} fill="url(#gA)" />
           <Area dataKey="current" stroke="#d4f94e" strokeWidth={1.5} fill="url(#gB)" />
         </AreaChart>
       </ResponsiveContainer>
       <p className="pt-1 text-[11px] leading-relaxed text-ink-low">
-        Onset rule: {pack.onset.threshold}. Medians: {doyToDate(pack.onset.historicalMedianDOY)} → {doyToDate(pack.onset.currentMedianDOY)}.
+        {tf("chart_onset_rule", lang, {
+          rule: onsetRule(pack, lang),
+          from: dayMonthLabel(pack.onset.historicalMedianDOY, lang),
+          to: dayMonthLabel(pack.onset.currentMedianDOY, lang),
+        })}
       </p>
     </div>
   );
 }
 
 export function SeasonTrend({ pack }: { pack: FarmPack }) {
-  const months = ["Aug", "Sep", "Oct", "Nov", "Dec", "Jan", "Feb", "Mar", "Apr"];
-  const data = months.map((m, i) => ({
-    m,
+  const { lang } = useLang();
+  const data = SEASON_MONTHS.map((month, i) => ({
+    m: monthLabel(month, lang),
     current: pack.season.current[i],
     previous: pack.season.previous[i],
     historical: pack.season.historical[i],
@@ -88,19 +92,19 @@ export function SeasonTrend({ pack }: { pack: FarmPack }) {
   return (
     <div>
       <div className="flex items-center gap-4 pb-2 text-[11px] text-ink-mid">
-        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-lime" /> Current season</span>
-        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t border-dashed border-water" /> Previous</span>
-        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t border-dashed border-ink-low" /> Historical avg</span>
+        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 bg-lime" /> {t("chart_current", lang)}</span>
+        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t border-dashed border-water" /> {t("chart_previous", lang)}</span>
+        <span className="flex items-center gap-1.5"><span className="h-0.5 w-4 border-t border-dashed border-ink-low" /> {t("chart_historical", lang)}</span>
         <span className="ml-auto font-mono text-ink-low">NDVI · MODIS/VIIRS · NASA</span>
       </div>
       <ResponsiveContainer width="100%" height={180}>
         <LineChart data={data} margin={{ top: 6, right: 8, bottom: 0, left: -22 }}>
           <CartesianGrid stroke="#1e2f4d" strokeDasharray="3 5" vertical={false} />
           <XAxis dataKey="m" tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" />
-          <YAxis domain={[0, 1]} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" />
+          <YAxis domain={[0, 1]} tickFormatter={(v) => fmtNum(v as number, lang)} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" />
           <Tooltip
             contentStyle={{ background: "#16243d", border: "1px solid #1e2f4d", borderRadius: 8, fontSize: 12 }}
-            formatter={(val) => [Number(val).toFixed(2), "NDVI"]}
+            formatter={(val) => [fmtNum(Number(val).toFixed(2), lang), "NDVI"]}
           />
           <Line dataKey="current" stroke="#d4f94e" strokeWidth={2} dot={false} />
           <Line dataKey="previous" stroke="#4ea8de" strokeWidth={1.5} strokeDasharray="5 4" dot={false} />
@@ -110,4 +114,3 @@ export function SeasonTrend({ pack }: { pack: FarmPack }) {
     </div>
   );
 }
-

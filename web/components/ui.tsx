@@ -2,7 +2,7 @@
 
 import { Info } from "lucide-react";
 import type { Tier, Source } from "@/lib/data";
-import { CONF_KEYS, t } from "@/lib/i18n";
+import { CONF_KEYS, fmtNum, t } from "@/lib/i18n";
 import { useLang } from "@/lib/lang";
 
 export function TierBadge({ tier }: { tier: Tier }) {
@@ -20,21 +20,23 @@ export function TierBadge({ tier }: { tier: Tier }) {
 }
 
 export function SourceChip({ source }: { source: Source }) {
-  const map: Record<Source, [string, string]> = {
-    live: ["bg-earth/15 text-earth", "live"],
-    cache: ["bg-water/15 text-water", "cache"],
-    fixture: ["bg-amber/15 text-amber", "fixture"],
+  const { lang } = useLang();
+  const map: Record<Source, [string, Parameters<typeof t>[0]]> = {
+    live: ["bg-earth/15 text-earth", "src_live"],
+    cache: ["bg-water/15 text-water", "src_cache"],
+    fixture: ["bg-amber/15 text-amber", "src_fixture"],
   };
-  const [cls, label] = map[source];
+  const [cls, key] = map[source];
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] ${cls}`}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
+      {t(key, lang)}
     </span>
   );
 }
 
 export function DeltaChip({ value, unit = "", inverse = false }: { value: number; unit?: string; inverse?: boolean }) {
+  const { lang } = useLang();
   const good = inverse ? value < 0 : value > 0;
   const neutral = value === 0;
   const cls = neutral ? "bg-surface text-ink-mid" : good ? "bg-lime/15 text-lime" : "bg-risk/15 text-risk";
@@ -42,7 +44,7 @@ export function DeltaChip({ value, unit = "", inverse = false }: { value: number
   return (
     <span className={`inline-flex items-center rounded px-1.5 py-0.5 text-[11px] font-semibold tabular ${cls}`}>
       {sign}
-      {value}
+      {fmtNum(value, lang)}
       {unit}
     </span>
   );

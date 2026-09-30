@@ -100,6 +100,20 @@ describe("demo crop trait contracts", () => {
     expect(value("potato")).toBeGreaterThan(value("mustard"));
   });
 
+  it("stapleIndex is a bounded demo food-security ranking that puts rice on top and fibre at zero", () => {
+    const staple = (id: string) => CROPS.find((c) => c.id === id)!.stapleIndex;
+    for (const c of CROPS) {
+      expect(c.stapleIndex).toBeGreaterThanOrEqual(0);
+      expect(c.stapleIndex).toBeLessThanOrEqual(1);
+    }
+    expect(staple("boro")).toBe(1);
+    expect(staple("boro")).toBeGreaterThan(staple("potato"));
+    expect(staple("boro")).toBeGreaterThan(staple("maize"));
+    expect(staple("aus")).toBeGreaterThan(staple("mustard"));
+    expect(staple("jute")).toBe(0);
+    expect(staple("fallow")).toBe(0);
+  });
+
   it("crop ids are unique", () => {
     expect(new Set(CROPS.map((c) => c.id)).size).toBe(CROPS.length);
   });

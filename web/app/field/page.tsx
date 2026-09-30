@@ -5,9 +5,9 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
-import { FARMS, districtName, divisionName, farmName, getFarm } from "@/lib/data";
+import { FARMS, districtName, divisionName, farmContext, farmName, getFarm, provDetail } from "@/lib/data";
 import { useLang } from "@/lib/lang";
-import { CONF_KEYS, growthStageLabel, t, tf } from "@/lib/i18n";
+import { CONF_KEYS, fmtNum, growthStageLabel, soilTextureLabel, t, tf } from "@/lib/i18n";
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
@@ -38,9 +38,9 @@ function FieldHeader({ farmId }: { farmId: string }) {
         </h1>
         <p className="mt-2 flex flex-wrap items-center gap-x-5 gap-y-1 text-sm text-ink-mid">
           <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-ink-low" />{districtName(f, lang)}, {divisionName(f, lang)}, {t("country", lang)}</span>
-          <span className="font-mono text-xs text-ink-low">{f.lat.toFixed(4)}°N, {f.lon.toFixed(4)}°E</span>
-          <span className="flex items-center gap-1.5"><Ruler className="h-3.5 w-3.5 text-ink-low" />{f.areaHa} ha</span>
-          <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-ink-low" />{t("last_updated", lang)}: 2001–2025 · {t("demo_fixture", lang)}</span>
+          <span className="font-mono text-xs text-ink-low">{fmtNum(f.lat.toFixed(4), lang)}°N, {fmtNum(f.lon.toFixed(4), lang)}°E</span>
+          <span className="flex items-center gap-1.5"><Ruler className="h-3.5 w-3.5 text-ink-low" />{fmtNum(f.areaHa, lang)} {t("unit_ha", lang)}</span>
+          <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-ink-low" />{t("last_updated", lang)}: {fmtNum("2001–2025", lang)} · {t("demo_fixture", lang)}</span>
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -75,10 +75,10 @@ function FieldView({ farmId }: { farmId: string }) {
   }, []);
 
   const CARDS = [
-    { icon: Waves, label: t("metric_soil_moisture", lang), value: `${m.soilMoisturePct}%`, delta: m.soilMoistureDelta, unit: "%", sub: "SMAP L4 · vs last 7 d", color: "#4ea8de", inverse: false },
-    { icon: Thermometer, label: t("metric_temp", lang), value: `${m.tempC}°C`, delta: m.tempDelta, unit: "°C", sub: "POWER · vs 30-y mean", color: "#f2b84b", inverse: false },
-    { icon: Sprout, label: "NDVI", value: m.ndvi.toFixed(2), delta: m.ndviDelta, unit: "", sub: "MODIS/VIIRS · greenness", color: "#57c785", inverse: false },
-    { icon: Flame, label: t("metric_heat_days", lang), value: `${m.heatDays}`, delta: m.heatDaysDelta, unit: " d", sub: "T2M_MAX · per season", color: "#ef6c4d", inverse: true },
+    { icon: Waves, label: t("metric_soil_moisture", lang), value: `${fmtNum(m.soilMoisturePct, lang)}%`, delta: m.soilMoistureDelta, unit: "%", sub: tf("card_sub_moisture", lang, { n: 7 }), color: "#4ea8de", inverse: false },
+    { icon: Thermometer, label: t("metric_temp", lang), value: `${fmtNum(m.tempC, lang)}°C`, delta: m.tempDelta, unit: "°C", sub: tf("card_sub_temp", lang, { n: 30 }), color: "#f2b84b", inverse: false },
+    { icon: Sprout, label: "NDVI", value: fmtNum(m.ndvi.toFixed(2), lang), delta: m.ndviDelta, unit: "", sub: tf("card_sub_ndvi", lang, {}), color: "#57c785", inverse: false },
+    { icon: Flame, label: t("metric_heat_days", lang), value: `${fmtNum(m.heatDays, lang)}`, delta: m.heatDaysDelta, unit: ` ${t("unit_days_short", lang)}`, sub: tf("card_sub_heat", lang, {}), color: "#ef6c4d", inverse: true },
   ];
 
   return (
@@ -120,7 +120,7 @@ function FieldView({ farmId }: { farmId: string }) {
             </Panel>
             <Panel title={t("panel_rain_title", lang)} right={<SourceChip source="fixture" />}>
               <div className="flex items-baseline gap-2 pb-1">
-                <span className="font-display text-2xl font-bold tabular text-water">{m.rainfallTrendPctPerDecade > 0 ? "+" : ""}{m.rainfallTrendPctPerDecade}%</span>
+                <span className="font-display text-2xl font-bold tabular text-water">{m.rainfallTrendPctPerDecade > 0 ? "+" : ""}{fmtNum(m.rainfallTrendPctPerDecade, lang)}%</span>
                 <span className="text-xs text-ink-mid">{t("per_decade", lang)}</span>
               </div>
               <p className="mt-2 text-[11px] leading-relaxed text-ink-low">
@@ -143,7 +143,7 @@ function FieldView({ farmId }: { farmId: string }) {
               <div>
                 <h2 className="font-display text-base font-bold text-lime">{t("onset_detected", lang)}</h2>
                 <p className="text-sm text-ink-mid tabular">
-                  <span className="font-bold text-ink-hi">{Math.abs(f.onset.shiftDays)}</span>{" "}
+                  <span className="font-bold text-ink-hi">{fmtNum(Math.abs(f.onset.shiftDays), lang)}</span>{" "}
                   {later ? t("days_later", lang) : t("days_earlier", lang)}
                 </p>
               </div>
@@ -169,10 +169,10 @@ function FieldView({ farmId }: { farmId: string }) {
               {[
                 [t("current_crop", lang), lang === "bn" ? f.crop_bn : f.crop_en],
                 [t("growth_stage", lang), growthStageLabel(f.growthStage, lang)],
-                [t("soil_type", lang), `${f.soilType} · pH ${f.soil.ph}`],
-                [t("area_label", lang), `${f.areaHa} ha`],
-                [t("elevation_label", lang), `${f.elevationM} m`],
-                [t("context_label", lang), f.context],
+                [t("soil_type", lang), `${soilTextureLabel(f.soilType, lang)} · pH ${fmtNum(f.soil.ph, lang)}`],
+                [t("area_label", lang), `${fmtNum(f.areaHa, lang)} ${t("unit_ha", lang)}`],
+                [t("elevation_label", lang), `${fmtNum(f.elevationM, lang)} ${t("unit_m", lang)}`],
+                [t("context_label", lang), farmContext(f, lang)],
               ].map(([k, v]) => (
                 <div key={k} className="flex items-center justify-between border-b border-line-soft py-2 last:border-0">
                   <dt className="text-ink-mid">{k}</dt>
@@ -190,9 +190,8 @@ function FieldView({ farmId }: { farmId: string }) {
                     <p className="flex items-center gap-2 text-sm font-medium text-ink-hi">
                       <span className="truncate">{p.name}</span> <TierBadge tier={p.tier} />
                     </p>
-                    <p className="truncate text-[11px] text-ink-low">{p.detail}</p>
-                    <p className="font-mono text-[10px] text-ink-low">{p.version} · {p.retrieved}</p>
-                  </div>
+                    <p className="truncate text-[11px] text-ink-low">{provDetail(p, lang)}</p>
+                    <p className="font-mono text-[10px] text-ink-low">{p.version} · {p.retrieved === "—" ? "—" : t("not_retrieved", lang)}</p>                  </div>
                   <a href={p.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-link hover:underline">{t("view", lang)}</a>
                 </li>
               ))}
@@ -205,7 +204,7 @@ function FieldView({ farmId }: { farmId: string }) {
           >
             <p className="text-xs leading-relaxed text-ink-mid">{t("uncertainty_note", lang)}</p>
             <ul className="mt-3 space-y-1.5 text-[11px] text-ink-low">
-              <li>· {t("unc_soil", lang)} ({f.soil.ph}, {f.soil.texture})</li>
+              <li>· {t("unc_soil", lang)} ({fmtNum(f.soil.ph, lang)}, {soilTextureLabel(f.soil.texture, lang)})</li>
               <li>· {f.dataQuality.smapEra ? t("unc_smap_yes", lang) : t("unc_smap_no", lang)}</li>
               <li>· {tf("unc_ndvi_years", lang, { n: f.dataQuality.ndviRecordYears })}</li>
             </ul>

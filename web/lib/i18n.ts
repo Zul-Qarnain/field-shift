@@ -1,5 +1,17 @@
 export type Lang = "en" | "bn";
 
+/** Bengali digits ০–৯. Same value, different glyph. */
+const BN_DIGITS = ["০", "১", "২", "৩", "৪", "৫", "৬", "৭", "৮", "৯"] as const;
+
+/** Latin digits become Bengali digits; every other character (signs, decimals, units, words) is untouched. */
+export const toBnDigits = (value: string | number) => String(value).replace(/[0-9]/g, (d) => BN_DIGITS[Number(d)]);
+
+/** The same number written the way this language writes it. Never rounds, changes or reformats the value. */
+export const fmtNum = (value: string | number, lang: Lang) => (lang === "bn" ? toBnDigits(value) : String(value));
+
+/** Short label plus number, e.g. "12 d" / "১২ দিন" — the unit follows the language, the number does not change. */
+export const fmtUnit = (value: string | number, unit: string, lang: Lang) => `${fmtNum(value, lang)} ${unit}`;
+
 const STRINGS = {
   nav_home: { en: "Home", bn: "হোম" },
   nav_field: { en: "Field Analysis", bn: "মাঠ বিশ্লেষণ" },
@@ -13,6 +25,7 @@ const STRINGS = {
   shell_note_3: { en: "A healthier tomorrow.", bn: "সুস্থ আগামীকাল।" },
   country: { en: "Bangladesh", bn: "বাংলাদেশ" },
   demo_fixture: { en: "demo fixture", bn: "ডেমো ফিক্সচার" },
+  not_retrieved: { en: "not yet (demo fixture)", bn: "এখনও সংগ্রহ হয়নি (ডেমো ফিক্সচার)" },
   demo_flags: { en: "demo flags", bn: "ডেমো চিহ্ন" },
   view: { en: "View", bn: "দেখুন" },
   copy: { en: "Copy", bn: "কপি" },
@@ -149,13 +162,13 @@ const STRINGS = {
     bn: "স্লাইডার সরালেই এই ডিভাইসে র‍্যাঙ্ক বদলায় — গণনা সবসময় এক।",
   },
   plan_irrigation_note: {
-    en: "Water saving also counts dry-season pumping — this farm's demo irrigation access is {n} (ESTIMATE). Stable harvest is the weight on food & income (S8), the season's crop value graded by the water it can get.",
-    bn: "পানি সাশ্রয় স্লাইডার শুষ্ক মৌসুমে সেচের পানিও গণনা করে; এই খামারের ডেমো সেচ-প্রবেশাধিকার {n} (ESTIMATE)। “স্থিতিশীল ফলন” মৌসুমের খাদ্য ও আয়-মূল্য (S8) কে বেশি ওজন দেয়।",
+    en: "Water saving also counts dry-season pumping — this farm's demo irrigation access is {n} (ESTIMATE). Stable harvest is the weight on food & income (S8): each season's demo income graded by its water-reliability margin, plus the staple rice the sequence can actually grow where its water need can be covered.",
+    bn: "পানি সাশ্রয় স্লাইডার শুষ্ক মৌসুমে সেচের পানিও গণনা করে; এই খামারের ডেমো সেচ-প্রবেশাধিকার {n} (ESTIMATE)। “স্থিতিশীল ফলন” মৌসুমের খাদ্য ও আয়-মূল্য (S8) কে বেশি ওজন দেয়: প্রতি মৌসুমের ডেমো আয়-মূল্য সেই মৌসুমের পানির নির্ভরযোগ্যতার প্রান্ত দিয়ে গুণ করা হয়, সঙ্গে যোগ হয় এই ক্রম যে ধান সত্যিই ফলাতে পারে তার খাদ্য-নিরাপত্তার অংশ — যেখানে ফসলের পানির চাহিদা মেটাতে সম্ভব।",
   },
   crop_pool: { en: "Crop pool", bn: "ফসলের তালিকা" },
   crop_pool_info: {
-    en: "Crops considered for the rotation. Same-family crops may follow each other but lose soil-health points; every sequence must also fit the 365-day calendar (durations + 10-day turnarounds + the onset shift). Fallow leaves the season idle.",
-    bn: "ফসল-পর্যায়ের জন্য যেসব ফসল বিবেচনা করা হয়। একই গোত্রের ফসল পরপর বসানো যায়, তবে মাটির স্বাস্থ্যের পয়েন্ট কমে; প্রতিটি ক্রমকে ৩৬৫ দিনের ক্যালেন্ডারেও বসতে হয় (বর্ধনাকাল + ১০ দিনের টার্নঅ্যাউন্ড + বর্ষার শুরু পিছনো)। পতিত মানে সেই মৌসুমে জমি ফাঁকা রাখা।",
+    en: "Crops considered for the rotation. Same-family crops may follow each other but lose soil-health points; every sequence must also fit the 365-day calendar (durations + 10-day turnarounds + the onset shift). Fallow leaves the season idle, and is charged for it — less when the calendar left barely any room to crop, in full when the year still had a season spare.",
+    bn: "ফসল-পর্যায়ের জন্য যেসব ফসল বিবেচনা করা হয়। একই গোত্রের ফসল পরপর বসানো যায়, তবে মাটির স্বাস্থ্যের পয়েন্ট কমে; প্রতিটি ক্রমকে ৩৬৫ দিনের ক্যালেন্ডারেও বসতে হয় (বর্ধনাকাল + ১০ দিনের টার্নঅ্যাউন্ড + বর্ষার শুরু পিছনো)। পতিত মানে সেই মৌসুমে জমি ফাঁকা রাখা — তার জন্য পয়েন্ট কাটা হয়; ক্যালেন্ডারে ফসল ফেলার জায়গা প্রায় না-থাকলে কম কাটে, আর বছরে পুরো একটি মৌসুম ফাঁকা থাকলে পুরোটা কাটে।",
   },
   scenarios: { en: "What-if", bn: "যদি এমন হয়" },
   whatif_info: {
@@ -198,7 +211,6 @@ const STRINGS = {
 
   why: { en: "Why", bn: "কেন" },
   why_title: { en: "Why this rotation?", bn: "এই ফসল-পর্যায়টি কেন?" },
-  engine_english_note: { en: "The reasons and the source list below are in English for now.", bn: "নিচের কারণ ও উৎসের তালিকা আপাতত ইংরেজিতে।" },
   source_word: { en: "source", bn: "উৎস" },
   because: { en: "Because", bn: "কারণ" },
   component_scores: { en: "Component scores", bn: "উপস্কোর" },
@@ -239,14 +251,49 @@ const STRINGS = {
   th_resolution: { en: "Resolution", bn: "রেজোলিউশন" },
   th_temporal: { en: "Temporal", bn: "সময়সীমা" },
   th_link: { en: "Link", bn: "লিঙ্ক" },
+
+  src_fixture: { en: "fixture", bn: "ডেমো ফিক্সচার" },
+  src_cache: { en: "cache", bn: "ক্যাশ" },
+  src_live: { en: "live", bn: "লাইভ" },
+  copy_failed: { en: "Copy failed — select the text", bn: "কপি হয়নি — লেখাটি নির্বাচন করুন" },
+  unit_ha: { en: "ha", bn: "হেক্টর" },
+  unit_m: { en: "m", bn: "মিটার" },
+
+  card_sub_moisture: { en: "SMAP L4 · vs last {n} d", bn: "SMAP L4 · গত {n} দিনের তুলনায়" },
+  card_sub_temp: { en: "POWER · vs {n}-y mean", bn: "POWER · {n} বছরের গড়ের তুলনায়" },
+  card_sub_ndvi: { en: "MODIS/VIIRS · greenness", bn: "MODIS/VIIRS · সবুজাভতা" },
+  card_sub_heat: { en: "T2M_MAX · per season", bn: "T2M_MAX · মৌসুম প্রতি" },
+
+  chart_current: { en: "Current season", bn: "চলতি মৌসুম" },
+  chart_previous: { en: "Previous", bn: "আগের মৌসুম" },
+  chart_historical: { en: "Historical avg", bn: "ঐতিহাসিক গড়" },
+  chart_pct_season: { en: "of season", bn: "মৌসুমের অংশ" },
+  chart_mann_whitney: { en: "Mann-Whitney", bn: "ম্যান-হুইটনি" },
+  chart_onset_rule: {
+    en: "Onset rule: {rule}. Medians: {from} → {to}.",
+    bn: "শুরুর নিয়ম: {rule}। মধ্যক: {from} → {to}।",
+  },
+  onset_rule_bn: { en: "7-day window ≥ 20 mm, dry spell ≤ 7 days", bn: "৭ দিনের উইন্ডোতে ≥ ২০ মিমি বৃষ্টি, তারপর ৭ দিনের বেশি শুকনো সময় নয়" },
+  drawer_sources: {
+    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, not yet cited · onset shift: farm fixture + the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
+    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, এখনও উদ্ধৃত নয় · শুরুর পরিবর্তন: খামারের ফিক্সচার + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
+  },
 } as const;
 
 export type StringKey = keyof typeof STRINGS;
 export const t = (key: StringKey, lang: Lang) => STRINGS[key][lang];
 
-/** Strings with {placeholder} slots — values stay Latin digits, the phrasing follows the language. */
+/** Interface text that exists in both languages, carrying the same numbers in each. */
+export interface BiText {
+  en: string;
+  bn: string;
+}
+
+export const pick = (text: BiText, lang: Lang) => text[lang];
+
+/** Strings with {placeholder} slots — the phrasing follows the language and inserted numbers take that language's digits. */
 export const tf = (key: StringKey, lang: Lang, vars: Record<string, string | number>) =>
-  STRINGS[key][lang].replace(/\{(\w+)\}/g, (_match, name: string) => String(vars[name] ?? ""));
+  STRINGS[key][lang].replace(/\{(\w+)\}/g, (_match, name: string) => fmtNum(String(vars[name] ?? ""), lang));
 
 const GROWTH_STAGE_BN: Record<string, string> = {
   Vegetative: "বর্ধনাকাল",
@@ -256,6 +303,34 @@ const GROWTH_STAGE_BN: Record<string, string> = {
 
 export const growthStageLabel = (stage: string, lang: Lang) =>
   lang === "bn" ? GROWTH_STAGE_BN[stage] ?? stage : stage;
+
+const SOIL_TEXTURE_BN: Record<string, string> = {
+  Loam: "দোঁশ",
+  "Clay Loam": "এঁটে-দোঁশ",
+  "Sandy Loam": "বেলে-দোঁশ",
+  "Silty Clay": "পলল-এঁটে",
+  "Silty Clay Loam": "পলল-এঁটে-দোঁশ",
+};
+
+export const soilTextureLabel = (texture: string, lang: Lang) =>
+  lang === "bn" ? SOIL_TEXTURE_BN[texture] ?? texture : texture;
+
+/** Calendar month names in both languages, index 0 = January. */
+const MONTHS: [string, string][] = [
+  ["Jan", "জানু"], ["Feb", "ফেব্রু"], ["Mar", "মার্চ"], ["Apr", "এপ্রিল"], ["May", "মে"], ["Jun", "জুন"],
+  ["Jul", "জুলাই"], ["Aug", "আগ"], ["Sep", "সেপ্ট"], ["Oct", "অক্টো"], ["Nov", "নভে"], ["Dec", "ডিসে"],
+];
+
+export const monthLabel = (monthIndex: number, lang: Lang) => {
+  const [en, bn] = MONTHS[((monthIndex % 12) + 12) % 12];
+  return lang === "bn" ? bn : en;
+};
+
+/** Day plus month for a day-of-year value, written the way the language writes dates. */
+export const dayMonthLabel = (doy: number, lang: Lang, year = 2024) => {
+  const d = new Date(year, 0, doy);
+  return lang === "bn" ? `${toBnDigits(d.getDate())} ${monthLabel(d.getMonth(), "bn")}` : d.toLocaleString("en", { month: "short", day: "numeric" });
+};
 
 export const CONF_KEYS = {
   high: "conf_high",
