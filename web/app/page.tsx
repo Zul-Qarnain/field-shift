@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { ArrowRight, Droplets, MapPin, Sprout, Thermometer, TrendingDown } from "lucide-react";
-import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
+import { FARMS, districtName, divisionName, farmContext, farmName } from "@/lib/data";
 import { withRealData } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
-import { t } from "@/lib/i18n";
+import { fmtNum, t } from "@/lib/i18n";
 import { Panel, SourceChip } from "@/components/ui";
 
 export default function Home() {
@@ -61,14 +61,14 @@ export default function Home() {
                     <MapPin className="h-3 w-3" /> {districtName(f, lang)}, {divisionName(f, lang)}
                   </p>
                 </div>
-                <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-ink-mid">{f.context}</span>
+                <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-ink-mid">{farmContext(f, lang)}</span>
               </div>
               <div className="mt-4 flex items-center gap-4 text-xs">
                 <span className={`tabular font-semibold ${f.onset.shiftDays > 0 ? "text-amber" : "text-lime"}`}>
-                  {t("card_onset", lang)} {f.onset.shiftDays > 0 ? "+" : ""}{f.onset.shiftDays} {t("unit_days_short", lang)}
+                  {t("card_onset", lang)} {f.onset.shiftDays > 0 ? "+" : ""}{fmtNum(f.onset.shiftDays, lang)} {t("unit_days_short", lang)}
                 </span>
-                <span className="flex items-center gap-1 text-ink-mid"><Droplets className="h-3.5 w-3.5 text-water" />{f.metrics.soilMoisturePct}%</span>
-                <span className="flex items-center gap-1 text-ink-mid"><Thermometer className="h-3.5 w-3.5 text-risk" />{f.metrics.heatDays} {t("unit_heat_days", lang)}</span>
+                <span className="flex items-center gap-1 text-ink-mid"><Droplets className="h-3.5 w-3.5 text-water" />{fmtNum(f.metrics.soilMoisturePct, lang)}%</span>
+                <span className="flex items-center gap-1 text-ink-mid"><Thermometer className="h-3.5 w-3.5 text-risk" />{fmtNum(f.metrics.heatDays, lang)} {t("unit_heat_days", lang)}</span>
                 <span className="ml-auto text-ink-low transition-colors group-hover:text-link"><ArrowRight className="h-3.5 w-3.5" /></span>
               </div>
             </Link>

@@ -3,11 +3,11 @@
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
 import type { OnsetView, PowerPack } from "@/lib/packs";
+import { useLang } from "@/lib/lang";
+import { dayMonthLabel, fmtNum, t, tf } from "@/lib/i18n";
 
 const ERA_A_COLOR = "#4ea8de";
 const ERA_B_COLOR = "#d4f94e";
-
-const doyToDate = (doy: number) => new Date(2024, 0, Math.round(doy)).toLocaleString("en", { month: "short", day: "numeric" });
 
 function density(samples: number[], from: number, to: number, bandwidth = 6) {
   const xs: number[] = [];
@@ -24,6 +24,7 @@ function density(samples: number[], from: number, to: number, bandwidth = 6) {
  * in the caption — if POWER precipitation is inhomogeneous these years are CHIRPS years.
  */
 export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPack }) {
+  const { lang } = useLang();
   const from = Math.min(...view.eraA, ...view.eraB) - 8;
   const to = Math.max(...view.eraA, ...view.eraB) + 8;
 
@@ -35,18 +36,19 @@ export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPa
   }, [pack.id, pack.retrievedUtc, view.product]);
 
   const ticks = [pack.onset.window.startDoy, 152, 182, 213, 244, pack.onset.window.endDoy];
+  const nDays = (value: number) => `${fmtNum(value > 0 ? `+${value}` : value, lang)} ${t("unit_days_short", lang)}`;
 
   return (
     <div>
       <div className="flex flex-wrap items-center gap-4 pb-2 text-[11px] text-ink-mid">
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm bg-water" /> {view.eraALabel} (n={view.eraA.length})
+          <span className="h-2 w-2 rounded-sm bg-water" /> {fmtNum(view.eraALabel, lang)} ({fmtNum(view.eraA.length, lang)} {t("chart_years_unit", lang)})
         </span>
         <span className="flex items-center gap-1.5">
-          <span className="h-2 w-2 rounded-sm bg-lime" /> {view.eraBLabel} (n={view.eraB.length})
+          <span className="h-2 w-2 rounded-sm bg-lime" /> {fmtNum(view.eraBLabel, lang)} ({fmtNum(view.eraB.length, lang)} {t("chart_years_unit", lang)})
         </span>
         <span className="ml-auto font-mono text-ink-low">
-          {view.pValue === null ? "Mann-Whitney not computable" : `p = ${view.pValue.toFixed(3)} · Mann-Whitney`}
+          {view.pValue === null ? t("mw_not_computable", lang) : `p = ${fmtNum(view.pValue.toFixed(3), lang)} · ${t("chart_mann_whitney", lang)}`}
         </span>
       </div>
       <ResponsiveContainer width="100%" height={170}>
@@ -62,35 +64,57 @@ export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPa
             </linearGradient>
           </defs>
           <CartesianGrid stroke="#1e2f4d" strokeDasharray="3 5" vertical={false} />
-          <XAxis dataKey="doy" type="number" domain={[from, to]} ticks={ticks} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" tickFormatter={(v: number) => doyToDate(v)} />
+          <XAxis dataKey="doy" type="number" domain={[from, to]} ticks={ticks} tick={{ fill: "#7b8ca6", fontSize: 11 }} stroke="#1e2f4d" tickFormatter={(v: number) => dayMonthLabel(v, lang)} />
           <YAxis hide />
           <ReferenceLine x={view.medianA} stroke={ERA_A_COLOR} strokeDasharray="4 4" />
           <ReferenceLine x={view.medianB} stroke={ERA_B_COLOR} strokeDasharray="4 4" />
           <Tooltip
             contentStyle={{ background: "#16243d", border: "1px solid #1e2f4d", borderRadius: 8, fontSize: 12 }}
-            labelFormatter={(v) => doyToDate(v as number)}
-            formatter={(val, name) => [((val as number) * 100).toFixed(1) + "% of season", name === "current" ? view.eraBLabel : view.eraALabel]}
+            labelFormatter={(v) => dayMonthLabel(v as number, lang)}
+            formatter={(val, name) => [`${fmtNum(((val as number) * 100).toFixed(1), lang)}% ${t("chart_pct_season", lang)}`, name === "current" ? fmtNum(view.eraBLabel, lang) : fmtNum(view.eraALabel, lang)]}
           />
           <Area dataKey="historical" stroke={ERA_A_COLOR} strokeWidth={1.5} fill="url(#pgA)" />
           <Area dataKey="current" stroke={ERA_B_COLOR} strokeWidth={1.5} fill="url(#pgB)" />
         </AreaChart>
       </ResponsiveContainer>
       <p className="pt-1 text-[11px] leading-relaxed text-ink-low">
-        Source: <span className="font-semibold text-ink-mid">{view.product}</span> · {view.yearsDetected} years with a detected onset · era medians{" "}
-        {doyToDate(view.medianA)} (DOY {view.medianA}) → {doyToDate(view.medianB)} (DOY {view.medianB}), shift {view.shiftDays > 0 ? "+" : ""}
-        {view.shiftDays} d. Rule: {pack.onset.rule} Threshold {view.thresholdMm?.toFixed(1) ?? "n/a"} mm/5 d.
+        {tf("pack_rule_line", lang, { product: view.product, rule: pack.onset.rule, mm: view.thresholdMm?.toFixed(1) ?? "n/a" })} ·{" "}
+        {tf("pack_years_detected", lang, { n: view.yearsDetected })} ·{" "}
+        {tf("pack_era_medians", lang, {
+          fromA: dayMonthLabel(view.medianA, lang), a: view.medianA,
+          fromB: dayMonthLabel(view.medianB, lang), b: view.medianB,
+          days: view.shiftDays, unit: t("unit_days_short", lang),
+        })}
+        {" — "}
+        <span className="font-mono">{nDays(view.shiftDays)}</span>.
       </p>
       {view.censored.of > 0 && (
         <p className="mt-1 text-[11px] leading-relaxed text-ink-low">
-          Censoring: {view.censored.count} of {view.censored.of} years ({view.censored.sharePct?.toFixed(0) ?? "n/a"}%) fall on the first searchable day (DOY{" "}
-          {pack.onset.window.startDoy}) — the rule cannot report an onset before it, so a small shift may be partly the window, not the monsoon.
+          {tf("pack_censoring_line", lang, {
+            count: view.censored.count, total: view.censored.of,
+            pct: view.censored.sharePct?.toFixed(0) ?? "n/a", doy: pack.onset.window.startDoy,
+          })}
         </p>
       )}
-      {view.caution && <p className="mt-1 text-[11px] leading-relaxed text-amber">{view.caution}</p>}
+      {view.caution && (
+        <p className="mt-1 text-[11px] leading-relaxed text-amber">
+          {view.product === "CHIRPS v2.0" && view.alternative
+            ? tf("pack_caution_power_flagged", lang, {
+                year: pack.quality.precipHomogeneity.changePointInsideAnalysisWindow ?? "—",
+                days: view.alternative.shiftDays ?? "n/a",
+                p: view.alternative.pValue?.toFixed(3) ?? "n/a",
+              })
+            : view.caution}
+        </p>
+      )}
       {view.alternative && (
         <p className="mt-1 text-[11px] leading-relaxed text-ink-low">
-          Cross-check ({view.alternative.product}): shift {view.alternative.shiftDays ?? "n/a"} d, p={view.alternative.pValue?.toFixed(3) ?? "n/a"} —{" "}
-          {view.alternative.pValue !== null && view.alternative.pValue < 0.05 ? "also significant" : "not significant on its own"}.
+          {tf("pack_alternative_line", lang, {
+            product: view.alternative.product,
+            days: view.alternative.shiftDays ?? "n/a",
+            p: view.alternative.pValue?.toFixed(3) ?? "n/a",
+            verdict: view.alternative.pValue !== null && view.alternative.pValue < 0.05 ? t("significant", lang) : t("not_significant", lang),
+          })}
         </p>
       )}
     </div>
@@ -99,6 +123,7 @@ export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPa
 
 /** Small real-data strip: annual rainfall or heat days, labelled by year/month. */
 export function PackSparkline({ series, color, unit }: { series: { label: string[]; values: number[] }; color: string; unit: string }) {
+  const { lang } = useLang();
   const data = series.label.map((label, i) => ({ label, value: series.values[i] }));
   return (
     <div className="mt-2">
@@ -108,14 +133,14 @@ export function PackSparkline({ series, color, unit }: { series: { label: string
           <XAxis dataKey="label" hide />
           <Tooltip
             contentStyle={{ background: "#16243d", border: "1px solid #1e2f4d", borderRadius: 8, fontSize: 12 }}
-            formatter={(val) => [`${val}${unit}`, ""]}
+            formatter={(val) => [`${fmtNum(val as number, lang)}${unit}`, ""]}
           />
           <Line dataKey="value" stroke={color} strokeWidth={1.5} dot={{ r: 1.5, fill: color, strokeWidth: 0 }} />
         </LineChart>
       </ResponsiveContainer>
       <div className="flex justify-between font-mono text-[10px] text-ink-low">
-        <span>{series.label[0]}</span>
-        <span>{series.label[series.label.length - 1]}</span>
+        <span>{fmtNum(series.label[0], lang)}</span>
+        <span>{fmtNum(series.label[series.label.length - 1], lang)}</span>
       </div>
     </div>
   );

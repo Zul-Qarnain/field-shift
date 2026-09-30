@@ -1,4 +1,5 @@
 import type { FarmPack, ProvEntry } from "./data";
+import { toBnDigits } from "./i18n";
 import barishal03 from "../public/data/packs/farms/barishal-03.json";
 import farm12 from "../public/data/packs/farms/farm-12.json";
 import khulna09 from "../public/data/packs/farms/khulna-09.json";
@@ -441,6 +442,7 @@ export function withRealData(farm: FarmPack): FarmPack {
           id: "chirps",
           name: "CHIRPS v2.0",
           detail: `Independent rainfall cross-check · ${pack.crossCheck.tierLabel ?? "Open (UCSB CHC / USGS)"} · 0.25° cell ${pack.crossCheck.grid?.cell.join(", ") ?? "n/a"}`,
+          detail_bn: `স্বাধীন বৃষ্টিপাত যাচাই · ${pack.crossCheck.tierLabel ?? "Open (UCSB CHC / USGS)"} · ০.২৫° ঘর ${pack.crossCheck.grid?.cell.join(", ") ?? "n/a"}`,
           version: `${pack.crossCheck.source} · ${pack.crossCheck.yearsOnDisk?.first ?? "1981"}–${pack.crossCheck.yearsOnDisk?.last ?? "2025"}`,
           retrieved: pack.crossCheck.retrievedUtc ? `${pack.crossCheck.retrievedUtc.slice(0, 10)} (UTC)` : "not retrieved",
           tier: "Open",
@@ -465,6 +467,7 @@ export function withRealData(farm: FarmPack): FarmPack {
           ? {
               ...entry,
               detail: `Daily rainfall, T2M, solar — ${pack.lat.toFixed(4)}°N, ${pack.lon.toFixed(4)}°E (${pack.covered.daysWithData} days)`,
+              detail_bn: `দৈনিক বৃষ্টি, T2M, সৌর — ${toBnDigits(pack.lat.toFixed(4))}°N, ${toBnDigits(pack.lon.toFixed(4))}°E (${toBnDigits(pack.covered.daysWithData)} দিন)`,
               version: `Daily API ${pack.powerApiVersion} · ${pack.powerProductVersion ?? "MERRA-2"}`,
               retrieved: `${retrievedDay(pack)} (UTC)`,
             }

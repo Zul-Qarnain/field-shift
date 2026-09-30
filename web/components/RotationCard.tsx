@@ -1,10 +1,10 @@
 "use client";
 
 import { Crop, Droplets, Flame, Leaf, Shield, Sprout } from "lucide-react";
-import type { RotationResult } from "@/lib/engine";
+import { pick, type RotationResult } from "@/lib/engine";
 import { cropName } from "@/lib/data";
 import { useLang } from "@/lib/lang";
-import { t } from "@/lib/i18n";
+import { fmtNum, t } from "@/lib/i18n";
 import { ConfidenceChip, TierBadge } from "@/components/ui";
 
 const COMP_COLORS: Record<string, string> = {
@@ -22,6 +22,7 @@ const COMP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = 
 };
 
 export function ComponentBar({ k, label, value, weight }: { k: string; label: string; value: number; weight?: number }) {
+  const { lang } = useLang();
   const Icon = COMP_ICONS[k] ?? Sprout;
   return (
     <div className="flex items-center gap-2">
@@ -30,8 +31,8 @@ export function ComponentBar({ k, label, value, weight }: { k: string; label: st
       <div className="h-1.5 flex-1 overflow-hidden rounded-full bg-inset">
         <div className="h-full rounded-full" style={{ width: `${value * 100}%`, background: COMP_COLORS[k] }} />
       </div>
-      <span className="w-8 shrink-0 text-right font-mono text-[11px] tabular text-ink-mid">{value.toFixed(2)}</span>
-      {weight !== undefined && <span className="w-8 shrink-0 text-right font-mono text-[10px] text-ink-low">×{weight.toFixed(2)}</span>}
+      <span className="w-8 shrink-0 text-right font-mono text-[11px] tabular text-ink-mid">{fmtNum(value.toFixed(2), lang)}</span>
+      {weight !== undefined && <span className="w-10 shrink-0 text-right font-mono text-[10px] text-ink-low">×{fmtNum(weight.toFixed(2), lang)}</span>}
     </div>
   );
 }
@@ -70,8 +71,8 @@ export function RotationCard({
         <div className="flex items-center gap-2">
           <ConfidenceChip level={result.confidence} />
           <span className="font-display text-xl font-bold tabular">
-            {result.total}
-            <span className="text-xs font-medium text-ink-low">/100</span>
+            {fmtNum(result.total, lang)}
+            <span className="text-xs font-medium text-ink-low">/{fmtNum(100, lang)}</span>
           </span>
         </div>
       </div>
@@ -85,7 +86,7 @@ export function RotationCard({
       {result.risks.length > 0 && (
         <div className="mt-3 flex flex-wrap gap-1.5">
           {result.risks.map((r) => (
-            <span key={r} className="rounded-full border border-amber/40 bg-amber/10 px-2 py-0.5 text-[10px] text-amber">⚠ {r}</span>
+            <span key={r.en} className="rounded-full border border-amber/40 bg-amber/10 px-2 py-0.5 text-[10px] text-amber">⚠ {pick(r, lang)}</span>
           ))}
         </div>
       )}
@@ -127,15 +128,14 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
               <span className="rounded-md border border-line bg-inset px-2 py-1 text-xs font-semibold">{cropName(c, lang)}</span>
             </span>
           ))}
-          <span className="ml-auto font-display text-lg font-bold tabular">{result.total}/100</span>
+          <span className="ml-auto font-display text-lg font-bold tabular">{fmtNum(result.total, lang)}/{fmtNum(100, lang)}</span>
         </div>
-        {lang === "bn" && <p className="mt-2 text-[11px] leading-relaxed text-ink-low">{t("engine_english_note", lang)}</p>}
 
         <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">{t("because", lang)}</h3>
         <ul className="mt-2 space-y-2">
-          {result.why.map((w, i) => (
-            <li key={i} className="flex gap-2 text-sm leading-relaxed text-ink-mid">
-              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-lime" />{w}
+          {result.why.map((w) => (
+            <li key={w.en} className="flex gap-2 text-sm leading-relaxed text-ink-mid">
+              <span className="mt-1.5 h-1.5 w-1.5 shrink-0 rounded-full bg-lime" />{pick(w, lang)}
             </li>
           ))}
         </ul>
@@ -151,10 +151,10 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
           <>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">{t("penalties", lang)}</h3>
             <ul className="mt-2 space-y-1.5">
-              {result.penalties.map((p, i) => (
-                <li key={`${i}-${p.rule}`} className="rounded-lg border border-risk/30 bg-risk/5 p-2.5 text-xs text-ink-mid">
-                  <span className="font-semibold text-risk">−{p.amount}</span> {p.rule}
-                  <span className="mt-0.5 block text-[10px] text-ink-low">{t("source_word", lang)}: {p.source}</span>
+              {result.penalties.map((p) => (
+                <li key={p.rule.en} className="rounded-lg border border-risk/30 bg-risk/5 p-2.5 text-xs text-ink-mid">
+                  <span className="font-semibold text-risk">−{fmtNum(p.amount, lang)}</span> {pick(p.rule, lang)}
+                  <span className="mt-0.5 block text-[10px] text-ink-low">{t("source_word", lang)}: {pick(p.source, lang)}</span>
                 </li>
               ))}
             </ul>
@@ -162,11 +162,7 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
         )}
 
         <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">{t("data_provenance", lang)}</h3>
-        <p className="mt-2 rounded-lg border border-line bg-surface p-3 font-mono text-[11px] leading-relaxed text-ink-mid">
-          Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) ·
-          demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, not yet cited ·
-          onset shift: farm fixture + the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)
-        </p>
+        <p className="mt-2 rounded-lg border border-line bg-surface p-3 font-mono text-[11px] leading-relaxed text-ink-mid">{t("drawer_sources", lang)}</p>
         <p className="mt-4 text-[11px] leading-relaxed text-ink-low">{t("why_sensitivity_note", lang)}</p>
       </aside>
     </div>

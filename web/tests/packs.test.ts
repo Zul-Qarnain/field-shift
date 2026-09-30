@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
-import { FARMS, type FarmPack } from "@/lib/data";
+import { CROPS, FARMS, type FarmPack } from "@/lib/data";
+import { DEFAULT_PRIORITIES, DEFAULT_SCENARIO, generateRotations } from "@/lib/engine";
 import {
   PACK_INDEX, coveredWindow, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData,
 } from "@/lib/packs";
@@ -222,5 +223,50 @@ describe("covered window label", () => {
     const pack = packForFarm("rangpur-21")!;
     expect(coveredWindow(pack)).toContain("1981-01-01");
     expect(coveredWindow(pack)).toContain("→");
+  });
+});
+
+/**
+ * A1's ranking guarantees, re-checked against the real packs instead of the fixture shifts.
+ * The measured onset shift is small and mostly earlier (or taken from CHIRPS), which loosens the
+ * 365-day calendar rather than tightening it — so the irrigated north must still be able to win
+ * with Boro, and the dry/coastal farms must still not be pushed into it.
+ */
+describe("A1 guarantees under the real onset data", () => {
+  const real = (id: string) => withRealData(FARMS.find((f) => f.id === id)!);
+  const keyOf = (crops: { id: string }[]) => crops.map((c) => c.id).join(">");
+  const ranked = (farm: FarmPack, priorities: typeof DEFAULT_PRIORITIES) =>
+    generateRotations(farm, priorities, DEFAULT_SCENARIO, new Set(CROPS.map((c) => c.id)));
+  const boroRank = (farm: FarmPack, priorities: typeof DEFAULT_PRIORITIES) =>
+    ranked(farm, priorities).findIndex((r) => keyOf(r.crops).startsWith("aman>boro>")) + 1;
+
+  it("still plans no rotation away: every farm keeps a large valid set", () => {
+    for (const id of FARM_IDS) expect(ranked(real(id), DEFAULT_PRIORITIES).length).toBeGreaterThan(20);
+  });
+
+  for (const water of [0, 25]) {
+    for (const stability of [75, 100]) {
+      it(`Water ${water} + Stable ${stability}: Aman→Boro leads Rangpur and stays top 3 on Tangail`, () => {
+        const priorities = { ...DEFAULT_PRIORITIES, water, stability };
+        expect(boroRank(real("rangpur-21"), priorities)).toBe(1);
+        expect(boroRank(real("farm-12"), priorities)).toBeLessThanOrEqual(3);
+      });
+    }
+  }
+
+  it("keeps Boro off the top spot at the dry Barind and the coastal farms", () => {
+    for (const id of ["rajshahi-07", "khulna-09", "barishal-03"]) {
+      expect(keyOf(ranked(real(id), DEFAULT_PRIORITIES)[0].crops)).not.toContain("boro");
+    }
+  });
+
+  it("still produces at least four distinct first choices across the six farms", () => {
+    expect(new Set(FARM_IDS.map((id) => keyOf(ranked(real(id), DEFAULT_PRIORITIES)[0].crops))).size).toBeGreaterThanOrEqual(4);
+  });
+
+  it("never puts Boro first when Water saving is maxed", () => {
+    for (const id of FARM_IDS) {
+      expect(keyOf(ranked(real(id), { ...DEFAULT_PRIORITIES, water: 100 })[0].crops)).not.toContain("boro");
+    }
   });
 });
