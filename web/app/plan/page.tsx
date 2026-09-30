@@ -4,6 +4,7 @@ import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Copy, Droplets, Leaf, Shield, Sprout } from "lucide-react";
 import { CROPS, cropName, districtName, farmName, getFarm } from "@/lib/data";
+import { withRealData } from "@/lib/packs";
 import {
   DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
   type Priorities, type RotationResult, type Scenario,
@@ -33,7 +34,7 @@ const SCENARIOS: { label: StringKey; apply: Scenario }[] = [
 ];
 
 function PlanView({ farmId }: { farmId: string }) {
-  const pack = getFarm(farmId);
+  const pack = withRealData(getFarm(farmId));
   const { lang } = useLang();
   const [priorities, setPriorities] = useState<Priorities>(DEFAULT_PRIORITIES);
   const [scenario, setScenario] = useState<Scenario>(DEFAULT_SCENARIO);

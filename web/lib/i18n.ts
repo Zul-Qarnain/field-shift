@@ -8,8 +8,8 @@ const STRINGS = {
   nav_data: { en: "Data", bn: "ডেটা" },
   search_ph: { en: "Search district or demo farm…", bn: "জেলা বা খামার খুঁজুন…" },
   tagline: { en: "Earth data. Smarter farms.", bn: "পৃথিবীর তথ্য। ভালো ফসল।" },
-  shell_note_1: { en: "Sample data today.", bn: "আজ নমুনা ডেটায়।" },
-  shell_note_2: { en: "NASA feeds next.", bn: "পরে NASA-র ডেটা।" },
+  shell_note_1: { en: "NASA POWER data today.", bn: "আজ NASA POWER-এর ডেটা।" },
+  shell_note_2: { en: "More feeds next.", bn: "পরে আরও ডেটা।" },
   shell_note_3: { en: "A healthier tomorrow.", bn: "সুস্থ আগামীকাল।" },
   country: { en: "Bangladesh", bn: "বাংলাদেশ" },
   demo_fixture: { en: "demo fixture", bn: "ডেমো ফিক্সচার" },
@@ -23,8 +23,8 @@ const STRINGS = {
   english_only_note: { en: "Detailed definitions are in English for now.", bn: "বিস্তারিত সংজ্ঞা আপাতত ইংরেজিতে।" },
   english_only_table_note: { en: "The dataset roles below stay in English for now.", bn: "নিচের ডেটাসেটের ভূমিকা আপাতত ইংরেজিতেই লেখা।" },
   generated_fixtures: {
-    en: "Demo fixtures — deterministic sample data until the pipeline fills the cache",
-    bn: "ডেমো ফিক্সচার — পাইপলাইন চালু হলে প্রকৃত ক্যাশ ডেটা আসবে",
+    en: "Climate numbers come from the NASA POWER packs (cross-checked with CHIRPS); soil moisture, NDVI, soil and crop traits are still deterministic demo fixtures.",
+    bn: "জলবায়ুর সংখ্যাগুলো NASA POWER প্যাক থেকে আসে (CHIRPS দিয়ে যাচাই করা); মাটির আর্দ্রতা, NDVI, মাটি ও ফসলের বৈশিষ্ট্য এখনও নির্ধারিত ডেমো ফিক্সচার।",
   },
   footer_line: {
     en: "Built for the NASA Space Apps Challenge — a community science initiative. Not an official NASA product.",
@@ -112,7 +112,7 @@ const STRINGS = {
     en: "Sample distributions — real POWER onset years arrive with the pipeline.",
     bn: "নমুনা বণ্টন — পাইপলাইন এলে প্রকৃত POWER শুরুর বছরগুলো আসবে।",
   },
-  per_decade: { en: "per decade · 1981–2025", bn: "প্রতি দশকে · ১৯৮১–২০২৫" },
+  per_decade: { en: "per decade · 2001–2025", bn: "প্রতি দশকে · ২০০১–২০২৫" },
   rain_sample_note: {
     en: "Sample value from the demo fixture. The Mann-Kendall trend over daily rainfall is computed by the pipeline.",
     bn: "ডেমো ফিক্সচারের নমুনা মান। দৈনিক বৃষ্টিপাতের Mann-Kendall ধারা পাইপলাইন হিসাব করবে।",
@@ -218,8 +218,8 @@ const STRINGS = {
     bn: "ইন্টারফেস যে সংজ্ঞাগুলো ব্যবহার করে, সব এখানে খুলে বলা হয়েছে। সাহিত্যে onset-এর একাধিক সংজ্ঞা আছে — আমাদের সংজ্ঞা কোনটি, আর আজ কতটা হিসাব হচ্ছে বনাম কতটা পরিকল্পনায় আছে, সেটাই এই পাতার কাজ।",
   },
   demo_build_note: {
-    en: "Demo build: numbers on these pages come from sample fixtures, not yet from the NASA data pipeline.",
-    bn: "ডেমো বিল্ড: এই পাতার সংখ্যাগুলো নমুনা ফিক্সচার থেকে আসে, এখনও NASA ডেটা পাইপলাইন থেকে নয়।",
+    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against CHIRPS. The rest of the numbers on these pages — soil moisture, NDVI, soil, water availability, crop traits, irrigation access — are still sample fixtures.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, CHIRPS দিয়ে যাচাই করা। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, মাটি, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার।",
   },
   method_footnote: {
     en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation is planned and does not exist yet.",
@@ -227,18 +227,37 @@ const STRINGS = {
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
-    en: "Every dataset Field Shift is designed to use, its role, and how it would be accessed. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled open non-space layer. The current build runs on demo fixtures — no dataset below has been retrieved yet. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
-    bn: "Field Shift যে সব ডেটাসেট ব্যবহারের জন্য তৈরি, তার ভূমিকা ও কীভাবে তা পাওয়া যাবে — সব এখানে। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। বর্তমান বিল্ড ডেমো ফিক্সচারে চলে — নিচের কোনো ডেটাসেট এখনও সংগ্রহ করা হয়নি। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
+    en: "Every dataset Field Shift is designed to use, its role, and how it would be accessed. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled open non-space layer. NASA POWER has now been retrieved — daily series for the six demo farms and all 64 district centroids; every other dataset below is still a plan and its values remain demo fixtures. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
+    bn: "Field Shift যে সব ডেটাসেট ব্যবহারের জন্য তৈরি, তার ভূমিকা ও কীভাবে তা পাওয়া যাবে — সব এখানে। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। NASA POWER এখন সংগৃহীত — ছয়টি ডেমো খামার ও ৬৪টি জেলা কেন্দ্রের জন্য দৈনিক ধারা; নিচের বাকি সব ডেটাসেট এখনও পরিকল্পনা, তাদের মান ডেমো ফিক্সচার। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
   },
   data_footnote: {
-    en: "This list is a hand-maintained plan of the datasets the app is designed to use — it is not generated from a manifest, and none of it has been retrieved yet. Retrieval dates, versions and cache provenance will be added per farm once the pipeline has cached the data; the in-app provenance drawer says so today.",
-    bn: "এই তালিকাটি হাতে রক্ষণাবেক্ষণ করা পরিকল্পনা — কোনো ম্যানিফেস্ট থেকে তৈরি হয়নি, এবং এখনও কোনো ডেটা সংগ্রহ করা হয়নি। পাইপলাইন ডেটা ক্যাশ করলে খামারভিত্তিক সংগ্রহের তারিখ, সংস্করণ ও ক্যাশ-উৎস যোগ হবে; অ্যাপের উৎস-ড্রয়ারে তাই এখন লেখা আছে।",
+    en: "This list is hand-maintained, not generated from a manifest — except the NASA POWER row, whose retrieval date, parameters and covered range are read from the built data packs. Everything else here is still unretrieved, and the in-app provenance drawer labels those values as fixtures.",
+    bn: "এই তালিকা হাতে রক্ষণাবেক্ষণ করা, কোনো ম্যানিফেস্ট থেকে তৈরি নয় — শুধু NASA POWER সারিটি ছাড়া, যার সংগ্রহের তারিখ, প্যারামিটার ও সময়সীমা তৈরি ডেটা প্যাক থেকে পড়া হয়। বাকি সব ডেটা এখনও সংগৃহীত হয়নি; অ্যাপের উৎস-ড্রয়ারে সেসব মান ফিক্সচার হিসেবেই চিহ্নিত।",
   },
   th_dataset: { en: "Dataset", bn: "ডেটাসেট" },
   th_role: { en: "Role in the decision", bn: "সিদ্ধান্তে ভূমিকা" },
   th_resolution: { en: "Resolution", bn: "রেজোলিউশন" },
   th_temporal: { en: "Temporal", bn: "সময়সীমা" },
   th_link: { en: "Link", bn: "লিঙ্ক" },
+
+  // Added with the NASA POWER data packs (ITEM 4). Kept at the end of the table so the
+  // parallel translation pass does not collide with them.
+  field_cards_note_real: {
+    en: "Temperature and heat days now come from this farm's NASA POWER data pack. Soil moisture and NDVI are still demo fixtures — SMAP L4 and MODIS/VIIRS have not been retrieved.",
+    bn: "তাপমাত্রা ও অতিরিক্ত গরমের দিন এখন এই খামারের NASA POWER ডেটা প্যাক থেকে আসে। মাটির আর্দ্রতা ও NDVI এখনও ডেমো ফিক্সচার — SMAP L4 ও MODIS/VIIRS সংগ্রহ করা হয়নি।",
+  },
+  uncertainty_note_real: {
+    en: "Onset, rainfall trend, heat days and temperature come from real daily data for this point — NASA POWER, cross-checked against CHIRPS v2.0 — using the stated rule and complete years only, not a forecast. POWER's rainfall series is not homogeneous over 1981–2025, so each number names the product it came from and is flagged when a change point falls inside the analysis window. Soil moisture, NDVI and soil are still modelled or demo fixture values.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এই স্থানের প্রকৃত দৈনিক ডেটা থেকে আসে — NASA POWER, CHIRPS v2.0 দিয়ে যাচাই করা — নির্দিষ্ট নিয়ম ও শুধু পূর্ণ বছর ব্যবহার করে, পূর্বাভাস নয়। POWER-এর বৃষ্টিপাতের ধারা ১৯৮১–২০২৫ সমজাতীয় নয়, তাই প্রতিটি সংখ্যা তার উৎস পণ্যের নাম বলে এবং বিশ্লেষণ-উইন্ডোর মধ্যে পরিবর্তন-বিন্দু থাকলে তা চিহ্নিত করা হয়। মাটির আর্দ্রতা, NDVI ও মাটির তথ্য এখনও মডেল বা ডেমো ফিক্সচার।",
+  },
+  rain_real_note: {
+    en: "Mann-Kendall + Theil-Sen on annual rainfall, complete years 2001 onward only (POWER’s earlier years are not homogeneous), scaled to % of the window mean:",
+    bn: "বার্ষিক বৃষ্টিপাতে Mann-Kendall + Theil-Sen, শুধু ২০০১ সাল থেকে পূর্ণ বছর (POWER-এর আগের বছরগুলো সমজাতীয় নয়), উইন্ডোর গড়ের % হিসেবে:",
+  },
+  not_significant: { en: "not significant", bn: "উল্লেখযোগ্য নয়" },
+  significant: { en: "significant", bn: "উল্লেখযোগ্য" },
+  no_measurable_shift: { en: "no measurable shift", bn: "পরিমাপযোগ্য পরিবর্তন নেই" },
+  onset_from_source: { en: "Onset from", bn: "শুরুর সময়ের উৎস" },
 } as const;
 
 export type StringKey = keyof typeof STRINGS;

@@ -19,17 +19,24 @@ export function TierBadge({ tier }: { tier: Tier }) {
   );
 }
 
-export function SourceChip({ source }: { source: Source }) {
-  const map: Record<Source, [string, string]> = {
+export type ChipSource = Source | "pack";
+
+/**
+ * `pack` marks a value that came from a committed NASA data pack — retrieved once, ahead of
+ * time, from the real API. `label` lets a chip name the dataset and its retrieval date.
+ */
+export function SourceChip({ source, label }: { source: ChipSource; label?: string }) {
+  const map: Record<ChipSource, [string, string]> = {
     live: ["bg-earth/15 text-earth", "live"],
     cache: ["bg-water/15 text-water", "cache"],
     fixture: ["bg-amber/15 text-amber", "fixture"],
+    pack: ["bg-link/15 text-link", "data pack"],
   };
-  const [cls, label] = map[source];
+  const [cls, defaultLabel] = map[source];
   return (
     <span className={`inline-flex items-center gap-1 rounded-full px-2 py-0.5 font-mono text-[10px] ${cls}`}>
       <span className="h-1.5 w-1.5 rounded-full bg-current" />
-      {label}
+      {label ?? defaultLabel}
     </span>
   );
 }

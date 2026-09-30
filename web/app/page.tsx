@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { ArrowRight, Droplets, MapPin, Sprout, Thermometer, TrendingDown } from "lucide-react";
 import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
+import { withRealData } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
 import { Panel, SourceChip } from "@/components/ui";
@@ -45,7 +46,9 @@ export default function Home() {
       <section className="mt-12">
         <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-low">{t("farms_heading", lang)}</h2>
         <div className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2 xl:grid-cols-3">
-          {FARMS.map((f) => (
+          {FARMS.map((base) => {
+            const f = withRealData(base);
+            return (
             <Link
               key={f.id}
               href={`/field?farm=${f.id}`}
@@ -69,7 +72,8 @@ export default function Home() {
                 <span className="ml-auto text-ink-low transition-colors group-hover:text-link"><ArrowRight className="h-3.5 w-3.5" /></span>
               </div>
             </Link>
-          ))}
+            );
+          })}
         </div>
       </section>
 

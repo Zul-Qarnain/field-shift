@@ -1,0 +1,12 @@
+# Python 3.13. Pinned to the versions the pipeline was developed and run against.
+# Core acquisition + science (src/acquire, src/compute, scripts/build_packs.py)
+requests>=2.32,<3
+pandas>=2.2
+numpy>=2.0
+scipy>=1.13
+shapely>=2.0
+# CHIRPS cross-check reader (reads the .nc files the reviewer downloaded into /workspace/fs-cache/chirps)
+xarray>=2024.1
+netCDF4>=1.6
+# Tests
+pytest>=8.0

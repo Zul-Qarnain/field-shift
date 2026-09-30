@@ -4,13 +4,14 @@ import Link from "next/link";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { getFarm, CROPS } from "@/lib/data";
+import { withRealData } from "@/lib/packs";
 import { generateRotations, DEFAULT_PRIORITIES, advisoryText } from "@/lib/engine";
 import { SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
 
 export function AdvisoryPeek({ farmId }: { farmId: string }) {
-  const pack = getFarm(farmId);
+  const pack = withRealData(getFarm(farmId));
   const results = generateRotations(pack, DEFAULT_PRIORITIES, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null }, new Set(CROPS.map((c) => c.id)));
   const { lang } = useLang();
   const [copied, setCopied] = useState(false);
