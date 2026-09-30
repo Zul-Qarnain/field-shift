@@ -1,6 +1,6 @@
 "use client";
 
-import { Suspense } from "react";
+import { Suspense, useEffect } from "react";
 import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
@@ -65,6 +65,14 @@ function FieldView({ farmId }: { farmId: string }) {
   const { lang } = useLang();
   const later = f.onset.shiftDays > 0;
   const m = f.metrics;
+
+  useEffect(() => {
+    if (window.location.hash !== "#map") return;
+    const el = document.getElementById("map");
+    if (!el) return;
+    const frame = requestAnimationFrame(() => el.scrollIntoView({ behavior: "smooth", block: "start" }));
+    return () => cancelAnimationFrame(frame);
+  }, []);
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
