@@ -1,0 +1,3839 @@
+{
+  "model_version": "onset-ml-v2",
+  "status": "experimental",
+  "issue_date": "2026-04-25",
+  "outlook_year": 2026,
+  "trained_on": {
+    "start": 1981,
+    "end": 2025,
+    "years": 45
+  },
+  "built_at_utc": "2026-09-30T11:43:44+00:00",
+  "model_trained_at_utc": "2026-09-30T11:43:43+00:00",
+  "quantile_interval": {
+    "low": 0.1,
+    "high": 0.9
+  },
+  "contribution_method": "LightGBM tree SHAP via pred_contrib=True \u2014 days relative to the model's base value",
+  "data_sources": {
+    "chirps": {
+      "name": "CHIRPS v2.0 daily (UCSB Climate Hazards Center)",
+      "retrieved_utc": "2026-09-30T10:54:25+00:00"
+    },
+    "power": {
+      "name": "NASA POWER daily (AG community)",
+      "retrieved_utc": "2026-09-30T09:08:07+00:00"
+    },
+    "oni": {
+      "name": "NOAA PSL ONI",
+      "retrieved_utc": "2026-09-30T08:57:03+00:00"
+    },
+    "dmi": {
+      "name": "NOAA PSL DMI (HadISST1.1)",
+      "retrieved_utc": "2026-09-30T08:57:03+00:00"
+    }
+  },
+  "metrics": {
+    "mae_model_days": 11.59,
+    "mae_clim_days": 10.04,
+    "skill": -0.155,
+    "rmse_days": 15.07,
+    "coverage": 0.55,
+    "n_district_years": 2880,
+    "n_years": 45,
+    "years_beating_climatology": 12,
+    "share_years_beating_climatology": 0.267,
+    "mae_clim2_days": 11.99,
+    "skill_vs_clim2": 0.033,
+    "n_district_years_vs_clim2": 2752,
+    "mae_lag1_days": 13.31,
+    "skill_vs_lag1": 0.129,
+    "n_missing_prior": 64,
+    "status": "experimental"
+  },
+  "backtest": "leave-one-year-out, all districts of a year held out together",
+  "features": [
+    "rain_anom_mar_apr",
+    "t2m_anom",
+    "t2m_max_anom",
+    "rh2m_anom",
+    "gwetroot_eow_anom",
+    "prior_onset_doy",
+    "oni_djf",
+    "oni_fma",
+    "dmi_feb_mar",
+    "lat",
+    "lon"
+  ],
+  "label_note": "Labels are the v2 onset rule \u2014 5-day rainfall \u2265 local Jun\u2013Sep mean (2001\u20132025), no break \u2265 10 days under 5 mm \u2014 applied to CHIRPS v2.0 (UCSB Climate Hazards Center) daily rainfall over DOY 121\u2013270. Labels and the rainfall feature come from the same product, so this is a same-source nowcast check; no comparison against a third rainfall dataset has been run.",
+  "sources": {
+    "labels": "CHIRPS v2.0 (UCSB Climate Hazards Center)",
+    "rainfall_feature": "CHIRPS v2.0 (UCSB Climate Hazards Center)",
+    "weather_features": "NASA POWER daily point series (T2M, T2M_MAX, RH2M, GWETROOT)",
+    "indices": "NOAA PSL ONI (ERSSTv6 3-month running mean) and DMI (HadISST1.1)",
+    "chirps_ui": "CHIRPS v2.0 (UCSB Climate Hazards Center)",
+    "power_rainfall_excluded": "POWER PRECTOTCORR is not used for labels or the rainfall feature in the CHIRPS arm: at Tangail its annual total averages 937 mm in 1981\u20131996, 1714 mm in 1997\u20132015 and 2814 mm in 2016\u20132025, so a 45-year anomaly climatology would be measuring the product, not the monsoon. The POWER arm is therefore reported for 2001\u20132025 only.",
+    "power_weather_note": "Temperature, humidity and root-zone moisture also come from a reanalysis-merged product; they are used as anomalies against each fold's own climatology, which limits but does not remove the same inhomogeneity risk.",
+    "chirps_grid": "CHIRPS v2.0 is a 0.25\u00b0 daily grid: a point's value is its nearest cell, not a station reading.",
+    "chirps_retrieved": {
+      "first year on disk": "2026-09-30T09:21:25+00:00",
+      "last training year": "2026-09-30T09:29:09+00:00",
+      "outlook year": "2026-09-30T10:54:25+00:00",
+      "years on disk": "1981\u20132026 (46 files)"
+    }
+  },
+  "variants": {
+    "chirps": {
+      "training_years": {
+        "start": 1981,
+        "end": 2025,
+        "count": 45
+      },
+      "districts": 64,
+      "folds": 45,
+      "metrics": {
+        "mae_model_days": 11.59,
+        "mae_clim_days": 10.04,
+        "skill": -0.155,
+        "rmse_days": 15.07,
+        "coverage": 0.55,
+        "n_district_years": 2880,
+        "n_years": 45,
+        "years_beating_climatology": 12,
+        "share_years_beating_climatology": 0.267,
+        "mae_clim2_days": 11.99,
+        "skill_vs_clim2": 0.033,
+        "n_district_years_vs_clim2": 2752,
+        "mae_lag1_days": 13.31,
+        "skill_vs_lag1": 0.129,
+        "n_missing_prior": 64,
+        "status": "experimental"
+      },
+      "per_year": [
+        {
+          "year": 1981,
+          "n": 64,
+          "mae_model": 7.07,
+          "mae_clim": 7.72,
+          "coverage": 0.844
+        },
+        {
+          "year": 1982,
+          "n": 64,
+          "mae_model": 13.51,
+          "mae_clim": 12.04,
+          "coverage": 0.297
+        },
+        {
+          "year": 1983,
+          "n": 64,
+          "mae_model": 21.57,
+          "mae_clim": 16.22,
+          "coverage": 0.219
+        },
+        {
+          "year": 1984,
+          "n": 64,
+          "mae_model": 8.72,
+          "mae_clim": 9.79,
+          "coverage": 0.969
+        },
+        {
+          "year": 1985,
+          "n": 64,
+          "mae_model": 16.76,
+          "mae_clim": 11.71,
+          "coverage": 0.797
+        },
+        {
+          "year": 1986,
+          "n": 64,
+          "mae_model": 12.65,
+          "mae_clim": 10.94,
+          "coverage": 0.391
+        },
+        {
+          "year": 1987,
+          "n": 64,
+          "mae_model": 13.01,
+          "mae_clim": 11.08,
+          "coverage": 0.609
+        },
+        {
+          "year": 1988,
+          "n": 64,
+          "mae_model": 7.6,
+          "mae_clim": 4.58,
+          "coverage": 0.734
+        },
+        {
+          "year": 1989,
+          "n": 64,
+          "mae_model": 6.57,
+          "mae_clim": 7.39,
+          "coverage": 0.594
+        },
+        {
+          "year": 1990,
+          "n": 64,
+          "mae_model": 7.99,
+          "mae_clim": 7.4,
+          "coverage": 0.859
+        },
+        {
+          "year": 1991,
+          "n": 64,
+          "mae_model": 12.84,
+          "mae_clim": 10.58,
+          "coverage": 0.406
+        },
+        {
+          "year": 1992,
+          "n": 64,
+          "mae_model": 16.86,
+          "mae_clim": 18.9,
+          "coverage": 0.266
+        },
+        {
+          "year": 1993,
+          "n": 64,
+          "mae_model": 19.33,
+          "mae_clim": 12.99,
+          "coverage": 0.188
+        },
+        {
+          "year": 1994,
+          "n": 64,
+          "mae_model": 12.89,
+          "mae_clim": 11.08,
+          "coverage": 0.562
+        },
+        {
+          "year": 1995,
+          "n": 64,
+          "mae_model": 10.59,
+          "mae_clim": 10.32,
+          "coverage": 0.547
+        },
+        {
+          "year": 1996,
+          "n": 64,
+          "mae_model": 10.83,
+          "mae_clim": 7.74,
+          "coverage": 0.484
+        },
+        {
+          "year": 1997,
+          "n": 64,
+          "mae_model": 11.04,
+          "mae_clim": 4.27,
+          "coverage": 1.0
+        },
+        {
+          "year": 1998,
+          "n": 64,
+          "mae_model": 10.57,
+          "mae_clim": 8.9,
+          "coverage": 0.609
+        },
+        {
+          "year": 1999,
+          "n": 64,
+          "mae_model": 8.98,
+          "mae_clim": 10.08,
+          "coverage": 0.625
+        },
+        {
+          "year": 2000,
+          "n": 64,
+          "mae_model": 7.38,
+          "mae_clim": 9.47,
+          "coverage": 0.406
+        },
+        {
+          "year": 2001,
+          "n": 64,
+          "mae_model": 15.65,
+          "mae_clim": 13.71,
+          "coverage": 0.281
+        },
+        {
+          "year": 2002,
+          "n": 64,
+          "mae_model": 12.2,
+          "mae_clim": 9.34,
+          "coverage": 0.438
+        },
+        {
+          "year": 2003,
+          "n": 64,
+          "mae_model": 11.14,
+          "mae_clim": 11.06,
+          "coverage": 0.469
+        },
+        {
+          "year": 2004,
+          "n": 64,
+          "mae_model": 5.52,
+          "mae_clim": 5.93,
+          "coverage": 0.875
+        },
+        {
+          "year": 2005,
+          "n": 64,
+          "mae_model": 20.46,
+          "mae_clim": 21.76,
+          "coverage": 0.234
+        },
+        {
+          "year": 2006,
+          "n": 64,
+          "mae_model": 11.11,
+          "mae_clim": 7.06,
+          "coverage": 0.594
+        },
+        {
+          "year": 2007,
+          "n": 64,
+          "mae_model": 9.77,
+          "mae_clim": 9.8,
+          "coverage": 0.531
+        },
+        {
+          "year": 2008,
+          "n": 64,
+          "mae_model": 8.79,
+          "mae_clim": 5.97,
+          "coverage": 0.484
+        },
+        {
+          "year": 2009,
+          "n": 64,
+          "mae_model": 7.6,
+          "mae_clim": 7.78,
+          "coverage": 0.656
+        },
+        {
+          "year": 2010,
+          "n": 64,
+          "mae_model": 12.14,
+          "mae_clim": 8.18,
+          "coverage": 0.516
+        },
+        {
+          "year": 2011,
+          "n": 64,
+          "mae_model": 5.93,
+          "mae_clim": 5.63,
+          "coverage": 0.797
+        },
+        {
+          "year": 2012,
+          "n": 64,
+          "mae_model": 17.54,
+          "mae_clim": 11.46,
+          "coverage": 0.312
+        },
+        {
+          "year": 2013,
+          "n": 64,
+          "mae_model": 12.0,
+          "mae_clim": 9.66,
+          "coverage": 0.297
+        },
+        {
+          "year": 2014,
+          "n": 64,
+          "mae_model": 12.29,
+          "mae_clim": 8.93,
+          "coverage": 0.438
+        },
+        {
+          "year": 2015,
+          "n": 64,
+          "mae_model": 10.75,
+          "mae_clim": 11.54,
+          "coverage": 0.234
+        },
+        {
+          "year": 2016,
+          "n": 64,
+          "mae_model": 9.96,
+          "mae_clim": 8.57,
+          "coverage": 0.688
+        },
+        {
+          "year": 2017,
+          "n": 64,
+          "mae_model": 8.52,
+          "mae_clim": 7.23,
+          "coverage": 0.672
+        },
+        {
+          "year": 2018,
+          "n": 64,
+          "mae_model": 10.93,
+          "mae_clim": 9.16,
+          "coverage": 0.5
+        },
+        {
+          "year": 2019,
+          "n": 64,
+          "mae_model": 12.37,
+          "mae_clim": 11.87,
+          "coverage": 0.141
+        },
+        {
+          "year": 2020,
+          "n": 64,
+          "mae_model": 6.96,
+          "mae_clim": 6.43,
+          "coverage": 0.797
+        },
+        {
+          "year": 2021,
+          "n": 64,
+          "mae_model": 9.91,
+          "mae_clim": 9.24,
+          "coverage": 0.578
+        },
+        {
+          "year": 2022,
+          "n": 64,
+          "mae_model": 8.93,
+          "mae_clim": 9.47,
+          "coverage": 0.797
+        },
+        {
+          "year": 2023,
+          "n": 64,
+          "mae_model": 25.11,
+          "mae_clim": 23.64,
+          "coverage": 0.359
+        },
+        {
+          "year": 2024,
+          "n": 64,
+          "mae_model": 12.1,
+          "mae_clim": 9.74,
+          "coverage": 0.766
+        },
+        {
+          "year": 2025,
+          "n": 64,
+          "mae_model": 7.1,
+          "mae_clim": 5.36,
+          "coverage": 0.875
+        }
+      ],
+      "importance": [
+        {
+          "feature": "lon",
+          "mae_increase_days": 1.22
+        },
+        {
+          "feature": "t2m_max_anom",
+          "mae_increase_days": 1.117
+        },
+        {
+          "feature": "prior_onset_doy",
+          "mae_increase_days": 0.247
+        },
+        {
+          "feature": "rain_anom_mar_apr",
+          "mae_increase_days": 0.168
+        },
+        {
+          "feature": "lat",
+          "mae_increase_days": 0.04
+        },
+        {
+          "feature": "oni_djf",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "oni_fma",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "mae_increase_days": -0.091
+        },
+        {
+          "feature": "t2m_anom",
+          "mae_increase_days": -0.195
+        },
+        {
+          "feature": "rh2m_anom",
+          "mae_increase_days": -0.245
+        }
+      ],
+      "top_features": [
+        "lon",
+        "t2m_max_anom",
+        "prior_onset_doy"
+      ],
+      "source": "CHIRPS v2.0 (UCSB Climate Hazards Center)"
+    },
+    "power": {
+      "training_years": {
+        "start": 2001,
+        "end": 2025,
+        "count": 25
+      },
+      "districts": 64,
+      "folds": 25,
+      "metrics": {
+        "mae_model_days": 14.97,
+        "mae_clim_days": 13.2,
+        "skill": -0.134,
+        "rmse_days": 18.65,
+        "coverage": 0.4,
+        "n_district_years": 1600,
+        "n_years": 25,
+        "years_beating_climatology": 9,
+        "share_years_beating_climatology": 0.36,
+        "mae_clim2_days": 14.07,
+        "skill_vs_clim2": -0.064,
+        "n_district_years_vs_clim2": 1472,
+        "mae_lag1_days": 15.89,
+        "skill_vs_lag1": 0.058,
+        "n_missing_prior": 64,
+        "status": "experimental"
+      },
+      "per_year": [
+        {
+          "year": 2001,
+          "n": 64,
+          "mae_model": 25.62,
+          "mae_clim": 14.89,
+          "coverage": 0.266
+        },
+        {
+          "year": 2002,
+          "n": 64,
+          "mae_model": 7.74,
+          "mae_clim": 7.94,
+          "coverage": 0.75
+        },
+        {
+          "year": 2003,
+          "n": 64,
+          "mae_model": 22.91,
+          "mae_clim": 20.38,
+          "coverage": 0.062
+        },
+        {
+          "year": 2004,
+          "n": 64,
+          "mae_model": 10.61,
+          "mae_clim": 11.01,
+          "coverage": 0.688
+        },
+        {
+          "year": 2005,
+          "n": 64,
+          "mae_model": 22.86,
+          "mae_clim": 28.59,
+          "coverage": 0.172
+        },
+        {
+          "year": 2006,
+          "n": 64,
+          "mae_model": 12.91,
+          "mae_clim": 6.7,
+          "coverage": 0.469
+        },
+        {
+          "year": 2007,
+          "n": 64,
+          "mae_model": 8.31,
+          "mae_clim": 11.11,
+          "coverage": 0.766
+        },
+        {
+          "year": 2008,
+          "n": 64,
+          "mae_model": 18.63,
+          "mae_clim": 14.9,
+          "coverage": 0.109
+        },
+        {
+          "year": 2009,
+          "n": 64,
+          "mae_model": 16.8,
+          "mae_clim": 13.68,
+          "coverage": 0.438
+        },
+        {
+          "year": 2010,
+          "n": 64,
+          "mae_model": 7.08,
+          "mae_clim": 7.25,
+          "coverage": 0.672
+        },
+        {
+          "year": 2011,
+          "n": 64,
+          "mae_model": 10.35,
+          "mae_clim": 11.01,
+          "coverage": 0.656
+        },
+        {
+          "year": 2012,
+          "n": 64,
+          "mae_model": 26.55,
+          "mae_clim": 23.18,
+          "coverage": 0.047
+        },
+        {
+          "year": 2013,
+          "n": 64,
+          "mae_model": 17.99,
+          "mae_clim": 12.59,
+          "coverage": 0.297
+        },
+        {
+          "year": 2014,
+          "n": 64,
+          "mae_model": 8.21,
+          "mae_clim": 6.15,
+          "coverage": 0.609
+        },
+        {
+          "year": 2015,
+          "n": 64,
+          "mae_model": 15.24,
+          "mae_clim": 12.95,
+          "coverage": 0.297
+        },
+        {
+          "year": 2016,
+          "n": 64,
+          "mae_model": 12.27,
+          "mae_clim": 9.06,
+          "coverage": 0.312
+        },
+        {
+          "year": 2017,
+          "n": 64,
+          "mae_model": 9.89,
+          "mae_clim": 10.4,
+          "coverage": 0.359
+        },
+        {
+          "year": 2018,
+          "n": 64,
+          "mae_model": 10.79,
+          "mae_clim": 16.52,
+          "coverage": 0.188
+        },
+        {
+          "year": 2019,
+          "n": 64,
+          "mae_model": 10.56,
+          "mae_clim": 14.69,
+          "coverage": 0.344
+        },
+        {
+          "year": 2020,
+          "n": 64,
+          "mae_model": 17.01,
+          "mae_clim": 15.84,
+          "coverage": 0.094
+        },
+        {
+          "year": 2021,
+          "n": 64,
+          "mae_model": 18.44,
+          "mae_clim": 12.33,
+          "coverage": 0.438
+        },
+        {
+          "year": 2022,
+          "n": 64,
+          "mae_model": 14.89,
+          "mae_clim": 12.96,
+          "coverage": 0.344
+        },
+        {
+          "year": 2023,
+          "n": 64,
+          "mae_model": 22.63,
+          "mae_clim": 16.04,
+          "coverage": 0.453
+        },
+        {
+          "year": 2024,
+          "n": 64,
+          "mae_model": 14.24,
+          "mae_clim": 13.19,
+          "coverage": 0.219
+        },
+        {
+          "year": 2025,
+          "n": 64,
+          "mae_model": 11.62,
+          "mae_clim": 6.6,
+          "coverage": 0.953
+        }
+      ],
+      "importance": [
+        {
+          "feature": "rh2m_anom",
+          "mae_increase_days": 0.837
+        },
+        {
+          "feature": "lat",
+          "mae_increase_days": 0.537
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "mae_increase_days": 0.507
+        },
+        {
+          "feature": "t2m_anom",
+          "mae_increase_days": 0.271
+        },
+        {
+          "feature": "prior_onset_doy",
+          "mae_increase_days": 0.254
+        },
+        {
+          "feature": "rain_anom_mar_apr",
+          "mae_increase_days": 0.195
+        },
+        {
+          "feature": "t2m_max_anom",
+          "mae_increase_days": 0.176
+        },
+        {
+          "feature": "lon",
+          "mae_increase_days": 0.154
+        },
+        {
+          "feature": "oni_djf",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "oni_fma",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "mae_increase_days": 0.0
+        }
+      ],
+      "top_features": [
+        "rh2m_anom",
+        "lat",
+        "gwetroot_eow_anom"
+      ],
+      "source": "NASA POWER PRECTOTCORR, 2001\u20132025 only"
+    }
+  },
+  "districts": [
+    {
+      "key": "bagerhat",
+      "kind": "district",
+      "label": "Bagerhat",
+      "lat": 22.5234,
+      "lon": 89.7543,
+      "predicted_doy": 142.2,
+      "predicted_date": "2026-05-22",
+      "interval_low_doy": 127.2,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 159.3,
+      "interval_high_date": "2026-06-08",
+      "climatology_doy": 141.1,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": 1.1,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 2.92
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "label_en": "root-zone soil wetness at the end of the window against normal",
+          "label_bn": "\u09ae\u09cc\u09b8\u09c1\u09ae-\u09b6\u09c1\u09b0\u09c1\u09b0 \u09b8\u09ae\u09af\u09bc \u09b6\u09c7\u09b7\u09c7 \u09ae\u09be\u099f\u09bf\u09b0 \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.73
+        }
+      ],
+      "observed_doy": 147.0,
+      "observed_date": "2026-05-27",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "bandarban",
+      "kind": "district",
+      "label": "Bandarban",
+      "lat": 21.7701,
+      "lon": 92.3862,
+      "predicted_doy": 142.0,
+      "predicted_date": "2026-05-22",
+      "interval_low_doy": 128.9,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 154.7,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 142.4,
+      "climatology_date": "2026-05-22",
+      "vs_climatology_days": -0.4,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 6.3
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.86
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 1.67
+        }
+      ],
+      "observed_doy": 158.0,
+      "observed_date": "2026-06-07",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "barguna",
+      "kind": "district",
+      "label": "Barguna",
+      "lat": 22.1729,
+      "lon": 90.2037,
+      "predicted_doy": 141.1,
+      "predicted_date": "2026-05-21",
+      "interval_low_doy": 129.5,
+      "interval_low_date": "2026-05-10",
+      "interval_high_doy": 158.0,
+      "interval_high_date": "2026-06-07",
+      "climatology_doy": 142.1,
+      "climatology_date": "2026-05-22",
+      "vs_climatology_days": -1.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 6.24
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.3
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.28
+        }
+      ],
+      "observed_doy": 156.0,
+      "observed_date": "2026-06-05",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "barisal",
+      "kind": "district",
+      "label": "Barisal",
+      "lat": 22.7615,
+      "lon": 90.3252,
+      "predicted_doy": 142.5,
+      "predicted_date": "2026-05-23",
+      "interval_low_doy": 128.8,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 156.0,
+      "interval_high_date": "2026-06-05",
+      "climatology_doy": 138.9,
+      "climatology_date": "2026-05-19",
+      "vs_climatology_days": 3.6,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 2.95
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.2
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.08
+        }
+      ],
+      "observed_doy": 144.0,
+      "observed_date": "2026-05-24",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "bhola",
+      "kind": "district",
+      "label": "Bhola",
+      "lat": 22.4008,
+      "lon": 90.768,
+      "predicted_doy": 146.3,
+      "predicted_date": "2026-05-26",
+      "interval_low_doy": 130.3,
+      "interval_low_date": "2026-05-10",
+      "interval_high_doy": 160.3,
+      "interval_high_date": "2026-06-09",
+      "climatology_doy": 146.7,
+      "climatology_date": "2026-05-27",
+      "vs_climatology_days": -0.4,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 6.23
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 3.36
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.92
+        }
+      ],
+      "observed_doy": 144.0,
+      "observed_date": "2026-05-24",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "bogra",
+      "kind": "district",
+      "label": "Bogra",
+      "lat": 24.8298,
+      "lon": 89.3314,
+      "predicted_doy": 132.8,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 124.3,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 150.5,
+      "interval_high_date": "2026-05-31",
+      "climatology_doy": 133.3,
+      "climatology_date": "2026-05-13",
+      "vs_climatology_days": -0.5,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.21
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.66
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.65
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "brahamanbaria",
+      "kind": "district",
+      "label": "Brahamanbaria",
+      "lat": 23.9571,
+      "lon": 91.1122,
+      "predicted_doy": 132.0,
+      "predicted_date": "2026-05-12",
+      "interval_low_doy": 124.7,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 146.0,
+      "interval_high_date": "2026-05-26",
+      "climatology_doy": 132.3,
+      "climatology_date": "2026-05-12",
+      "vs_climatology_days": -0.3,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.35
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.61
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.45
+        }
+      ],
+      "observed_doy": 134.0,
+      "observed_date": "2026-05-14",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "chandpur",
+      "kind": "district",
+      "label": "Chandpur",
+      "lat": 23.244,
+      "lon": 90.8422,
+      "predicted_doy": 140.7,
+      "predicted_date": "2026-05-21",
+      "interval_low_doy": 128.3,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 154.2,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 136.6,
+      "climatology_date": "2026-05-17",
+      "vs_climatology_days": 4.1,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.49
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.3
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.14
+        }
+      ],
+      "observed_doy": 141.0,
+      "observed_date": "2026-05-21",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "chittagong",
+      "kind": "district",
+      "label": "Chittagong",
+      "lat": 22.4235,
+      "lon": 92.0405,
+      "predicted_doy": 146.3,
+      "predicted_date": "2026-05-26",
+      "interval_low_doy": 128.9,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 159.2,
+      "interval_high_date": "2026-06-08",
+      "climatology_doy": 142.2,
+      "climatology_date": "2026-05-22",
+      "vs_climatology_days": 4.1,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 6.66
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 3.26
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.98
+        }
+      ],
+      "observed_doy": 150.0,
+      "observed_date": "2026-05-30",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "chuadanga",
+      "kind": "district",
+      "label": "Chuadanga",
+      "lat": 23.6014,
+      "lon": 88.8218,
+      "predicted_doy": 137.5,
+      "predicted_date": "2026-05-18",
+      "interval_low_doy": 126.5,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 156.2,
+      "interval_high_date": "2026-06-05",
+      "climatology_doy": 140.8,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": -3.3,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 4.79
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.99
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 2.16
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "comilla",
+      "kind": "district",
+      "label": "Comilla",
+      "lat": 23.4218,
+      "lon": 91.0764,
+      "predicted_doy": 138.8,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 126.5,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 157.9,
+      "interval_high_date": "2026-06-07",
+      "climatology_doy": 135.8,
+      "climatology_date": "2026-05-16",
+      "vs_climatology_days": 3.0,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.47
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.0
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "label_en": "root-zone soil wetness at the end of the window against normal",
+          "label_bn": "\u09ae\u09cc\u09b8\u09c1\u09ae-\u09b6\u09c1\u09b0\u09c1\u09b0 \u09b8\u09ae\u09af\u09bc \u09b6\u09c7\u09b7\u09c7 \u09ae\u09be\u099f\u09bf\u09b0 \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 1.6
+        }
+      ],
+      "observed_doy": 138.0,
+      "observed_date": "2026-05-18",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "cox-s-bazar",
+      "kind": "district",
+      "label": "Cox's Bazar",
+      "lat": 21.3319,
+      "lon": 92.0922,
+      "predicted_doy": 143.7,
+      "predicted_date": "2026-05-24",
+      "interval_low_doy": 128.0,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 154.7,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 146.8,
+      "climatology_date": "2026-05-27",
+      "vs_climatology_days": -3.1,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 8.39
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.19
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.99
+        }
+      ],
+      "observed_doy": 156.0,
+      "observed_date": "2026-06-05",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "dhaka",
+      "kind": "district",
+      "label": "Dhaka",
+      "lat": 23.7832,
+      "lon": 90.3566,
+      "predicted_doy": 129.1,
+      "predicted_date": "2026-05-09",
+      "interval_low_doy": 123.8,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 148.4,
+      "interval_high_date": "2026-05-28",
+      "climatology_doy": 130.1,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": -1.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.44
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.98
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.89
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "dinajpur",
+      "kind": "district",
+      "label": "Dinajpur",
+      "lat": 25.6426,
+      "lon": 88.7239,
+      "predicted_doy": 139.5,
+      "predicted_date": "2026-05-20",
+      "interval_low_doy": 126.5,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 151.2,
+      "interval_high_date": "2026-05-31",
+      "climatology_doy": 138.6,
+      "climatology_date": "2026-05-19",
+      "vs_climatology_days": 0.9,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 5.59
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.49
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.43
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "faridpur",
+      "kind": "district",
+      "label": "Faridpur",
+      "lat": 23.4662,
+      "lon": 89.8718,
+      "predicted_doy": 137.5,
+      "predicted_date": "2026-05-18",
+      "interval_low_doy": 126.2,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 153.4,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 137.5,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": 0.0,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.26
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.05
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.61
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "feni",
+      "kind": "district",
+      "label": "Feni",
+      "lat": 23.0214,
+      "lon": 91.4022,
+      "predicted_doy": 138.8,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 127.1,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 154.2,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 138.1,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": 0.7,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.61
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.24
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 1.57
+        }
+      ],
+      "observed_doy": 141.0,
+      "observed_date": "2026-05-21",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "gaibandha",
+      "kind": "district",
+      "label": "Gaibandha",
+      "lat": 25.3435,
+      "lon": 89.5363,
+      "predicted_doy": 132.1,
+      "predicted_date": "2026-05-12",
+      "interval_low_doy": 125.9,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 144.3,
+      "interval_high_date": "2026-05-24",
+      "climatology_doy": 131.6,
+      "climatology_date": "2026-05-12",
+      "vs_climatology_days": 0.5,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.19
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.95
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.09
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "gazipur",
+      "kind": "district",
+      "label": "Gazipur",
+      "lat": 24.0924,
+      "lon": 90.4078,
+      "predicted_doy": 128.5,
+      "predicted_date": "2026-05-09",
+      "interval_low_doy": 123.6,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 147.6,
+      "interval_high_date": "2026-05-28",
+      "climatology_doy": 129.2,
+      "climatology_date": "2026-05-09",
+      "vs_climatology_days": -0.7,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.91
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.98
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.6
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "gopalganj",
+      "kind": "district",
+      "label": "Gopalganj",
+      "lat": 23.1067,
+      "lon": 89.8624,
+      "predicted_doy": 135.7,
+      "predicted_date": "2026-05-16",
+      "interval_low_doy": 126.7,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 153.0,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 139.0,
+      "climatology_date": "2026-05-19",
+      "vs_climatology_days": -3.3,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.3
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.68
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.44
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "habiganj",
+      "kind": "district",
+      "label": "Habiganj",
+      "lat": 24.3354,
+      "lon": 91.432,
+      "predicted_doy": 127.5,
+      "predicted_date": "2026-05-08",
+      "interval_low_doy": 122.9,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 142.0,
+      "interval_high_date": "2026-05-22",
+      "climatology_doy": 127.0,
+      "climatology_date": "2026-05-07",
+      "vs_climatology_days": 0.5,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -4.24
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.81
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.95
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "jamalpur",
+      "kind": "district",
+      "label": "Jamalpur",
+      "lat": 24.9997,
+      "lon": 89.7778,
+      "predicted_doy": 131.4,
+      "predicted_date": "2026-05-11",
+      "interval_low_doy": 124.8,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 146.5,
+      "interval_high_date": "2026-05-27",
+      "climatology_doy": 132.3,
+      "climatology_date": "2026-05-12",
+      "vs_climatology_days": -0.9,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.68
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.03
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.7
+        }
+      ],
+      "observed_doy": 132.0,
+      "observed_date": "2026-05-12",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "jessore",
+      "kind": "district",
+      "label": "Jessore",
+      "lat": 23.0849,
+      "lon": 89.1259,
+      "predicted_doy": 141.0,
+      "predicted_date": "2026-05-21",
+      "interval_low_doy": 127.0,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 154.9,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 137.8,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": 3.2,
+      "top_contributions": [
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.76
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.84
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 1.73
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "jhalokati",
+      "kind": "district",
+      "label": "Jhalokati",
+      "lat": 22.5617,
+      "lon": 90.1721,
+      "predicted_doy": 142.1,
+      "predicted_date": "2026-05-22",
+      "interval_low_doy": 127.2,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 156.8,
+      "interval_high_date": "2026-06-06",
+      "climatology_doy": 141.1,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": 1.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.25
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.07
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "label_en": "root-zone soil wetness at the end of the window against normal",
+          "label_bn": "\u09ae\u09cc\u09b8\u09c1\u09ae-\u09b6\u09c1\u09b0\u09c1\u09b0 \u09b8\u09ae\u09af\u09bc \u09b6\u09c7\u09b7\u09c7 \u09ae\u09be\u099f\u09bf\u09b0 \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 1.99
+        }
+      ],
+      "observed_doy": 147.0,
+      "observed_date": "2026-05-27",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "jhenaidah",
+      "kind": "district",
+      "label": "Jhenaidah",
+      "lat": 23.495,
+      "lon": 89.1227,
+      "predicted_doy": 138.8,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 125.2,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 150.4,
+      "interval_high_date": "2026-05-30",
+      "climatology_doy": 136.8,
+      "climatology_date": "2026-05-17",
+      "vs_climatology_days": 2.0,
+      "top_contributions": [
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -3.27
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.11
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 2.07
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "joypurhat",
+      "kind": "district",
+      "label": "Joypurhat",
+      "lat": 25.0632,
+      "lon": 89.0908,
+      "predicted_doy": 136.2,
+      "predicted_date": "2026-05-16",
+      "interval_low_doy": 125.2,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 150.1,
+      "interval_high_date": "2026-05-30",
+      "climatology_doy": 135.2,
+      "climatology_date": "2026-05-15",
+      "vs_climatology_days": 1.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.67
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 2.47
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.04
+        }
+      ],
+      "observed_doy": 132.0,
+      "observed_date": "2026-05-12",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "khagrachhari",
+      "kind": "district",
+      "label": "Khagrachhari",
+      "lat": 23.2112,
+      "lon": 91.9621,
+      "predicted_doy": 137.1,
+      "predicted_date": "2026-05-17",
+      "interval_low_doy": 126.8,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 154.6,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 138.4,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": -1.3,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.71
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.7
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 1.58
+        }
+      ],
+      "observed_doy": 141.0,
+      "observed_date": "2026-05-21",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "khulna",
+      "kind": "district",
+      "label": "Khulna",
+      "lat": 22.5024,
+      "lon": 89.4192,
+      "predicted_doy": 141.8,
+      "predicted_date": "2026-05-22",
+      "interval_low_doy": 128.0,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 158.9,
+      "interval_high_date": "2026-06-08",
+      "climatology_doy": 143.3,
+      "climatology_date": "2026-05-23",
+      "vs_climatology_days": -1.5,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 4.62
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.24
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.02
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "kishoreganj",
+      "kind": "district",
+      "label": "Kishoreganj",
+      "lat": 24.3369,
+      "lon": 90.9279,
+      "predicted_doy": 127.3,
+      "predicted_date": "2026-05-07",
+      "interval_low_doy": 122.8,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 143.0,
+      "interval_high_date": "2026-05-23",
+      "climatology_doy": 128.9,
+      "climatology_date": "2026-05-09",
+      "vs_climatology_days": -1.6,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -4.3
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.2
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.91
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "kurigram",
+      "kind": "district",
+      "label": "Kurigram",
+      "lat": 25.8054,
+      "lon": 89.6677,
+      "predicted_doy": 132.7,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 124.0,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 144.0,
+      "interval_high_date": "2026-05-24",
+      "climatology_doy": 134.4,
+      "climatology_date": "2026-05-14",
+      "vs_climatology_days": -1.7,
+      "top_contributions": [
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.69
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.44
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.03
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "kushtia",
+      "kind": "district",
+      "label": "Kushtia",
+      "lat": 23.9428,
+      "lon": 89.025,
+      "predicted_doy": 134.4,
+      "predicted_date": "2026-05-14",
+      "interval_low_doy": 127.5,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 151.1,
+      "interval_high_date": "2026-05-31",
+      "climatology_doy": 137.8,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": -3.4,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 2.5
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.24
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.14
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "lakshmipur",
+      "kind": "district",
+      "label": "Lakshmipur",
+      "lat": 22.8709,
+      "lon": 90.8679,
+      "predicted_doy": 142.9,
+      "predicted_date": "2026-05-23",
+      "interval_low_doy": 128.7,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 155.5,
+      "interval_high_date": "2026-06-05",
+      "climatology_doy": 141.2,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": 1.7,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.34
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.23
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.16
+        }
+      ],
+      "observed_doy": 141.0,
+      "observed_date": "2026-05-21",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "lalmonirhat",
+      "kind": "district",
+      "label": "Lalmonirhat",
+      "lat": 26.1221,
+      "lon": 89.1654,
+      "predicted_doy": 137.1,
+      "predicted_date": "2026-05-17",
+      "interval_low_doy": 124.4,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 145.3,
+      "interval_high_date": "2026-05-25",
+      "climatology_doy": 140.0,
+      "climatology_date": "2026-05-20",
+      "vs_climatology_days": -2.9,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 2.65
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.56
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.17
+        }
+      ],
+      "observed_doy": 137.0,
+      "observed_date": "2026-05-17",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "madaripur",
+      "kind": "district",
+      "label": "Madaripur",
+      "lat": 23.2312,
+      "lon": 90.1302,
+      "predicted_doy": 136.1,
+      "predicted_date": "2026-05-16",
+      "interval_low_doy": 126.8,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 152.5,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 137.3,
+      "climatology_date": "2026-05-17",
+      "vs_climatology_days": -1.2,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.93
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.88
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.77
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "magura",
+      "kind": "district",
+      "label": "Magura",
+      "lat": 23.4696,
+      "lon": 89.4567,
+      "predicted_doy": 135.6,
+      "predicted_date": "2026-05-16",
+      "interval_low_doy": 125.8,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 150.0,
+      "interval_high_date": "2026-05-30",
+      "climatology_doy": 138.1,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": -2.5,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.72
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.63
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 1.44
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "manikganj",
+      "kind": "district",
+      "label": "Manikganj",
+      "lat": 23.8355,
+      "lon": 89.9416,
+      "predicted_doy": 128.6,
+      "predicted_date": "2026-05-09",
+      "interval_low_doy": 124.0,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 142.6,
+      "interval_high_date": "2026-05-23",
+      "climatology_doy": 131.6,
+      "climatology_date": "2026-05-12",
+      "vs_climatology_days": -3.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.22
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.69
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.75
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "maulvibazar",
+      "kind": "district",
+      "label": "Maulvibazar",
+      "lat": 24.4865,
+      "lon": 91.8824,
+      "predicted_doy": 125.8,
+      "predicted_date": "2026-05-06",
+      "interval_low_doy": 123.5,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 138.8,
+      "interval_high_date": "2026-05-19",
+      "climatology_doy": 128.0,
+      "climatology_date": "2026-05-08",
+      "vs_climatology_days": -2.2,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -4.22
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.41
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.74
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "meherpur",
+      "kind": "district",
+      "label": "Meherpur",
+      "lat": 23.7884,
+      "lon": 88.7008,
+      "predicted_doy": 138.7,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 127.7,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 155.2,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 146.4,
+      "climatology_date": "2026-05-26",
+      "vs_climatology_days": -7.7,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 8.05
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.68
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.25
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "munshiganj",
+      "kind": "district",
+      "label": "Munshiganj",
+      "lat": 23.5266,
+      "lon": 90.4381,
+      "predicted_doy": 132.8,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 125.4,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 152.8,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 130.9,
+      "climatology_date": "2026-05-11",
+      "vs_climatology_days": 1.9,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.35
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.91
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.88
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "mymensingh",
+      "kind": "district",
+      "label": "Mymensingh",
+      "lat": 24.7221,
+      "lon": 90.4163,
+      "predicted_doy": 127.2,
+      "predicted_date": "2026-05-07",
+      "interval_low_doy": 122.8,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 142.4,
+      "interval_high_date": "2026-05-22",
+      "climatology_doy": 131.4,
+      "climatology_date": "2026-05-11",
+      "vs_climatology_days": -4.2,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.95
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.56
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.68
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "naogaon",
+      "kind": "district",
+      "label": "Naogaon",
+      "lat": 24.8735,
+      "lon": 88.7382,
+      "predicted_doy": 144.7,
+      "predicted_date": "2026-05-25",
+      "interval_low_doy": 128.5,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 150.2,
+      "interval_high_date": "2026-05-30",
+      "climatology_doy": 146.5,
+      "climatology_date": "2026-05-27",
+      "vs_climatology_days": -1.8,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 8.71
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.3
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 1.73
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "narail",
+      "kind": "district",
+      "label": "Narail",
+      "lat": 23.1323,
+      "lon": 89.5287,
+      "predicted_doy": 138.6,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 127.0,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 155.2,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 137.6,
+      "climatology_date": "2026-05-18",
+      "vs_climatology_days": 1.0,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.33
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.61
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.24
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "narayanganj",
+      "kind": "district",
+      "label": "Narayanganj",
+      "lat": 23.7153,
+      "lon": 90.617,
+      "predicted_doy": 133.8,
+      "predicted_date": "2026-05-14",
+      "interval_low_doy": 125.4,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 152.8,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 135.4,
+      "climatology_date": "2026-05-15",
+      "vs_climatology_days": -1.6,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.27
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.89
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.67
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "narsingdi",
+      "kind": "district",
+      "label": "Narsingdi",
+      "lat": 24.0073,
+      "lon": 90.8058,
+      "predicted_doy": 127.7,
+      "predicted_date": "2026-05-08",
+      "interval_low_doy": 122.6,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 143.2,
+      "interval_high_date": "2026-05-23",
+      "climatology_doy": 129.1,
+      "climatology_date": "2026-05-09",
+      "vs_climatology_days": -1.4,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -4.16
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.32
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.86
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "natore",
+      "kind": "district",
+      "label": "Natore",
+      "lat": 24.3933,
+      "lon": 89.0905,
+      "predicted_doy": 137.1,
+      "predicted_date": "2026-05-17",
+      "interval_low_doy": 125.6,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 149.6,
+      "interval_high_date": "2026-05-30",
+      "climatology_doy": 134.8,
+      "climatology_date": "2026-05-15",
+      "vs_climatology_days": 2.3,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.99
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 2.56
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.44
+        }
+      ],
+      "observed_doy": 122.0,
+      "observed_date": "2026-05-02",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "nawabganj",
+      "kind": "district",
+      "label": "Nawabganj",
+      "lat": 24.6912,
+      "lon": 88.2595,
+      "predicted_doy": 139.3,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 128.3,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 153.3,
+      "interval_high_date": "2026-06-02",
+      "climatology_doy": 144.2,
+      "climatology_date": "2026-05-24",
+      "vs_climatology_days": -4.9,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 6.95
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.51
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.42
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "netrakona",
+      "kind": "district",
+      "label": "Netrakona",
+      "lat": 24.8867,
+      "lon": 90.7893,
+      "predicted_doy": 130.3,
+      "predicted_date": "2026-05-10",
+      "interval_low_doy": 122.9,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 141.9,
+      "interval_high_date": "2026-05-22",
+      "climatology_doy": 129.6,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": 0.7,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.89
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.07
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.65
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "nilphamari",
+      "kind": "district",
+      "label": "Nilphamari",
+      "lat": 26.0205,
+      "lon": 88.922,
+      "predicted_doy": 138.6,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 124.8,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 147.9,
+      "interval_high_date": "2026-05-28",
+      "climatology_doy": 140.6,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": -2.0,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 5.17
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.27
+        },
+        {
+          "feature": "oni_fma",
+          "label_en": "El Ni\u00f1o / La Ni\u00f1a state in Feb\u2013Apr",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c7\u2013\u098f\u09aa\u09cd\u09b0\u09bf\u09b2\u09c7 \u098f\u09b2 \u09a8\u09bf\u09a8\u09cb / \u09b2\u09be \u09a8\u09bf\u09a8\u09be\u09b0 \u0985\u09ac\u09b8\u09cd\u09a5\u09be",
+          "effect_days": 1.86
+        }
+      ],
+      "observed_doy": 137.0,
+      "observed_date": "2026-05-17",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "noakhali",
+      "kind": "district",
+      "label": "Noakhali",
+      "lat": 22.7881,
+      "lon": 91.1302,
+      "predicted_doy": 140.4,
+      "predicted_date": "2026-05-20",
+      "interval_low_doy": 127.3,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 154.7,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 143.3,
+      "climatology_date": "2026-05-23",
+      "vs_climatology_days": -2.9,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.33
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.11
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.1
+        }
+      ],
+      "observed_doy": 141.0,
+      "observed_date": "2026-05-21",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "pabna",
+      "kind": "district",
+      "label": "Pabna",
+      "lat": 24.0809,
+      "lon": 89.3386,
+      "predicted_doy": 132.9,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 123.8,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 144.8,
+      "interval_high_date": "2026-05-25",
+      "climatology_doy": 135.7,
+      "climatology_date": "2026-05-16",
+      "vs_climatology_days": -2.8,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.45
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.54
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.9
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "panchagarh",
+      "kind": "district",
+      "label": "Panchagarh",
+      "lat": 26.3206,
+      "lon": 88.5472,
+      "predicted_doy": 142.9,
+      "predicted_date": "2026-05-23",
+      "interval_low_doy": 125.4,
+      "interval_low_date": "2026-05-05",
+      "interval_high_doy": 153.7,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 143.5,
+      "climatology_date": "2026-05-24",
+      "vs_climatology_days": -0.6,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 8.07
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.76
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.59
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "patuakhali",
+      "kind": "district",
+      "label": "Patuakhali",
+      "lat": 22.2585,
+      "lon": 90.4599,
+      "predicted_doy": 148.2,
+      "predicted_date": "2026-05-28",
+      "interval_low_doy": 129.5,
+      "interval_low_date": "2026-05-10",
+      "interval_high_doy": 160.6,
+      "interval_high_date": "2026-06-10",
+      "climatology_doy": 143.9,
+      "climatology_date": "2026-05-24",
+      "vs_climatology_days": 4.3,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 6.08
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 3.73
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.9
+        }
+      ],
+      "observed_doy": 145.0,
+      "observed_date": "2026-05-25",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "pirojpur",
+      "kind": "district",
+      "label": "Pirojpur",
+      "lat": 22.5149,
+      "lon": 89.9954,
+      "predicted_doy": 142.1,
+      "predicted_date": "2026-05-22",
+      "interval_low_doy": 127.3,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 159.0,
+      "interval_high_date": "2026-06-08",
+      "climatology_doy": 141.1,
+      "climatology_date": "2026-05-21",
+      "vs_climatology_days": 1.0,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.24
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.04
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "label_en": "root-zone soil wetness at the end of the window against normal",
+          "label_bn": "\u09ae\u09cc\u09b8\u09c1\u09ae-\u09b6\u09c1\u09b0\u09c1\u09b0 \u09b8\u09ae\u09af\u09bc \u09b6\u09c7\u09b7\u09c7 \u09ae\u09be\u099f\u09bf\u09b0 \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.0
+        }
+      ],
+      "observed_doy": 147.0,
+      "observed_date": "2026-05-27",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rajbari",
+      "kind": "district",
+      "label": "Rajbari",
+      "lat": 23.7353,
+      "lon": 89.5752,
+      "predicted_doy": 135.4,
+      "predicted_date": "2026-05-15",
+      "interval_low_doy": 125.7,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 147.9,
+      "interval_high_date": "2026-05-28",
+      "climatology_doy": 136.2,
+      "climatology_date": "2026-05-16",
+      "vs_climatology_days": -0.8,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.48
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.11
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -1.53
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rajshahi",
+      "kind": "district",
+      "label": "Rajshahi",
+      "lat": 24.4152,
+      "lon": 88.5966,
+      "predicted_doy": 140.7,
+      "predicted_date": "2026-05-21",
+      "interval_low_doy": 126.6,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 152.1,
+      "interval_high_date": "2026-06-01",
+      "climatology_doy": 148.8,
+      "climatology_date": "2026-05-29",
+      "vs_climatology_days": -8.1,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 8.42
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.87
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.03
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rangamati",
+      "kind": "district",
+      "label": "Rangamati",
+      "lat": 22.7961,
+      "lon": 92.2233,
+      "predicted_doy": 140.3,
+      "predicted_date": "2026-05-20",
+      "interval_low_doy": 127.9,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 157.1,
+      "interval_high_date": "2026-06-06",
+      "climatology_doy": 140.4,
+      "climatology_date": "2026-05-20",
+      "vs_climatology_days": -0.1,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -3.12
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.04
+        },
+        {
+          "feature": "t2m_max_anom",
+          "label_en": "pre-monsoon daily maximum temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u09b8\u09b0\u09cd\u09ac\u09cb\u099a\u09cd\u099a \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.99
+        }
+      ],
+      "observed_doy": 181.0,
+      "observed_date": "2026-06-30",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rangpur",
+      "kind": "district",
+      "label": "Rangpur",
+      "lat": 25.633,
+      "lon": 89.2626,
+      "predicted_doy": 133.2,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 125.5,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 146.6,
+      "interval_high_date": "2026-05-27",
+      "climatology_doy": 134.8,
+      "climatology_date": "2026-05-15",
+      "vs_climatology_days": -1.6,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.09
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 3.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.03
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "satkhira",
+      "kind": "district",
+      "label": "Satkhira",
+      "lat": 22.4746,
+      "lon": 89.1384,
+      "predicted_doy": 151.6,
+      "predicted_date": "2026-06-01",
+      "interval_low_doy": 127.5,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 161.2,
+      "interval_high_date": "2026-06-10",
+      "climatology_doy": 153.7,
+      "climatology_date": "2026-06-03",
+      "vs_climatology_days": -2.1,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 8.67
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 4.46
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.42
+        }
+      ],
+      "observed_doy": 153.0,
+      "observed_date": "2026-06-02",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "shariatpur",
+      "kind": "district",
+      "label": "Shariatpur",
+      "lat": 23.2293,
+      "lon": 90.4224,
+      "predicted_doy": 139.1,
+      "predicted_date": "2026-05-19",
+      "interval_low_doy": 128.5,
+      "interval_low_date": "2026-05-09",
+      "interval_high_doy": 154.6,
+      "interval_high_date": "2026-06-04",
+      "climatology_doy": 138.8,
+      "climatology_date": "2026-05-19",
+      "vs_climatology_days": 0.3,
+      "top_contributions": [
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.41
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.21
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "label_en": "root-zone soil wetness at the end of the window against normal",
+          "label_bn": "\u09ae\u09cc\u09b8\u09c1\u09ae-\u09b6\u09c1\u09b0\u09c1\u09b0 \u09b8\u09ae\u09af\u09bc \u09b6\u09c7\u09b7\u09c7 \u09ae\u09be\u099f\u09bf\u09b0 \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 2.1
+        }
+      ],
+      "observed_doy": 138.0,
+      "observed_date": "2026-05-18",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "sherpur",
+      "kind": "district",
+      "label": "Sherpur",
+      "lat": 25.0924,
+      "lon": 90.0951,
+      "predicted_doy": 129.1,
+      "predicted_date": "2026-05-09",
+      "interval_low_doy": 122.7,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 142.5,
+      "interval_high_date": "2026-05-23",
+      "climatology_doy": 129.9,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": -0.8,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.99
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.4
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.6
+        }
+      ],
+      "observed_doy": 132.0,
+      "observed_date": "2026-05-12",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "sirajganj",
+      "kind": "district",
+      "label": "Sirajganj",
+      "lat": 24.3988,
+      "lon": 89.523,
+      "predicted_doy": 130.5,
+      "predicted_date": "2026-05-11",
+      "interval_low_doy": 124.4,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 143.5,
+      "interval_high_date": "2026-05-24",
+      "climatology_doy": 130.9,
+      "climatology_date": "2026-05-11",
+      "vs_climatology_days": -0.4,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.63
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.93
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -1.55
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "sunamganj",
+      "kind": "district",
+      "label": "Sunamganj",
+      "lat": 24.8882,
+      "lon": 91.3908,
+      "predicted_doy": 130.1,
+      "predicted_date": "2026-05-10",
+      "interval_low_doy": 123.8,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 139.9,
+      "interval_high_date": "2026-05-20",
+      "climatology_doy": 130.4,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": -0.3,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.82
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.03
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.62
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "sylhet",
+      "kind": "district",
+      "label": "Sylhet",
+      "lat": 24.8903,
+      "lon": 91.9583,
+      "predicted_doy": 126.7,
+      "predicted_date": "2026-05-07",
+      "interval_low_doy": 123.4,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 139.4,
+      "interval_high_date": "2026-05-19",
+      "climatology_doy": 130.3,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": -3.6,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.94
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.13
+        },
+        {
+          "feature": "prior_onset_doy",
+          "label_en": "when last season's rains started",
+          "label_bn": "\u0997\u09a4 \u09ae\u09cc\u09b8\u09c1\u09ae\u09c7 \u09ac\u09c3\u09b7\u09cd\u099f\u09bf \u0995\u09ac\u09c7 \u09b6\u09c1\u09b0\u09c1 \u09b9\u09af\u09bc\u09c7\u099b\u09bf\u09b2",
+          "effect_days": -2.01
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "tangail",
+      "kind": "district",
+      "label": "Tangail",
+      "lat": 24.3758,
+      "lon": 90.0016,
+      "predicted_doy": 127.8,
+      "predicted_date": "2026-05-08",
+      "interval_low_doy": 123.6,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 143.9,
+      "interval_high_date": "2026-05-24",
+      "climatology_doy": 131.2,
+      "climatology_date": "2026-05-11",
+      "vs_climatology_days": -3.4,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.92
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.83
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.62
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "thakurgaon",
+      "kind": "district",
+      "label": "Thakurgaon",
+      "lat": 25.9362,
+      "lon": 88.3107,
+      "predicted_doy": 140.9,
+      "predicted_date": "2026-05-21",
+      "interval_low_doy": 126.3,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 154.4,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 143.1,
+      "climatology_date": "2026-05-23",
+      "vs_climatology_days": -2.2,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 7.57
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.62
+        },
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -2.12
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    }
+  ],
+  "farms": [
+    {
+      "key": "farm-12",
+      "kind": "farm",
+      "label": "Farm-12 (Tangail)",
+      "lat": 24.2514,
+      "lon": 89.9152,
+      "predicted_doy": 127.6,
+      "predicted_date": "2026-05-08",
+      "interval_low_doy": 123.6,
+      "interval_low_date": "2026-05-04",
+      "interval_high_doy": 143.0,
+      "interval_high_date": "2026-05-23",
+      "climatology_doy": 131.2,
+      "climatology_date": "2026-05-11",
+      "vs_climatology_days": -3.6,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.99
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.61
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.65
+        }
+      ],
+      "observed_doy": 133.0,
+      "observed_date": "2026-05-13",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rajshahi-07",
+      "kind": "farm",
+      "label": "Farm-07 (Rajshahi)",
+      "lat": 24.3636,
+      "lon": 88.3277,
+      "predicted_doy": 140.4,
+      "predicted_date": "2026-05-20",
+      "interval_low_doy": 128.1,
+      "interval_low_date": "2026-05-08",
+      "interval_high_doy": 153.7,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 148.8,
+      "climatology_date": "2026-05-29",
+      "vs_climatology_days": -8.4,
+      "top_contributions": [
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": 7.51
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -2.75
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.17
+        }
+      ],
+      "observed_doy": 132.0,
+      "observed_date": "2026-05-12",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "barishal-03",
+      "kind": "farm",
+      "label": "Farm-03 (Barishal)",
+      "lat": 22.8486,
+      "lon": 90.2512,
+      "predicted_doy": 139.7,
+      "predicted_date": "2026-05-20",
+      "interval_low_doy": 127.0,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 153.8,
+      "interval_high_date": "2026-06-03",
+      "climatology_doy": 138.9,
+      "climatology_date": "2026-05-19",
+      "vs_climatology_days": 0.8,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 3.63
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.0
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.43
+        }
+      ],
+      "observed_doy": 144.0,
+      "observed_date": "2026-05-24",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "khulna-09",
+      "kind": "farm",
+      "label": "Farm-09 (Khulna)",
+      "lat": 22.8029,
+      "lon": 89.4018,
+      "predicted_doy": 143.1,
+      "predicted_date": "2026-05-23",
+      "interval_low_doy": 127.2,
+      "interval_low_date": "2026-05-07",
+      "interval_high_doy": 156.3,
+      "interval_high_date": "2026-06-05",
+      "climatology_doy": 143.3,
+      "climatology_date": "2026-05-23",
+      "vs_climatology_days": -0.2,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": 2.93
+        },
+        {
+          "feature": "rh2m_anom",
+          "label_en": "pre-monsoon humidity against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0986\u09b0\u09cd\u09a6\u09cd\u09b0\u09a4\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": -1.77
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -1.58
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "rangpur-21",
+      "kind": "farm",
+      "label": "Farm-21 (Rangpur)",
+      "lat": 25.6486,
+      "lon": 89.3517,
+      "predicted_doy": 133.0,
+      "predicted_date": "2026-05-13",
+      "interval_low_doy": 125.5,
+      "interval_low_date": "2026-05-06",
+      "interval_high_doy": 146.0,
+      "interval_high_date": "2026-05-26",
+      "climatology_doy": 134.8,
+      "climatology_date": "2026-05-15",
+      "vs_climatology_days": -1.8,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.21
+        },
+        {
+          "feature": "t2m_anom",
+          "label_en": "pre-monsoon mean temperature against normal",
+          "label_bn": "\u09aa\u09c2\u09b0\u09cd\u09ac-\u09ae\u09cc\u09b8\u09c1\u09ae\u09bf \u0997\u09a1\u09bc \u09a4\u09be\u09aa\u09ae\u09be\u09a4\u09cd\u09b0\u09be \u0997\u09a1\u09bc\u09c7\u09b0 \u09a4\u09c1\u09b2\u09a8\u09be\u09af\u09bc",
+          "effect_days": 3.01
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "label_en": "Indian Ocean Dipole in Feb\u2013Mar",
+          "label_bn": "\u09ab\u09c7\u09ac\u09cd\u09b0\u09c1\u2013\u09ae\u09be\u09b0\u09cd\u099a\u09c7 \u0987\u09a8\u09cd\u09a1\u09bf\u09af\u09bc\u09be\u09a8 \u0993\u09b6\u09be\u09a8 \u09a1\u09be\u0987\u09aa\u09cb\u09b2",
+          "effect_days": -2.04
+        }
+      ],
+      "observed_doy": 140.0,
+      "observed_date": "2026-05-20",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    },
+    {
+      "key": "sylhet-15",
+      "kind": "farm",
+      "label": "Farm-15 (Sylhet)",
+      "lat": 24.8026,
+      "lon": 92.0521,
+      "predicted_doy": 126.4,
+      "predicted_date": "2026-05-06",
+      "interval_low_doy": 123.4,
+      "interval_low_date": "2026-05-03",
+      "interval_high_doy": 139.9,
+      "interval_high_date": "2026-05-20",
+      "climatology_doy": 130.3,
+      "climatology_date": "2026-05-10",
+      "vs_climatology_days": -3.9,
+      "top_contributions": [
+        {
+          "feature": "lat",
+          "label_en": "how far north the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u0989\u09a4\u09cd\u09a4\u09b0\u09c7",
+          "effect_days": -3.31
+        },
+        {
+          "feature": "lon",
+          "label_en": "how far east the district is",
+          "label_bn": "\u099c\u09c7\u09b2\u09be\u099f\u09bf \u0995\u09a4\u099f\u09be \u09aa\u09c2\u09b0\u09cd\u09ac\u09c7",
+          "effect_days": -2.27
+        },
+        {
+          "feature": "prior_onset_doy",
+          "label_en": "when last season's rains started",
+          "label_bn": "\u0997\u09a4 \u09ae\u09cc\u09b8\u09c1\u09ae\u09c7 \u09ac\u09c3\u09b7\u09cd\u099f\u09bf \u0995\u09ac\u09c7 \u09b6\u09c1\u09b0\u09c1 \u09b9\u09af\u09bc\u09c7\u099b\u09bf\u09b2",
+          "effect_days": -2.05
+        }
+      ],
+      "observed_doy": 135.0,
+      "observed_date": "2026-05-15",
+      "observed_note": "This year's onset was already observed by the stated rule before the outlook was built."
+    }
+  ],
+  "observed_notes": {
+    "bagerhat": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "bandarban": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "barguna": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "barisal": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "bhola": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "bogra": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "brahamanbaria": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "chandpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "chittagong": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "chuadanga": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "comilla": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "cox-s-bazar": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "dhaka": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "dinajpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "faridpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "feni": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "gaibandha": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "gazipur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "gopalganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "habiganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "jamalpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "jessore": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "jhalokati": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "jhenaidah": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "joypurhat": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "khagrachhari": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "khulna": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "kishoreganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "kurigram": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "kushtia": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "lakshmipur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "lalmonirhat": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "madaripur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "magura": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "manikganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "maulvibazar": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "meherpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "munshiganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "mymensingh": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "naogaon": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "narail": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "narayanganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "narsingdi": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "natore": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "nawabganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "netrakona": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "nilphamari": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "noakhali": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "pabna": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "panchagarh": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "patuakhali": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "pirojpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rajbari": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rajshahi": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rangamati": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rangpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "satkhira": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "shariatpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "sherpur": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "sirajganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "sunamganj": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "sylhet": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "tangail": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "thakurgaon": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "farm-12": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rajshahi-07": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "barishal-03": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "khulna-09": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "rangpur-21": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)",
+    "sylhet-15": "observed under the v2 rule in CHIRPS v2.0 (UCSB Climate Hazards Center) (record ends DOY 243)"
+  },
+  "out_of_sample": {
+    "districts_compared": 64,
+    "mae_model_days": 4.34,
+    "bias_days": -1.67,
+    "mae_clim_days": 4.71,
+    "interval_hits": 60,
+    "note": "One season only, and only where the v2 rule could already confirm the onset; it is not evidence of skill on its own."
+  },
+  "district_count": 64,
+  "farm_district_note": "A demo farm's baseline and prior-season onset come from the district it sits in; its own 1 Mar \u2013 20 Apr rainfall comes from its own CHIRPS cell.",
+  "onset_rule": "Onset definition v2 (local-relative 5-day accumulation, adapted from Moron & Robertson 2014)",
+  "chirps_cells": {
+    "bagerhat": {
+      "lat": 22.625,
+      "lon": 89.875
+    },
+    "bandarban": {
+      "lat": 21.875,
+      "lon": 92.375
+    },
+    "barguna": {
+      "lat": 22.125,
+      "lon": 90.125
+    },
+    "barisal": {
+      "lat": 22.875,
+      "lon": 90.375
+    },
+    "barishal-03": {
+      "lat": 22.875,
+      "lon": 90.375
+    },
+    "bhola": {
+      "lat": 22.375,
+      "lon": 90.875
+    },
+    "bogra": {
+      "lat": 24.875,
+      "lon": 89.375
+    },
+    "brahamanbaria": {
+      "lat": 23.875,
+      "lon": 91.125
+    },
+    "chandpur": {
+      "lat": 23.125,
+      "lon": 90.875
+    },
+    "chittagong": {
+      "lat": 22.375,
+      "lon": 92.125
+    },
+    "chuadanga": {
+      "lat": 23.625,
+      "lon": 88.875
+    },
+    "comilla": {
+      "lat": 23.375,
+      "lon": 91.125
+    },
+    "cox-s-bazar": {
+      "lat": 21.375,
+      "lon": 92.125
+    },
+    "dhaka": {
+      "lat": 23.875,
+      "lon": 90.375
+    },
+    "dinajpur": {
+      "lat": 25.625,
+      "lon": 88.625
+    },
+    "faridpur": {
+      "lat": 23.375,
+      "lon": 89.875
+    },
+    "farm-12": {
+      "lat": 24.375,
+      "lon": 89.875
+    },
+    "feni": {
+      "lat": 23.125,
+      "lon": 91.375
+    },
+    "gaibandha": {
+      "lat": 25.375,
+      "lon": 89.625
+    },
+    "gazipur": {
+      "lat": 24.125,
+      "lon": 90.375
+    },
+    "gopalganj": {
+      "lat": 23.125,
+      "lon": 89.875
+    },
+    "habiganj": {
+      "lat": 24.375,
+      "lon": 91.375
+    },
+    "jamalpur": {
+      "lat": 24.875,
+      "lon": 89.875
+    },
+    "jessore": {
+      "lat": 23.125,
+      "lon": 89.125
+    },
+    "jhalokati": {
+      "lat": 22.625,
+      "lon": 90.125
+    },
+    "jhenaidah": {
+      "lat": 23.375,
+      "lon": 89.125
+    },
+    "joypurhat": {
+      "lat": 25.125,
+      "lon": 89.125
+    },
+    "khagrachhari": {
+      "lat": 23.125,
+      "lon": 91.875
+    },
+    "khulna": {
+      "lat": 22.625,
+      "lon": 89.375
+    },
+    "khulna-09": {
+      "lat": 22.875,
+      "lon": 89.375
+    },
+    "kishoreganj": {
+      "lat": 24.375,
+      "lon": 90.875
+    },
+    "kurigram": {
+      "lat": 25.875,
+      "lon": 89.625
+    },
+    "kushtia": {
+      "lat": 23.875,
+      "lon": 89.125
+    },
+    "lakshmipur": {
+      "lat": 22.875,
+      "lon": 90.875
+    },
+    "lalmonirhat": {
+      "lat": 26.125,
+      "lon": 89.125
+    },
+    "madaripur": {
+      "lat": 23.125,
+      "lon": 90.125
+    },
+    "magura": {
+      "lat": 23.375,
+      "lon": 89.375
+    },
+    "manikganj": {
+      "lat": 23.875,
+      "lon": 89.875
+    },
+    "maulvibazar": {
+      "lat": 24.375,
+      "lon": 91.875
+    },
+    "meherpur": {
+      "lat": 23.875,
+      "lon": 88.625
+    },
+    "munshiganj": {
+      "lat": 23.625,
+      "lon": 90.375
+    },
+    "mymensingh": {
+      "lat": 24.625,
+      "lon": 90.375
+    },
+    "naogaon": {
+      "lat": 24.875,
+      "lon": 88.625
+    },
+    "narail": {
+      "lat": 23.125,
+      "lon": 89.625
+    },
+    "narayanganj": {
+      "lat": 23.625,
+      "lon": 90.625
+    },
+    "narsingdi": {
+      "lat": 24.125,
+      "lon": 90.875
+    },
+    "natore": {
+      "lat": 24.375,
+      "lon": 89.125
+    },
+    "nawabganj": {
+      "lat": 24.625,
+      "lon": 88.375
+    },
+    "netrakona": {
+      "lat": 24.875,
+      "lon": 90.875
+    },
+    "nilphamari": {
+      "lat": 26.125,
+      "lon": 88.875
+    },
+    "noakhali": {
+      "lat": 22.875,
+      "lon": 91.125
+    },
+    "pabna": {
+      "lat": 24.125,
+      "lon": 89.375
+    },
+    "panchagarh": {
+      "lat": 26.375,
+      "lon": 88.625
+    },
+    "patuakhali": {
+      "lat": 22.375,
+      "lon": 90.375
+    },
+    "pirojpur": {
+      "lat": 22.625,
+      "lon": 89.875
+    },
+    "rajbari": {
+      "lat": 23.625,
+      "lon": 89.625
+    },
+    "rajshahi": {
+      "lat": 24.375,
+      "lon": 88.625
+    },
+    "rajshahi-07": {
+      "lat": 24.375,
+      "lon": 88.375
+    },
+    "rangamati": {
+      "lat": 22.875,
+      "lon": 92.125
+    },
+    "rangpur": {
+      "lat": 25.625,
+      "lon": 89.375
+    },
+    "rangpur-21": {
+      "lat": 25.625,
+      "lon": 89.375
+    },
+    "satkhira": {
+      "lat": 22.375,
+      "lon": 89.125
+    },
+    "shariatpur": {
+      "lat": 23.125,
+      "lon": 90.375
+    },
+    "sherpur": {
+      "lat": 25.125,
+      "lon": 90.125
+    },
+    "sirajganj": {
+      "lat": 24.375,
+      "lon": 89.625
+    },
+    "sunamganj": {
+      "lat": 24.875,
+      "lon": 91.375
+    },
+    "sylhet": {
+      "lat": 24.875,
+      "lon": 91.875
+    },
+    "sylhet-15": {
+      "lat": 24.875,
+      "lon": 92.125
+    },
+    "tangail": {
+      "lat": 24.375,
+      "lon": 90.125
+    },
+    "thakurgaon": {
+      "lat": 25.875,
+      "lon": 88.375
+    }
+  },
+  "issue_before_onset": "The outlook is issued on 25 April. The v2 window opens at DOY 121 (1 May in 2026), so in some districts the real onset falls only days after the issue date: the model predicts an event that can arrive almost immediately, not one a season away."
+}

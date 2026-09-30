@@ -12,6 +12,7 @@ import { CONF_KEYS, fmtNum, fmtUnit, growthStageLabel, soilTextureLabel, t, tf }
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
+import { OnsetOutlookCard } from "@/components/OnsetOutlookCard";
 import { HomogeneityNote, OnsetSensitivity, PackMethodNote } from "@/components/PackNotes";
 import { confidenceFromQuality, onsetShiftSignificant } from "@/lib/engine";
 
@@ -325,6 +326,8 @@ function FieldView({ farmId }: { farmId: string }) {
               {t("view_analysis", lang)} →
             </Link>
           </section>
+
+          <OnsetOutlookCard farmId={farmId} />
 
           <Panel title={t("field_details", lang)}>
             <dl className="text-sm">

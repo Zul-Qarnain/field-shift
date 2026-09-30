@@ -267,6 +267,47 @@ const STRINGS = {
   th_temporal: { en: "Temporal", bn: "সময়সীমা" },
   th_link: { en: "Link", bn: "লিঙ্ক" },
 
+  ml_heading: { en: "ML outlook", bn: "মডেলের পূর্বাভাস (ML)" },
+  ml_badge: { en: "ML prediction", bn: "মডেলের পূর্বাভাস" },
+  ml_experimental: { en: "experimental", bn: "পরীক্ষামূলক" },
+  ml_predicted_onset: { en: "Model's predicted onset", bn: "মডেল অনুযায়ী বর্ষার শুরু" },
+  ml_interval: { en: "Model's 10–90 range", bn: "মডেলের 10–90 ব্যবধান" },
+  ml_climatology: { en: "District climatology", bn: "জেলার গড় শুরু" },
+  ml_vs_climatology: { en: "{days} days vs climatology", bn: "গড়ের তুলনায় {days} দিন" },
+  ml_observed: { en: "Already observed this season", bn: "এই মৌসুমে ইতিমধ্যে পর্যবেক্ষিত" },
+  ml_not_observed: { en: "Not observable yet", bn: "এখনো পর্যবেক্ষণযোগ্য নয়" },
+  ml_why: { en: "What moved this prediction", bn: "কী এই অনুমান নড়িয়েছে" },
+  ml_backtest: { en: "Leave-one-year-out backtest", bn: "ব্যাকটেস্ট (প্রতি বছর আলাদা রেখে)" },
+  ml_backtest_scope: { en: "{years} years · {districts} districts", bn: "{years} বছর · {districts} জেলা" },
+  ml_mae_line: {
+    en: "model {model} d · climatology {clim} d · skill {skill}",
+    bn: "মডেল {model} দিন · গড় {clim} দিন · স্কিল {skill}",
+  },
+  ml_coverage_line: {
+    en: "the interval covered {pct}% of backtested onsets",
+    bn: "ব্যবধানটি ব্যাকটেস্টকৃত শুরুর {pct}% ঢেকেছে",
+  },
+  ml_shipped_note: {
+    en: "On this backtest the model beats the district's own average start.",
+    bn: "এই ব্যাকটেস্টে মডেল জেলার নিজের গড় শুরুকে ছাড়িয়েছে।",
+  },
+  ml_experimental_note: {
+    en: "The model does NOT beat climatology here — treat it as no better than the district average.",
+    bn: "এখানে মডেল গড়কে ছারাতে পারেনি — জেলার গড়ের চেয়ে ভালো ধরবেন না।",
+  },
+  ml_offline_note: {
+    en: "Built offline from cached CHIRPS, NASA POWER and NOAA data — not run in your browser.",
+    bn: "এই পূর্বাভাস অফলাইনে তৈরি (CHIRPS, NASA POWER ও NOAA ক্যাশ ডেটা) — আপনার ব্রাউজারে হিসাব হয় না।",
+  },
+  ml_model_line: { en: "Model {version} · issued {issue} for {year}", bn: "মডেল {version} · {year} সালের জন্য {issue} তারিখে জারি" },
+  ml_same_source_note: {
+    en: "Onset labels and the rainfall feature both come from CHIRPS — a same-source check, not an independent forecast.",
+    bn: "শুরুর লেবেল ও বৃষ্টির ফিচার দুটোই CHIRPS থেকে — একই উৎসের যাচাই, স্বাধীন পূর্বাভাস নয়।",
+  },
+  ml_missing: {
+    en: "No ML outlook for this farm yet.",
+    bn: "এই খামারের জন্য এখনো কোনো এমএল পূর্বাভাস নেই।",
+  },
   src_fixture: { en: "fixture", bn: "ডেমো ফিক্সচার" },
   src_cache: { en: "cache", bn: "ক্যাশ" },
   src_live: { en: "live", bn: "লাইভ" },
