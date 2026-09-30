@@ -52,6 +52,8 @@ export interface FarmPack {
   heatExposure: { aman: number; rabi: number; pre: number };
   soil: { ph: number; texture: string; socPct: number; cec: number; source: "SoilGrids (modeled)" };
   floodProneIndex: number;
+  /** 0–1 share of dry-season water demand this farm can cover by pumping. ESTIMATE — demo value per farm, pending citation. */
+  irrigation: number;
   dataQuality: { smapEra: boolean; soilModeled: boolean; ndviRecordYears: number };
   provenance: ProvEntry[];
 }
@@ -73,6 +75,12 @@ const PROV = (place: string): ProvEntry[] => [
   { id: "method", name: "Onset detection", detail: "Deterministic rule, stated in Method", version: "v1.0", retrieved: "—", tier: "Open", url: "/method" },
 ];
 
+/**
+ * Demo farm packs. ESTIMATE — irrigation access per farm is a hand-set demo value, not a
+ * survey figure: Rangpur 0.8 (dense shallow tubewells), Rajshahi 0.7 (Barind deep tubewells,
+ * water table falling), Tangail 0.6, Sylhet 0.5, Barishal 0.35 (surface water, tidal),
+ * Khulna 0.2 (saline groundwater, unusable in the dry season).
+ */
 export const FARMS: FarmPack[] = [
   {
     id: "farm-12", name_en: "Farm-12", name_bn: "খামার-১২", district: "Tangail", division: "Dhaka Division",
@@ -84,7 +92,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.12, 0.24, 0.41, 0.58, 0.66, 0.72, 0.69, 0.61, 0.52], previous: [0.1, 0.2, 0.34, 0.5, 0.6, 0.66, 0.64, 0.58, 0.5], historical: [0.11, 0.21, 0.35, 0.52, 0.61, 0.67, 0.65, 0.59, 0.51] },
     waterAvail: { aman: 0.82, rabi: 0.44, pre: 0.5 }, heatExposure: { aman: 0.35, rabi: 0.55, pre: 0.75 },
     soil: { ph: 6.3, texture: "Clay Loam", socPct: 1.1, cec: 18, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.45, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.45, irrigation: 0.6, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Tangail"),
   },
   {
@@ -97,7 +105,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.08, 0.16, 0.3, 0.44, 0.5, 0.55, 0.52, 0.47, 0.41], previous: [0.1, 0.19, 0.33, 0.47, 0.55, 0.6, 0.57, 0.52, 0.45], historical: [0.11, 0.2, 0.36, 0.5, 0.58, 0.63, 0.6, 0.55, 0.48] },
     waterAvail: { aman: 0.62, rabi: 0.3, pre: 0.34 }, heatExposure: { aman: 0.5, rabi: 0.7, pre: 0.9 },
     soil: { ph: 7.4, texture: "Sandy Loam", socPct: 0.7, cec: 12, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.08, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.08, irrigation: 0.7, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Rajshahi"),
   },
   {
@@ -110,7 +118,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.14, 0.28, 0.47, 0.62, 0.7, 0.76, 0.72, 0.66, 0.58], previous: [0.13, 0.26, 0.44, 0.6, 0.68, 0.74, 0.7, 0.64, 0.56], historical: [0.12, 0.25, 0.43, 0.58, 0.66, 0.72, 0.69, 0.63, 0.55] },
     waterAvail: { aman: 0.95, rabi: 0.55, pre: 0.62 }, heatExposure: { aman: 0.22, rabi: 0.4, pre: 0.6 },
     soil: { ph: 6.8, texture: "Silty Clay", socPct: 1.6, cec: 24, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.86, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.86, irrigation: 0.35, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Barishal"),
   },
   {
@@ -123,7 +131,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.12, 0.24, 0.4, 0.55, 0.63, 0.68, 0.65, 0.6, 0.52], previous: [0.12, 0.23, 0.39, 0.53, 0.61, 0.66, 0.63, 0.58, 0.5], historical: [0.11, 0.22, 0.38, 0.52, 0.6, 0.65, 0.62, 0.57, 0.49] },
     waterAvail: { aman: 0.85, rabi: 0.42, pre: 0.5 }, heatExposure: { aman: 0.3, rabi: 0.5, pre: 0.72 },
     soil: { ph: 7.1, texture: "Silty Clay Loam", socPct: 1.2, cec: 20, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.64, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.64, irrigation: 0.2, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Khulna"),
   },
   {
@@ -136,7 +144,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.13, 0.25, 0.43, 0.58, 0.66, 0.71, 0.68, 0.62, 0.55], previous: [0.12, 0.24, 0.41, 0.56, 0.64, 0.69, 0.66, 0.6, 0.53], historical: [0.12, 0.23, 0.4, 0.55, 0.63, 0.68, 0.65, 0.59, 0.52] },
     waterAvail: { aman: 0.78, rabi: 0.48, pre: 0.55 }, heatExposure: { aman: 0.2, rabi: 0.35, pre: 0.55 },
     soil: { ph: 5.9, texture: "Loam", socPct: 1.3, cec: 17, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.3, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.3, irrigation: 0.8, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Rangpur"),
   },
   {
@@ -149,7 +157,7 @@ export const FARMS: FarmPack[] = [
     season: { current: [0.14, 0.27, 0.45, 0.6, 0.68, 0.74, 0.7, 0.64, 0.57], previous: [0.13, 0.25, 0.43, 0.58, 0.66, 0.72, 0.68, 0.62, 0.55], historical: [0.12, 0.24, 0.42, 0.56, 0.64, 0.7, 0.67, 0.61, 0.54] },
     waterAvail: { aman: 0.92, rabi: 0.58, pre: 0.66 }, heatExposure: { aman: 0.24, rabi: 0.38, pre: 0.58 },
     soil: { ph: 5.4, texture: "Clay Loam", socPct: 1.8, cec: 22, source: "SoilGrids (modeled)" },
-    floodProneIndex: 0.52, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
+    floodProneIndex: 0.52, irrigation: 0.5, dataQuality: { smapEra: true, soilModeled: true, ndviRecordYears: 24 },
     provenance: PROV("Sylhet"),
   },
 ];
@@ -160,9 +168,13 @@ export interface Crop {
   id: string;
   name_en: string;
   name_bn: string;
+  /** Botanical family; "none" marks idle fallow, which is not a crop. */
   family: string;
   season: SeasonKey;
+  /** Growing days; 0 for fallow, which consumes no part of the season. ESTIMATE — demo durations. */
   durationDays: number;
+  /** ESTIMATE — demo food & income value of growing this crop for one season (0–1, idea: BBS yield × farm price, not yet cited). */
+  yieldValue: number;
   waterDemand: number;
   heatTol: number;
   floodTol: number;
@@ -173,17 +185,23 @@ export interface Crop {
   rootDeep: boolean;
 }
 
+/** ESTIMATE — demo trait values (durations, water demand, tolerances, N and residue indices, yieldValue) pending citation. */
 export const CROPS: Crop[] = [
-  { id: "aman", name_en: "Rice (Aman)", name_bn: "ধান (আমন)", family: "Poaceae", season: "aman", durationDays: 125, waterDemand: 0.9, heatTol: 0.55, floodTol: 0.75, nDemand: 0.8, nFixing: false, residueIndex: 0.85, phRange: [5.5, 7.5], rootDeep: false },
-  { id: "boro", name_en: "Rice (Boro)", name_bn: "ধান (বোরো)", family: "Poaceae", season: "rabi", durationDays: 140, waterDemand: 0.95, heatTol: 0.45, floodTol: 0.4, nDemand: 0.85, nFixing: false, residueIndex: 0.8, phRange: [5.5, 7.5], rootDeep: false },
-  { id: "wheat", name_en: "Wheat", name_bn: "গম", family: "Poaceae", season: "rabi", durationDays: 115, waterDemand: 0.6, heatTol: 0.35, floodTol: 0.1, nDemand: 0.7, nFixing: false, residueIndex: 0.55, phRange: [6.0, 7.5], rootDeep: true },
-  { id: "maize", name_en: "Maize", name_bn: "ভুট্টা", family: "Poaceae", season: "rabi", durationDays: 120, waterDemand: 0.65, heatTol: 0.5, floodTol: 0.15, nDemand: 0.8, nFixing: false, residueIndex: 0.9, phRange: [5.8, 7.5], rootDeep: true },
-  { id: "mustard", name_en: "Mustard", name_bn: "সরিষা", family: "Brassicaceae", season: "rabi", durationDays: 90, waterDemand: 0.4, heatTol: 0.5, floodTol: 0.1, nDemand: 0.5, nFixing: false, residueIndex: 0.35, phRange: [6.0, 7.5], rootDeep: false },
-  { id: "lentil", name_en: "Lentil", name_bn: "মসুর", family: "Fabaceae", season: "rabi", durationDays: 105, waterDemand: 0.35, heatTol: 0.45, floodTol: 0.1, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [6.0, 7.8], rootDeep: false },
-  { id: "mungbean", name_en: "Mungbean", name_bn: "মুগ", family: "Fabaceae", season: "pre", durationDays: 70, waterDemand: 0.35, heatTol: 0.6, floodTol: 0.15, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [5.8, 7.5], rootDeep: false },
-  { id: "sesame", name_en: "Sesame", name_bn: "তিল", family: "Pedaliaceae", season: "pre", durationDays: 85, waterDemand: 0.3, heatTol: 0.75, floodTol: 0.2, nDemand: 0.35, nFixing: false, residueIndex: 0.3, phRange: [5.5, 7.5], rootDeep: true },
-  { id: "jute", name_en: "Jute", name_bn: "পাট", family: "Malvaceae", season: "pre", durationDays: 110, waterDemand: 0.8, heatTol: 0.7, floodTol: 0.7, nDemand: 0.6, nFixing: false, residueIndex: 0.95, phRange: [5.5, 7.5], rootDeep: true },
-  { id: "potato", name_en: "Potato", name_bn: "আলু", family: "Solanaceae", season: "rabi", durationDays: 95, waterDemand: 0.6, heatTol: 0.3, floodTol: 0.05, nDemand: 0.6, nFixing: false, residueIndex: 0.25, phRange: [5.0, 6.5], rootDeep: false },
+  { id: "aman", name_en: "Rice (Aman)", name_bn: "ধান (আমন)", family: "Poaceae", season: "aman", durationDays: 125, yieldValue: 0.8, waterDemand: 0.9, heatTol: 0.55, floodTol: 0.75, nDemand: 0.8, nFixing: false, residueIndex: 0.85, phRange: [5.5, 7.5], rootDeep: false },
+  { id: "boro", name_en: "Rice (Boro)", name_bn: "ধান (বোরো)", family: "Poaceae", season: "rabi", durationDays: 140, yieldValue: 0.95, waterDemand: 0.95, heatTol: 0.45, floodTol: 0.4, nDemand: 0.85, nFixing: false, residueIndex: 0.8, phRange: [5.5, 7.5], rootDeep: false },
+  { id: "wheat", name_en: "Wheat", name_bn: "গম", family: "Poaceae", season: "rabi", durationDays: 115, yieldValue: 0.7, waterDemand: 0.6, heatTol: 0.35, floodTol: 0.1, nDemand: 0.7, nFixing: false, residueIndex: 0.55, phRange: [6.0, 7.5], rootDeep: true },
+  { id: "maize", name_en: "Maize", name_bn: "ভুট্টা", family: "Poaceae", season: "rabi", durationDays: 120, yieldValue: 0.85, waterDemand: 0.65, heatTol: 0.5, floodTol: 0.15, nDemand: 0.8, nFixing: false, residueIndex: 0.9, phRange: [5.8, 7.5], rootDeep: true },
+  { id: "mustard", name_en: "Mustard", name_bn: "সরিষা", family: "Brassicaceae", season: "rabi", durationDays: 90, yieldValue: 0.5, waterDemand: 0.4, heatTol: 0.5, floodTol: 0.1, nDemand: 0.5, nFixing: false, residueIndex: 0.35, phRange: [6.0, 7.5], rootDeep: false },
+  { id: "lentil", name_en: "Lentil", name_bn: "মসুর", family: "Fabaceae", season: "rabi", durationDays: 105, yieldValue: 0.55, waterDemand: 0.35, heatTol: 0.45, floodTol: 0.1, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [6.0, 7.8], rootDeep: false },
+  // ESTIMATE — demo trait values pending citation (duration, demand and tolerances are hand-set).
+  { id: "aus", name_en: "Rice (Aus)", name_bn: "ধান (আউশ)", family: "Poaceae", season: "pre", durationDays: 105, yieldValue: 0.6, waterDemand: 0.7, heatTol: 0.6, floodTol: 0.4, nDemand: 0.75, nFixing: false, residueIndex: 0.8, phRange: [5.5, 7.5], rootDeep: false },
+  { id: "mungbean", name_en: "Mungbean", name_bn: "মুগ", family: "Fabaceae", season: "pre", durationDays: 70, yieldValue: 0.5, waterDemand: 0.35, heatTol: 0.6, floodTol: 0.15, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [5.8, 7.5], rootDeep: false },
+  { id: "sesame", name_en: "Sesame", name_bn: "তিল", family: "Pedaliaceae", season: "pre", durationDays: 85, yieldValue: 0.45, waterDemand: 0.3, heatTol: 0.75, floodTol: 0.2, nDemand: 0.35, nFixing: false, residueIndex: 0.3, phRange: [5.5, 7.5], rootDeep: true },
+  { id: "jute", name_en: "Jute", name_bn: "পাট", family: "Malvaceae", season: "pre", durationDays: 110, yieldValue: 0.65, waterDemand: 0.8, heatTol: 0.7, floodTol: 0.7, nDemand: 0.6, nFixing: false, residueIndex: 0.95, phRange: [5.5, 7.5], rootDeep: true },
+  { id: "potato", name_en: "Potato", name_bn: "আলু", family: "Solanaceae", season: "rabi", durationDays: 95, yieldValue: 0.85, waterDemand: 0.6, heatTol: 0.3, floodTol: 0.05, nDemand: 0.6, nFixing: false, residueIndex: 0.25, phRange: [5.0, 6.5], rootDeep: false },
+  // ESTIMATE — idle land, not a crop: it consumes no season days and no water, so fit traits are
+  // neutral (0.5) and the engine prices it with an explicit idle-land penalty instead.
+  { id: "fallow", name_en: "Fallow", name_bn: "পতিত", family: "none", season: "pre", durationDays: 0, yieldValue: 0.0, waterDemand: 0, heatTol: 0.5, floodTol: 0.5, nDemand: 0, nFixing: false, residueIndex: 0, phRange: [4.5, 8.5], rootDeep: false },
 ];
 
 export const getFarm = (id: string) => FARMS.find((f) => f.id === id) ?? FARMS[0];

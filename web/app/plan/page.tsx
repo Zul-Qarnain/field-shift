@@ -12,7 +12,7 @@ import { useLang } from "@/lib/lang";
 import { Panel, SourceChip, InfoDot } from "@/components/ui";
 import { RotationCard, WhyDrawer } from "@/components/RotationCard";
 
-const ALL_CROPS = ["aman", "boro", "wheat", "maize", "mustard", "lentil", "mungbean", "sesame", "potato"];
+const ALL_CROPS = CROPS.map((c) => c.id);
 
 const SLIDERS: { key: keyof Priorities; label_en: string; label_bn: string; icon: typeof Droplets; color: string }[] = [
   { key: "water", label_en: "Water saving", label_bn: "পানি সাশ্রয়", icon: Droplets, color: "#4ea8de" },
@@ -27,6 +27,8 @@ const SCENARIOS: { label: string; apply: Scenario }[] = [
   { label: "Rainfall −20%", apply: { ...DEFAULT_SCENARIO, rainfallPct: -20 } },
   { label: "Hotter +1°C", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 1 } },
   { label: "Hotter +2°C", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 2 } },
+  { label: "Onset +7 days", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 7 } },
+  { label: "Onset +15 days", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 15 } },
 ];
 
 function PlanView({ farmId }: { farmId: string }) {
@@ -39,9 +41,9 @@ function PlanView({ farmId }: { farmId: string }) {
   const [copied, setCopied] = useState<"adv" | "sms" | null>(null);
 
   const results = useMemo(() => generateRotations(pack, priorities, scenario, pool), [pack, priorities, scenario, pool]);
-  const top = results[0];
-  const advisory = advisoryText(pack, top, lang);
-  const sms = smsText(pack, top, lang);
+  const top = results[0] as RotationResult | undefined;
+  const advisory = top ? advisoryText(pack, top, lang) : "";
+  const sms = top ? smsText(pack, top, lang) : "";
   const isBaseline = scenario === DEFAULT_SCENARIO;
 
   const copy = (text: string, kind: "adv" | "sms") => {
@@ -80,9 +82,14 @@ function PlanView({ farmId }: { farmId: string }) {
               ))}
             </div>
             <p className="mt-3 text-[11px] text-ink-low">Sliders re-rank instantly, on this device, with the same math every time.</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
+              {lang === "bn"
+                ? `পানি সাশ্রয় স্লাইডার শুষ্ক মৌসুমে সেচের পানিও গণনা করে; এই খামারের ডেমো সেচ-প্রবেশাধিকার ${pack.irrigation} (ESTIMATE)। “স্থিতিশীল ফলন” মৌসুমের খাদ্য ও আয়-মূল্য (S8) কে বেশি ওজন দেয়।`
+                : `Water saving also counts dry-season pumping — this farm's demo irrigation access is ${pack.irrigation} (ESTIMATE). Stable harvest is the weight on food & income (S8), the season's crop value graded by the water it can get.`}
+            </p>
           </Panel>
 
-          <Panel title="Crop pool" right={<InfoDot text="Crops considered for the rotation. Same-family crops cannot follow each other." />}>
+          <Panel title="Crop pool" right={<InfoDot text="Crops considered for the rotation. Same-family crops may follow each other but lose soil-health points; every sequence must also fit the 365-day calendar (durations + 10-day turnarounds + the onset shift). Fallow leaves the season idle." />}>
             <div className="flex flex-wrap gap-1.5">
               {CROPS.map((c) => {
                 const on = pool.has(c.id);
@@ -147,31 +154,33 @@ function PlanView({ farmId }: { farmId: string }) {
           )}
           {results.length === 0 && (
             <Panel>
-              <p className="text-sm text-ink-mid">No valid rotation with this pool — the same-family rule or season windows block every sequence. Re-enable a legume or a cereal.</p>
+              <p className="text-sm text-ink-mid">No valid rotation with this pool — every sequence either leaves a season empty or overruns the 365-day calendar at this onset. Re-enable a short-duration crop (mungbean, sesame, fallow) or drop the +15-day onset scenario.</p>
             </Panel>
           )}
 
-          <section className="rounded-xl border border-lime/40 bg-lime/5 p-5">
-            <div className="flex flex-wrap items-center gap-2">
-              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory — the takeaway</p>
-              <SourceChip source="fixture" />
-            </div>
-            <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi">{advisory}</p>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
-              Ranking math runs for real on this device; the farm values it reads are demo fixtures.
-            </p>
-            <div className="mt-3 flex flex-wrap items-center gap-3">
-              <button onClick={() => copy(advisory, "adv")} className="flex items-center gap-1.5 rounded-lg bg-lime px-3.5 py-2 text-xs font-bold text-canvas hover:brightness-110">
-                {copied === "adv" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                {copied === "adv" ? "Copied" : "Copy advisory"}
-              </button>
-              <button onClick={() => copy(sms, "sms")} className="flex items-center gap-1.5 rounded-lg border border-line bg-inset px-3.5 py-2 text-xs font-medium text-ink-mid hover:text-ink-hi">
-                {copied === "sms" ? <Check className="h-3.5 w-3.5 text-earth" /> : <Copy className="h-3.5 w-3.5" />}
-                SMS version · {sms.length}/160
-              </button>
-              <span className="font-bengali text-xs text-ink-low">{lang === "en" ? advisoryText(pack, top, "bn") : advisoryText(pack, top, "en").slice(0, 80) + "…"}</span>
-            </div>
-          </section>
+          {top && (
+            <section className="rounded-xl border border-lime/40 bg-lime/5 p-5">
+              <div className="flex flex-wrap items-center gap-2">
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory — the takeaway</p>
+                <SourceChip source="fixture" />
+              </div>
+              <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi">{advisory}</p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
+                Ranking math runs for real on this device; the farm values it reads are demo fixtures, including the irrigation access the water score uses.
+              </p>
+              <div className="mt-3 flex flex-wrap items-center gap-3">
+                <button onClick={() => copy(advisory, "adv")} className="flex items-center gap-1.5 rounded-lg bg-lime px-3.5 py-2 text-xs font-bold text-canvas hover:brightness-110">
+                  {copied === "adv" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copied === "adv" ? "Copied" : "Copy advisory"}
+                </button>
+                <button onClick={() => copy(sms, "sms")} className="flex items-center gap-1.5 rounded-lg border border-line bg-inset px-3.5 py-2 text-xs font-medium text-ink-mid hover:text-ink-hi">
+                  {copied === "sms" ? <Check className="h-3.5 w-3.5 text-earth" /> : <Copy className="h-3.5 w-3.5" />}
+                  SMS version · {sms.length}/160
+                </button>
+                <span className="font-bengali text-xs text-ink-low">{lang === "en" ? advisoryText(pack, top, "bn") : advisoryText(pack, top, "en").slice(0, 80) + "…"}</span>
+              </div>
+            </section>
+          )}
         </div>
       </div>
 

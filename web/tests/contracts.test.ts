@@ -31,15 +31,33 @@ describe("data pack contracts", () => {
       expect(pack.lon).toBeLessThanOrEqual(93);
       expect(pack.polygon.length).toBeGreaterThanOrEqual(4);
     });
+
+    it(`${pack.id}: irrigation access is a bounded demo estimate the engine can read`, () => {
+      expect(pack.irrigation).toBeGreaterThanOrEqual(0);
+      expect(pack.irrigation).toBeLessThanOrEqual(1);
+      expect(Number.isFinite(pack.irrigation)).toBe(true);
+    });
   }
+
+  it("irrigation access ranks north-irrigated above saline-coastal", () => {
+    const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
+    const khulna = FARMS.find((f) => f.id === "khulna-09")!;
+    expect(rangpur.irrigation).toBeGreaterThan(khulna.irrigation);
+  });
 });
 
 describe("demo crop trait contracts", () => {
   it("every crop trait value is bounded and has a season", () => {
     for (const c of CROPS) {
       expect(["aman", "rabi", "pre"]).toContain(c.season);
-      expect(c.durationDays).toBeGreaterThan(40);
-      expect(c.durationDays).toBeLessThan(180);
+      if (c.family === "none") {
+        expect(c.durationDays).toBe(0);
+        expect(c.waterDemand).toBe(0);
+        expect(c.nFixing).toBe(false);
+      } else {
+        expect(c.durationDays).toBeGreaterThan(40);
+        expect(c.durationDays).toBeLessThan(180);
+      }
       for (const v of [c.waterDemand, c.heatTol, c.floodTol, c.nDemand, c.residueIndex]) {
         expect(v).toBeGreaterThanOrEqual(0);
         expect(v).toBeLessThanOrEqual(1);
@@ -49,10 +67,37 @@ describe("demo crop trait contracts", () => {
     }
   });
 
+  it("the pool covers all three seasons and includes aus rice and idle fallow", () => {
+    const aus = CROPS.find((c) => c.id === "aus");
+    expect(aus?.season).toBe("pre");
+    expect(aus?.name_en).toBe("Rice (Aus)");
+    expect(aus?.durationDays).toBeGreaterThanOrEqual(100);
+    expect(aus?.durationDays).toBeLessThanOrEqual(110);
+    const fallow = CROPS.find((c) => c.id === "fallow");
+    expect(fallow?.season).toBe("pre");
+    expect(fallow?.family).toBe("none");
+    for (const season of ["rabi", "pre"] as const) {
+      expect(CROPS.filter((c) => c.season === season).length).toBeGreaterThanOrEqual(2);
+    }
+    expect(CROPS.filter((c) => c.season === "aman").length).toBeGreaterThanOrEqual(1);
+  });
+
   it("at least one N-fixing legume exists for every farm's rabi/pre seasons", () => {
     const legumes = CROPS.filter((c) => c.nFixing);
     expect(legumes.some((c) => c.season === "rabi")).toBe(true);
     expect(legumes.some((c) => c.season === "pre")).toBe(true);
+  });
+
+  it("yieldValue is a bounded demo food-and-income ranking with idle land worth nothing", () => {
+    for (const c of CROPS) {
+      expect(c.yieldValue).toBeGreaterThanOrEqual(0);
+      expect(c.yieldValue).toBeLessThanOrEqual(1);
+    }
+    const value = (id: string) => CROPS.find((c) => c.id === id)!.yieldValue;
+    expect(value("fallow")).toBe(0);
+    expect(value("boro")).toBeGreaterThan(value("lentil"));
+    expect(value("boro")).toBeGreaterThan(value("sesame"));
+    expect(value("potato")).toBeGreaterThan(value("mustard"));
   });
 
   it("crop ids are unique", () => {

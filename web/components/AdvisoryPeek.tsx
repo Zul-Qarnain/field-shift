@@ -3,14 +3,14 @@
 import Link from "next/link";
 import { Copy, Check } from "lucide-react";
 import { useState } from "react";
-import { getFarm } from "@/lib/data";
+import { getFarm, CROPS } from "@/lib/data";
 import { generateRotations, DEFAULT_PRIORITIES, advisoryText } from "@/lib/engine";
 import { SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
 
 export function AdvisoryPeek({ farmId }: { farmId: string }) {
   const pack = getFarm(farmId);
-  const results = generateRotations(pack, DEFAULT_PRIORITIES, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null }, new Set(["aman", "boro", "wheat", "maize", "mustard", "lentil", "mungbean", "sesame", "potato"]));
+  const results = generateRotations(pack, DEFAULT_PRIORITIES, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null }, new Set(CROPS.map((c) => c.id)));
   const { lang } = useLang();
   const [copied, setCopied] = useState(false);
   const text = advisoryText(pack, results[0], lang);

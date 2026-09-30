@@ -11,9 +11,11 @@ const COMP_COLORS: Record<string, string> = {
   s4: "#57c785",
   s5: "#d4f94e",
   s6: "#ef6c4d",
+  s7: "#2ec4b6",
+  s8: "#c9a227",
 };
 const COMP_ICONS: Record<string, React.ComponentType<{ className?: string }>> = {
-  s1: Droplets, s2: Flame, s3: Crop, s4: Leaf, s5: Sprout, s6: Shield,
+  s1: Droplets, s2: Flame, s3: Crop, s4: Leaf, s5: Sprout, s6: Shield, s7: Droplets, s8: Sprout,
 };
 
 export function ComponentBar({ k, label, value, weight }: { k: string; label: string; value: number; weight?: number }) {
@@ -141,8 +143,8 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
           <>
             <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">Penalties</h3>
             <ul className="mt-2 space-y-1.5">
-              {result.penalties.map((p) => (
-                <li key={p.rule} className="rounded-lg border border-risk/30 bg-risk/5 p-2.5 text-xs text-ink-mid">
+              {result.penalties.map((p, i) => (
+                <li key={`${i}-${p.rule}`} className="rounded-lg border border-risk/30 bg-risk/5 p-2.5 text-xs text-ink-mid">
                   <span className="font-semibold text-risk">−{p.amount}</span> {p.rule}
                   <span className="mt-0.5 block text-[10px] text-ink-low">source: {p.source}</span>
                 </li>
@@ -154,7 +156,8 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
         <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">Provenance</h3>
         <p className="mt-2 rounded-lg border border-line bg-surface p-3 font-mono text-[11px] leading-relaxed text-ink-mid">
           Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) ·
-          demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · engine: field-shift rotation v1.0 (deterministic, tested)
+          demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, not yet cited ·
+          onset shift: farm fixture + the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)
         </p>
         <p className="mt-4 text-[11px] leading-relaxed text-ink-low">
           Sensitivity testing is planned and not yet run; move the priority sliders and the what-if scenarios to see how the ranking changes.

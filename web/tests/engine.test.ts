@@ -1,24 +1,74 @@
 import { describe, expect, it } from "vitest";
 import {
-  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
+  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, calendarDaysNeeded, effectiveOnsetShift, generateRotations, smsText,
+  type Penalty,
 } from "@/lib/engine";
-import { CROPS, FARMS } from "@/lib/data";
+import { CROPS, FARMS, type Crop } from "@/lib/data";
 
 const ALL = new Set(CROPS.map((c) => c.id));
+const pool = (...ids: string[]) => new Set(ids);
+const key = (r: { crops: Crop[] }) => r.crops.map((c) => c.id).join(">");
+const penaltyStart = (r: { penalties: Penalty[] }, prefix: string) => r.penalties.find((p) => p.rule.startsWith(prefix));
 
-describe("rotation engine — hard constraints", () => {
+describe("rotation engine — calendar and sequence rules", () => {
   for (const pack of FARMS) {
-    it(`${pack.id}: every rotation is Aman → rabi → pre-monsoon with no same-family repeats`, () => {
+    it(`${pack.id}: every rotation is Aman → rabi → pre, fits 365 days, and never repeats a crop`, () => {
       const results = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL);
-      expect(results.length).toBeGreaterThan(0);
+      expect(results.length).toBeGreaterThan(5);
       for (const r of results) {
         expect(r.crops.map((c) => c.season)).toEqual(["aman", "rabi", "pre"]);
-        for (let i = 1; i < r.crops.length; i++) {
-          expect(r.crops[i].family).not.toBe(r.crops[i - 1].family);
-        }
+        expect(new Set(r.crops.map((c) => c.id)).size).toBe(r.crops.length);
+        expect(r.calendarDays).toBeLessThanOrEqual(365);
+        expect(r.calendarDays).toBe(calendarDaysNeeded(r.crops, effectiveOnsetShift(pack, DEFAULT_SCENARIO)));
       }
     });
   }
+
+  it("allows Aman → Boro (and lists the cereal carryover penalty instead of banning it)", () => {
+    for (const pack of FARMS) {
+      const results = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "fallow"));
+      expect(results).toHaveLength(1);
+      expect(key(results[0])).toBe("aman>boro>fallow");
+      expect(penaltyStart(results[0], "Same-family sequence (cereal after cereal)")).toBeDefined();
+    }
+  });
+
+  it("keeps the cereal penalty above the legume penalty", () => {
+    const cereal = penaltyStart(generateRotations(FARMS[0], DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "fallow"))[0], "Same-family sequence")!;
+    const legume = penaltyStart(generateRotations(FARMS[0], DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "lentil", "mungbean"))[0], "Same-family sequence")!;
+    expect(legume.amount).toBeLessThan(cereal.amount);
+  });
+
+  it("rejects a year that cannot hold both dry-season crops: Boro + Aus never fits", () => {
+    for (const pack of FARMS) {
+      expect(generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "aus"))).toHaveLength(0);
+    }
+    expect(calendarDaysNeeded(CROPS.filter((c) => ["aman", "boro", "aus"].includes(c.id)), 0)).toBeGreaterThan(365);
+  });
+
+  it("accepts the tight combinations that real farms run", () => {
+    const pack = FARMS[0];
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "mungbean"))).toHaveLength(1);
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "potato", "jute"))).toHaveLength(1);
+  });
+
+  it("shrinks the calendar budget as the onset slips later", () => {
+    const pack = FARMS[0];
+    expect(effectiveOnsetShift(pack, DEFAULT_SCENARIO)).toBe(-7);
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "wheat", "jute"))).toHaveLength(1);
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: 3 }, pool("aman", "wheat", "jute"))).toHaveLength(0);
+    const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
+    expect(generateRotations(rangpur, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "mungbean"))).toHaveLength(1);
+    expect(generateRotations(rangpur, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: 15 }, pool("aman", "boro", "mungbean"))).toHaveLength(0);
+  });
+
+  it("offers fallow as a legal idle season and charges it for staying idle", () => {
+    const results = generateRotations(FARMS[0], DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool("aman", "boro", "fallow"));
+    const idle = penaltyStart(results[0], "Idle fallow");
+    expect(idle).toBeDefined();
+    expect(idle!.amount).toBeGreaterThan(0);
+    expect(results[0].risks.some((r) => r.includes("Idle season"))).toBe(true);
+  });
 
   it("empty crop pool yields no rotations", () => {
     expect(generateRotations(FARMS[0], DEFAULT_PRIORITIES, DEFAULT_SCENARIO, new Set())).toHaveLength(0);
@@ -28,6 +78,61 @@ describe("rotation engine — hard constraints", () => {
     const noRabi = new Set(ALL);
     CROPS.filter((c) => c.season === "rabi").forEach((c) => noRabi.delete(c.id));
     expect(generateRotations(FARMS[0], DEFAULT_PRIORITIES, DEFAULT_SCENARIO, noRabi)).toHaveLength(0);
+  });
+});
+
+describe("rotation engine — irrigation and onset", () => {
+  it("the same thirsty plan scores higher where the farm can irrigate", () => {
+    const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
+    const khulna = FARMS.find((f) => f.id === "khulna-09")!;
+    const p = pool("aman", "boro", "fallow");
+    const wet = generateRotations(rangpur, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, p)[0];
+    const dry = generateRotations(khulna, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, p)[0];
+    expect(wet.total).toBeGreaterThan(dry.total);
+    expect(wet.components.find((c) => c.key === "s1")!.value).toBeGreaterThan(dry.components.find((c) => c.key === "s1")!.value);
+  });
+
+  it("irrigation reliance drops as the dry-season demand falls", () => {
+    const pack = FARMS[0];
+    const s7 = (k: string) => generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL).find((r) => key(r) === k)!.components.find((c) => c.key === "s7")!.value;
+    expect(s7("aman>mustard>sesame")).toBeGreaterThan(s7("aman>boro>fallow"));
+    expect(s7("aman>lentil>mungbean")).toBeGreaterThan(s7("aman>boro>fallow"));
+  });
+
+  it("a later onset costs a wheat sequence more than a mungbean/sesame one", () => {
+    const pack = FARMS[0];
+    const late = { ...DEFAULT_SCENARIO, onsetShiftDays: 15 };
+    const all = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL);
+    const lateList = generateRotations(pack, DEFAULT_PRIORITIES, late, ALL);
+    const drop = (k: string) => {
+      const base = all.find((r) => key(r) === k)!;
+      const shifted = lateList.find((r) => key(r) === k)!;
+      expect(shifted).toBeDefined();
+      return base.total - shifted.total;
+    };
+    expect(drop("aman>wheat>mungbean")).toBeGreaterThan(drop("aman>mustard>sesame"));
+    expect(penaltyStart(lateList.find((r) => key(r) === "aman>wheat>mungbean")!, "Late monsoon onset")!.rule).toContain("+8 days");
+  });
+
+  it("the onset penalty grows with the delay on the same plan", () => {
+    const pack = FARMS.find((f) => f.id === "rajshahi-07")!;
+    const plan = (shift: number) => generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: shift }, pool("aman", "lentil", "sesame"))[0];
+    const mild = penaltyStart(plan(0), "Late monsoon onset")!;
+    const severe = penaltyStart(plan(10), "Late monsoon onset")!;
+    expect(severe.amount).toBeGreaterThan(mild.amount);
+    expect(plan(0).total).toBeGreaterThan(plan(10).total);
+  });
+
+  it("an early onset credits long-duration crops more than short ones", () => {
+    const pack = FARMS.find((f) => f.id === "rangpur-21")!;
+    const score = (ids: string[], onsetShiftDays: number) =>
+      generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays }, pool(...ids))[0].total;
+    const longGain = score(["aman", "mustard", "jute"], -8) - score(["aman", "mustard", "jute"], 4);
+    const shortGain = score(["aman", "mustard", "sesame"], -8) - score(["aman", "mustard", "sesame"], 4);
+    expect(longGain).toBeGreaterThan(0);
+    expect(longGain).toBeGreaterThan(shortGain);
+    expect(generateRotations(pack, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: -8 }, pool("aman", "mustard", "jute"))[0].why.join(" "))
+      .toContain("widens the growing window");
   });
 });
 
@@ -43,7 +148,10 @@ describe("rotation engine — determinism and scoring", () => {
       const sum = r.components.reduce((acc, c) => acc + c.weight, 0);
       expect(sum).toBeGreaterThan(0.97);
       expect(sum).toBeLessThan(1.03);
-      for (const c of r.components) expect(c.value).toBeGreaterThanOrEqual(0);
+      for (const c of r.components) {
+        expect(c.value).toBeGreaterThanOrEqual(0);
+        expect(c.value).toBeLessThanOrEqual(1);
+      }
     }
   });
 
