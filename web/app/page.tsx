@@ -4,6 +4,7 @@ import Link from "next/link";
 import { ArrowRight, Droplets, MapPin, Sprout, Thermometer, TrendingDown } from "lucide-react";
 import { FARMS, districtName, divisionName, farmContext, farmName } from "@/lib/data";
 import { withRealData } from "@/lib/packs";
+import { onsetShiftSignificant } from "@/lib/engine";
 import { useLang } from "@/lib/lang";
 import { fmtNum, t } from "@/lib/i18n";
 import { Panel, SourceChip } from "@/components/ui";
@@ -64,8 +65,9 @@ export default function Home() {
                 <span className="rounded-full border border-line px-2 py-0.5 text-[10px] text-ink-mid">{farmContext(f, lang)}</span>
               </div>
               <div className="mt-4 flex items-center gap-4 text-xs">
-                <span className={`tabular font-semibold ${f.onset.shiftDays > 0 ? "text-amber" : "text-lime"}`}>
+                <span className={`tabular font-semibold ${onsetShiftSignificant(f) ? (f.onset.shiftDays > 0 ? "text-amber" : "text-lime") : "text-ink-mid"}`}>
                   {t("card_onset", lang)} {f.onset.shiftDays > 0 ? "+" : ""}{fmtNum(f.onset.shiftDays, lang)} {t("unit_days_short", lang)}
+                  {!onsetShiftSignificant(f) && <span className="ml-1 font-normal">({t("ns_short", lang)})</span>}
                 </span>
                 <span className="flex items-center gap-1 text-ink-mid"><Droplets className="h-3.5 w-3.5 text-water" />{fmtNum(f.metrics.soilMoisturePct, lang)}%</span>
                 <span className="flex items-center gap-1 text-ink-mid"><Thermometer className="h-3.5 w-3.5 text-risk" />{fmtNum(f.metrics.heatDays, lang)} {t("unit_heat_days", lang)}</span>

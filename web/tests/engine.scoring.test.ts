@@ -451,9 +451,14 @@ describe("rotation engine — confidence, penalties, and advisory copy", () => {
 
   it("explains the calendar and the onset penalty in the Why list", () => {
     const rangpur = FARMS.find((f) => f.id === "rangpur-21")!;
+    // Rangpur's fixture shift is p=0.16, i.e. not significant, so the engine gates the measured
+    // part to 0: the whole +15-day effective shift here is the what-if the caller selected.
+    expect(rangpur.onset.pValue).toBeGreaterThanOrEqual(0.05);
     const plan = top(rangpur, DEFAULT_PRIORITIES, { ...DEFAULT_SCENARIO, onsetShiftDays: 15 }, sequence("aman", "wheat", "mungbean"))[0];
     expect(plan.why.map((w) => w.en).join(" ")).toContain("365-day calendar");
-    expect(plan.why.map((w) => w.en).join(" ")).toContain("Late onset (+11 days)");
+    expect(plan.why.map((w) => w.en).join(" ")).toContain("Late onset (+15 days)");
+    expect(plan.why.map((w) => w.en).join(" ")).toContain("is not significant, so it is treated as 0");
+    expect(plan.why.map((w) => w.bn).join(" ")).toContain("উল্লেখযোগ্য নয়");
     expect(plan.risks.some((r) => r.en.includes("Late onset"))).toBe(true);
   });
 });

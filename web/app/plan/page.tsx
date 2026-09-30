@@ -6,7 +6,7 @@ import { AlertTriangle, Check, Copy, Droplets, Leaf, Shield, Sprout } from "luci
 import { CROPS, cropName, districtName, farmContext, farmName, getFarm } from "@/lib/data";
 import { withRealData } from "@/lib/packs";
 import {
-  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
+  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, measuredOnsetShift, onsetShiftSignificant, smsText,
   type Priorities, type RotationResult, type Scenario,
 } from "@/lib/engine";
 import { useCopy } from "@/lib/clipboard";
@@ -114,6 +114,16 @@ function PlanView({ farmId }: { farmId: string }) {
                 </button>
               ))}
             </div>
+            <p className="mt-2.5 text-[11px] leading-relaxed text-ink-low">
+              {tf("plan_onset_baseline", lang, {
+                days: measuredOnsetShift(pack),
+                unit: t("unit_days_short", lang),
+                median: `${pack.onset.shiftDays > 0 ? "+" : ""}${pack.onset.shiftDays}`,
+                p: fmtNum(pack.onset.pValue.toFixed(3), lang),
+                verdict: onsetShiftSignificant(pack) ? t("significant", lang) : t("not_significant", lang),
+              })}
+              {pack.onset.source ? ` · ${pack.onset.source}` : ""}
+            </p>
             {!isBaseline && (
               <div className="mt-3 rounded-lg border border-amber/40 bg-amber/5 p-2.5 text-[11px] leading-relaxed text-amber">
                 ⚠ {t("stress_test", lang)}

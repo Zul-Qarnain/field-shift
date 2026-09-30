@@ -124,7 +124,42 @@ that is what the packs, the UI and the engine now carry (the era figure is taken
 POWER is flagged). Reporting POWER's −15 d/p = 0.016 as a climate finding would be reporting the
 product's own discontinuity as weather.
 
-## 5. Rainfall and temperature trends (2001–2025, never 1981–2025)
+## 5. What the product does with a non-significant shift
+
+Because the era test usually does *not* reject the null, the claim had to be gated. In
+`web/lib/engine.ts`:
+
+```
+onsetShiftSignificant(pack) = pack.onset.pValue < ONSET_ALPHA        // ONSET_ALPHA = 0.05, two-sided
+measuredOnsetShift(pack)    = significant ? median(B) − median(A) : 0
+effectiveOnsetShift(pack)   = measuredOnsetShift(pack) + scenario.onsetShiftDays
+```
+
+The gate is applied everywhere the shift appears, so the interface cannot say one thing and
+compute another:
+
+* Headline card: **"No significant onset shift"**, with the measured figures as secondary text
+  ("median −6 days, p = 0.76, not significant"). Only p < 0.05 renders "… days earlier/later".
+* "What this changes" copy switches to a statement that the two eras are not distinguishable,
+  instead of claiming the window opens earlier or later.
+* Advisory and SMS: `No significant onset shift on this farm (CHIRPS v2.0, p=0.764; median −6 days)
+  — the calendar treats it as 0`, and the SMS shortens to `onset n.s. (p=0.76)`. Bangla carries the
+  same wording with Bengali digits.
+* Home farm cards mark a gated value `n.s.` and stop colouring it as good/bad news.
+* Plan page states the baseline the engine is using: `Baseline onset shift used by the engine: 0 days
+  (measured −6 days, p = 0.764, not significant)`.
+* Why list carries "The measured onset shift (median −6 days, p = 0.764) is not significant, so it is
+  treated as 0 here", and the late-onset penalty's source line names the rule.
+* The calendar budget and the late-onset/early-onset terms all read `effectiveOnsetShift`, so a
+  non-significant shift can no longer buy or cost a farm growing days. The what-if buttons (+7/+15 d)
+  still apply — they are stated hypotheticals, not claims about the farm.
+
+Consequence for the demo rankings, measured: with the gate no farm gets extra calendar room from an
+unsupported earlier onset, so Aman→Boro stays #1 at Rangpur in all four Water 0–25 × Stable 75–100
+corners, while at Tangail it drops from 3rd to 4th (by 0.2 points) in the Water 25 + Stable 75 corner.
+`tests/packs.test.ts` pins both the gate and that reported outcome.
+
+## 6. Rainfall and temperature trends (2001–2025, never 1981–2025)
 
 | Farm | POWER %/decade | CHIRPS %/decade (τ, p) | CHIRPS Mann-Kendall | Heat days > 35 °C era Δ (p) | Mean T2M era Δ | T2M_MAX step in window |
 |---|---|---|---|---|---|---|
@@ -142,10 +177,12 @@ ERA5 spot check for 1985 gave 25.28 °C), so the *falling* count of > 35 °C day
 evidence that heat has eased — `quality.tempMaxHomogeneity` states the test result and
 `metrics.heatDaysCaution` fires where a step was found.
 
-## 6. What this pipeline does **not** claim
+## 7. What this pipeline does **not** claim
 
 * No onset shift is established; the app shows the era figure from whichever product survives its
-  own homogeneity test, names that product, and prints the other product's figure beside it.
+  own homogeneity test, names that product, and prints the other product's figure beside it — and
+  because that figure fails its era test at five of the six farms, the engine is handed **0** and the
+  headline, advisory, SMS, plan page and Why list all say so (§5).
 * No SMAP soil moisture: `metrics.rootZoneWetnessMonthly` is POWER **GWETROOT** (modelled root-zone
   wetness), labelled in the pack and the UI.
 * No NDVI, no SoilGrids, no crop-trait or irrigation citations: those remain demo fixtures.
@@ -155,13 +192,17 @@ evidence that heat has eased — `quality.tempMaxHomogeneity` states the test re
 * The original "+11 days later at Rajshahi" headline was demo fixture data; the real series does not
   support it under any rule tested here.
 
-## 7. Reproduce
+## 8. Reproduce
 
 ```bash
 /workspace/fs-venv/bin/python -m src.acquire.districts      # 64 ADM2 centroids -> bd_districts.csv
 /workspace/fs-venv/bin/python scripts/build_packs.py         # POWER + CHIRPS -> 70 packs (~70 s)
 /workspace/fs-venv/bin/python -m pytest -q                   # 108 tests; no network required
 ```
+
+The web layer is checked separately: `cd web && npx vitest run` (183 tests, including the onset
+significance rule and the A1 guarantees re-run against the real packs), `npx tsc --noEmit`,
+`npx eslint .`.
 
 CHIRPS files are read from `${CHIRPS_DIR:-/workspace/fs-cache/chirps}` and are never committed;
 each keeps the `source_url` and `retrieved_utc` attributes written by the download, which the packs

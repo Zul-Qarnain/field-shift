@@ -42,6 +42,8 @@ export interface FarmPack {
     eraB: number[];
     threshold: string;
     threshold_bn: string;
+    /** Which product the era figures above came from; set only when a real data pack backs the farm. */
+    source?: string;
   };
   metrics: {
     rainfallTrendPctPerDecade: number;

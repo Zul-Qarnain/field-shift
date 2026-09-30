@@ -13,7 +13,7 @@ import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/u
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
 import { HomogeneityNote, OnsetSensitivity, PackMethodNote } from "@/components/PackNotes";
-import { confidenceFromQuality } from "@/lib/engine";
+import { confidenceFromQuality, onsetShiftSignificant } from "@/lib/engine";
 
 const chartSkeleton = <div className="h-[170px] w-full animate-pulse rounded-lg bg-inset" />;
 const OnsetDistribution = dynamic(
@@ -80,6 +80,7 @@ function FieldView({ farmId }: { farmId: string }) {
   const f = withRealData(getFarm(farmId));
   const { lang } = useLang();
   const later = f.onset.shiftDays > 0;
+  const significantShift = onsetShiftSignificant(f);
   const m = f.metrics;
 
   useEffect(() => {
@@ -229,21 +230,33 @@ function FieldView({ farmId }: { farmId: string }) {
                 <Sprout className="h-5 w-5 text-lime" />
               </span>
               <div>
-                <h2 className="font-display text-base font-bold text-lime">{t("onset_detected", lang)}</h2>
+                <h2 className="font-display text-base font-bold text-lime">
+                  {significantShift ? t("onset_detected", lang) : t("onset_no_shift", lang)}
+                </h2>
                 <p className="text-sm text-ink-mid tabular">
-                  {view && view.shiftDays === 0 ? (
-                    <span className="font-bold text-ink-hi">{t("no_measurable_shift", lang)}</span>
+                  {significantShift ? (
+                    f.onset.shiftDays === 0 ? (
+                      <span className="font-bold text-ink-hi">{t("no_measurable_shift", lang)}</span>
+                    ) : (
+                      <>
+                        <span className="font-bold text-ink-hi">{fmtNum(Math.abs(f.onset.shiftDays), lang)}</span>{" "}
+                        {later ? t("days_later", lang) : t("days_earlier", lang)}
+                      </>
+                    )
                   ) : (
-                    <>
-                      <span className="font-bold text-ink-hi">{fmtNum(Math.abs(f.onset.shiftDays), lang)}</span>{" "}
-                      {later ? t("days_later", lang) : t("days_earlier", lang)}
-                    </>
+                    <span className="text-ink-mid">
+                      {tf("onset_median_secondary", lang, {
+                        days: `${f.onset.shiftDays > 0 ? "+" : ""}${f.onset.shiftDays}`,
+                        p: f.onset.pValue.toFixed(2),
+                        verdict: t("not_significant", lang),
+                      })}
+                    </span>
                   )}
                 </p>
                 {view && (
                   <p className="mt-1 font-mono text-[10px] text-ink-low">
-                    {t("onset_from_source", lang)}: {view.product} · p={view.pValue === null ? "n/a" : fmtNum(view.pValue.toFixed(3), lang)} ·{" "}
-                    {view.pValue !== null && view.pValue < 0.05 ? t("significant", lang) : t("not_significant", lang)}
+                    {t("onset_from_source", lang)}: {view.product} · p={fmtNum(view.pValue === null ? "n/a" : view.pValue.toFixed(3), lang)} ·{" "}
+                    {significantShift ? t("significant", lang) : t("not_significant", lang)}
                   </p>
                 )}
               </div>
@@ -253,7 +266,7 @@ function FieldView({ farmId }: { farmId: string }) {
                 <Wind className="h-3.5 w-3.5" /> {t("recommended_action", lang)}
               </p>
               <p className="mt-1.5 text-xs leading-relaxed text-ink-mid">
-                {later ? t("action_later", lang) : t("action_earlier", lang)}
+                {significantShift ? (later ? t("action_later", lang) : t("action_earlier", lang)) : t("action_no_shift", lang)}
               </p>
             </div>
             <Link

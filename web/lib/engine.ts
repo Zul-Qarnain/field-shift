@@ -160,9 +160,32 @@ const FAMILY_GROUP_BN: Record<string, string> = {
   nightshade: "আলু-বেগুন জাতীয়",
 };
 
-/** Farm-observed onset shift plus any what-if shift the user selected. Positive = later monsoon. */
+/** Era tests are two-sided Mann-Whitney U; below this p the shift is treated as detected. */
+export const ONSET_ALPHA = 0.05;
+
+/**
+ * Is this farm's measured era difference statistically distinguishable? A p ≥ 0.05 result is not
+ * a detected shift — the two eras could have come from the same distribution — so nothing here may
+ * claim the window opened earlier or later, and the engine must not act on the median difference.
+ */
+export function onsetShiftSignificant(pack: FarmPack): boolean {
+  return Number.isFinite(pack.onset.pValue) && pack.onset.pValue < ONSET_ALPHA;
+}
+
+/** The measured shift the engine is allowed to act on: the median difference only when significant. */
+export function measuredOnsetShift(pack: FarmPack): number {
+  return onsetShiftSignificant(pack) ? pack.onset.shiftDays : 0;
+}
+
+/** "median −6 days, p = 0.764" — the measured figures, quoted the same way everywhere they are downgraded to 0. */
+const shiftText = (pack: FarmPack) =>
+  `median ${pack.onset.shiftDays > 0 ? "+" : ""}${num(pack.onset.shiftDays)} days, p = ${fmtNum(pack.onset.pValue.toFixed(3), "en")}`;
+const shiftTextBn = (pack: FarmPack) =>
+  `মধ্যক ${pack.onset.shiftDays > 0 ? "+" : ""}${numBn(pack.onset.shiftDays)} দিন, p = ${fmtNum(pack.onset.pValue.toFixed(3), "bn")}`;
+
+/** Farm-observed onset shift (significant ones only) plus any what-if shift the user selected. Positive = later monsoon. */
 export function effectiveOnsetShift(pack: FarmPack, sc: Scenario) {
-  return pack.onset.shiftDays + sc.onsetShiftDays;
+  return measuredOnsetShift(pack) + sc.onsetShiftDays;
 }
 
 const rainSupply = (pack: FarmPack, season: SeasonKey, sc: Scenario) =>
@@ -390,8 +413,8 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
         ),
         amount: points(onsetPoints),
         source: bi(
-          "farm onset shift from the fixture + scenario shift you set; ESTIMATE scaling",
-          "ফিক্সচারের খামার-শুরুর পরিবর্তন + আপনার বেছে নেওয়া দৃশ্যপট; ESTIMATE স্কেলিং",
+          "measured onset shift used only when its era test is significant (p < 0.05), else 0, + scenario shift you set; ESTIMATE scaling",
+          "পরিমাপিত শুরুর পরিবর্তন কেবল উল্লেখযোগ্য হলে (p < ০.০৫) ব্যবহার হয়, না-হলে ০, + আপনার বেছে নেওয়া দৃশ্যপট; ESTIMATE স্কেলিং",
         ),
       });
     }
@@ -440,6 +463,12 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
         `৩৬৫ দিনের ক্যালেন্ডারে বসছে: ${numBn(used)} দিন লাগছে (${durationsBn} + ${numBn(TURNAROUND_DAYS)} দিনের টার্নঅ্যাউন্ড${shift >= 0 ? ` + ${numBn(shift)} দিনের দেরি-শুরু` : ` ${numBn(shift)} দিনের আগে-শুরু`}), ${numBn(spare)} দিন ফাঁকা থাকছে।`,
       ),
     ].concat(
+      pack.onset.shiftDays !== 0 && !onsetShiftSignificant(pack)
+        ? [bi(
+            `The measured onset shift (${shiftText(pack)}) is not significant, so it is treated as 0 here${sc.onsetShiftDays ? ` — only your ${sc.onsetShiftDays > 0 ? "+" : ""}${num(sc.onsetShiftDays)}-day what-if moves the calendar` : " and the calendar keeps the full year"}.`,
+            `পরিমাপিত শুরুর পরিবর্তন (${shiftTextBn(pack)}) উল্লেখযোগ্য নয়, তাই এখানে ০ ধরা হয়েছে${sc.onsetShiftDays ? ` — ক্যালেন্ডারে শুধু আপনার ${sc.onsetShiftDays > 0 ? "+" : ""}${numBn(sc.onsetShiftDays)} দিনের দৃশ্যপটই বসছে` : " — ক্যালেন্ডার পুরো বছরই রাখে"}।`,
+          )]
+        : [],
       sorted[0].key === "s6"
         ? [bi(
             `Resilience ${num(pct(s6))}/100: Aman flood exposure, dry-season heat and rain deficit.`,
@@ -499,25 +528,32 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
 
 export function advisoryText(pack: FarmPack, top: RotationResult, lang: "en" | "bn"): string {
   const seq = top.crops.map((c) => (lang === "en" ? c.name_en : c.name_bn)).join(" → ");
-  const shift = effectiveOnsetShift(pack, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null });
   const pump = Math.round(top.irrigationShare * 100);
   const onset = top.penalties.find((p) => p.rule.en.startsWith("Late monsoon onset"));
   const v = (x: number | string) => fmtNum(x, lang);
+  const p = pack.onset.pValue.toFixed(3);
+  const measured = Math.abs(pack.onset.shiftDays);
+  const later = pack.onset.shiftDays > 0;
+  const product = pack.onset.source ?? "demo fixture";
+  const significant = onsetShiftSignificant(pack);
+
   if (lang === "en") {
-    const onsetLine = shift >= 0 ? `Usable-rainfall onset is ${v(shift)} days later` : `Usable-rainfall onset is ${v(Math.abs(shift))} days earlier`;
+    const onsetLine = significant
+      ? `Usable-rainfall onset is ${v(measured)} days ${later ? "later" : "earlier"} than 2001–2012 on this farm (${product}, p=${v(p)}).`
+      : `No significant onset shift on this farm (${product}, p=${v(p)}; median ${v(later ? "+" : "")}${v(pack.onset.shiftDays)} days) — the calendar treats it as 0.`;
     const irrigated = pump > 0
       ? `Dry-season demand runs ${v(pump)}/100 above usable rainfall on the demo water scale, so this plan relies on pumping (farm irrigation access ${v(pack.irrigation)}, demo estimate).`
       : `This plan needs no dry-season pumping at this farm's rainfall.`;
-    return `${onsetLine} than 2001–2012 on this farm (POWER, p=${v(pack.onset.pValue.toFixed(3))}). Best-fit rotation: ${seq} — score ${v(top.total)}/100. ${irrigated}${onset ? ` ${onset.rule.en} costs ${v(onset.amount)} points.` : ""}`;
+    return `${onsetLine} Best-fit rotation: ${seq} — score ${v(top.total)}/100. ${irrigated}${onset ? ` ${onset.rule.en} costs ${v(onset.amount)} points.` : ""}`;
   }
-  const bnShift = shift >= 0
-    ? `ব্যবহারযোগ্য বর্ষার শুরু ২০০১–২০১২ এর তুলনায় ${v(Math.abs(shift))} দিন পরে`
-    : `ব্যবহারযোগ্য বর্ষার শুরু ২০০১–২০১২ এর তুলনায় ${v(Math.abs(shift))} দিন আগে`;
+  const bnOnset = significant
+    ? `ব্যবহারযোগ্য বর্ষার শুরু ২০০১–২০১২-এর তুলনায় ${v(measured)} দিন ${later ? "পরে" : "আগে"} হয়েছে (${product}, p=${v(p)})।`
+    : `এই খামারে বর্ষার শুরুর উল্লেখযোগ্য পরিবর্তন ধরা পড়েনি (${product}, p=${v(p)}; মধ্যক ${v(later ? "+" : "")}${v(pack.onset.shiftDays)} দিন) — ক্যালেন্ডারে ০ ধরা হয়েছে।`;
   const bnIrrig = pump > 0
     ? `শুষ্ক মৌসুমে ফসলের পানির চাহিদা ব্যবহারযোগ্য বৃষ্টি থেকে ${v(pump)}/১০০ বেশি (ডেমো স্কেল) — তাই সেচ লাগবে; খামারের সেচ-প্রবেশাধিকার ${v(pack.irrigation)} (ডেমো)।`
     : `এই পরিকল্পনায় শুষ্ক মৌসুমে সেচ লাগবে না।`;
-  const bnOnset = onset ? ` বর্ষার দেরিতে শুরু স্কোরে ${v(onset.amount)} পয়েন্ট কেটেছে।` : "";
-  return `${bnShift} হয়েছে (POWER, p=${v(pack.onset.pValue.toFixed(3))})। সেরা ফসল-পর্যায়: ${seq} — স্কোর ${v(top.total)}/১০০। ${bnIrrig}${bnOnset}`;
+  const bnPenalty = onset ? ` বর্ষার দেরিতে শুরু স্কোরে ${v(onset.amount)} পয়েন্ট কেটেছে।` : "";
+  return `${bnOnset} সেরা ফসল-পর্যায়: ${seq} — স্কোর ${v(top.total)}/১০০। ${bnIrrig}${bnPenalty}`;
 }
 
 export function smsText(pack: FarmPack, top: RotationResult, lang: "en" | "bn"): string {
@@ -525,6 +561,12 @@ export function smsText(pack: FarmPack, top: RotationResult, lang: "en" | "bn"):
   const shift = effectiveOnsetShift(pack, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null });
   const pump = Math.round(top.irrigationShare * 100);
   const v = (x: number | string) => fmtNum(x, lang);
-  if (lang === "en") return `FieldShift ${pack.name_en}: onset ${shift >= 0 ? "+" : ""}${v(shift)}d. Try: ${seq}. Pump +${v(pump)}/100. Score ${v(top.total)}/100.`;
-  return `ফিল্ডশিফট ${pack.name_bn}: শুরু ${shift >= 0 ? "+" : ""}${v(shift)} দিন। ফসল: ${top.crops.map((c) => c.name_bn).join(">")}। সেচ +${v(pump)}/১০০। স্কোর ${v(top.total)}/১০০।`;
+  const onsetPart = onsetShiftSignificant(pack)
+    ? `onset ${shift >= 0 ? "+" : ""}${v(shift)}d`
+    : `onset n.s. (p=${v(pack.onset.pValue.toFixed(2))})`;
+  const onsetBn = onsetShiftSignificant(pack)
+    ? `শুরু ${shift >= 0 ? "+" : ""}${v(shift)} দিন`
+    : `শুরু উল্লেখযোগ্য নয় (p=${v(pack.onset.pValue.toFixed(2))})`;
+  if (lang === "en") return `FieldShift ${pack.name_en}: ${onsetPart}. Try: ${seq}. Pump +${v(pump)}/100. Score ${v(top.total)}/100.`;
+  return `ফিল্ডশিফট ${pack.name_bn}: ${onsetBn}। ফসল: ${top.crops.map((c) => c.name_bn).join(">")}। সেচ +${v(pump)}/১০০। স্কোর ${v(top.total)}/১০০।`;
 }

@@ -289,8 +289,8 @@ const STRINGS = {
     bn: "৫ দিনের বৃষ্টি ≥ স্থানীয় জুন–সেপ্টেম্বর গড় (২০০১–২০২৫), পরে ১০ দিনের মধ্যে ৫ মিমির কম বৃষ্টির বিরতি নয়",
   },
   drawer_sources: {
-    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, not yet cited · onset shift: this farm's NASA POWER data pack, cross-checked with CHIRPS, plus the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
-    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, এখনও উদ্ধৃত নয় · শুরুর পরিবর্তন: এই খামারের NASA POWER ডেটা প্যাক (CHIRPS দিয়ে যাচাই) + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
+    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, not yet cited · onset shift: this farm's NASA POWER data pack, cross-checked with CHIRPS, used only when its era test is significant (else 0), plus the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
+    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, এখনও উদ্ধৃত নয় · শুরুর পরিবর্তন: এই খামারের NASA POWER ডেটা প্যাক (CHIRPS দিয়ে যাচাই), উল্লেখযোগ্য হলেই কেবল ব্যবহৃত (নয় হলে ০) + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
   },
 
   // Added with the NASA POWER data packs (ITEM 4). English + Bangla, numbers via tf/fmtNum.
@@ -308,6 +308,20 @@ const STRINGS = {
   },
   not_significant: { en: "not significant", bn: "উল্লেখযোগ্য নয়" },
   significant: { en: "significant", bn: "উল্লেখযোগ্য" },
+  ns_short: { en: "n.s.", bn: "ন.স." },
+  onset_no_shift: { en: "No significant onset shift", bn: "বর্ষার শুরুর উল্লেখযোগ্য পরিবর্তন নেই" },
+  onset_median_secondary: {
+    en: "median {days} days, p = {p} — {verdict}",
+    bn: "মধ্যক {days} দিন, p = {p} — {verdict}",
+  },
+  action_no_shift: {
+    en: "The two eras are not distinguishable at this point with the stated rule, so no earlier or later planting window is claimed here — the engine treats the shift as 0. Compare rotations before deciding.",
+    bn: "নির্দিষ্ট নিয়মে এই স্থানে দুই যুগের পার্থক্য ধরা যায়নি, তাই এখানে লাগানোর সময় আগে বা পরে হয়েছে দাবি করা হয় না — ইঞ্জিন পরিবর্তনটিকে ০ ধরে। সিদ্ধান্তের আগে ফসল-পর্যায় তুলনা করুন।",
+  },
+  plan_onset_baseline: {
+    en: "Baseline onset shift used by the engine: {days} {unit} (measured {median} {unit}, p = {p} — {verdict}).",
+    bn: "ইঞ্জিনের বেসলাইন শুরুর পরিবর্তন: {days} {unit} (পরিমাপিত {median} {unit}, p = {p} — {verdict})।",
+  },
   no_measurable_shift: { en: "no measurable shift", bn: "পরিমাপযোগ্য পরিবর্তন নেই" },
   onset_from_source: { en: "Onset from", bn: "শুরুর সময়ের উৎস" },
   pack_years_detected: { en: "{n} years with a detected onset", bn: "{n} বছরে প্রকৃত শুরু ধরা পড়েছে" },

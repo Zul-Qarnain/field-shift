@@ -433,6 +433,7 @@ export function withRealData(farm: FarmPack): FarmPack {
         eraA: view.eraA,
         eraB: view.eraB,
         threshold: pack.onset.thresholdText,
+        source: view.product,
       }
     : { ...farm.onset, threshold: pack.onset.thresholdText };
 
