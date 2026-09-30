@@ -8,5 +8,7 @@ shapely>=2.0
 # CHIRPS cross-check reader (reads the .nc files the reviewer downloaded into /workspace/fs-cache/chirps)
 xarray>=2024.1
 netCDF4>=1.6
+# Onset ML outlook (src/compute/ml, scripts/build_onset_ml.py)
+lightgbm>=4.7
 # Tests
 pytest>=8.0

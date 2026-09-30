@@ -1,4 +1,0 @@
-# Item 6 — onset ML outlook (src/compute/ml, scripts/build_onset_ml.py).
-# The data pipeline's own dependencies are in requirements.txt, which this file does not
-# duplicate or modify; this is only what the model adds on top of it.
-lightgbm>=4.7

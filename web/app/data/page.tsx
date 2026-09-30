@@ -2,11 +2,45 @@
 
 import { TierBadge } from "@/components/ui";
 import type { Tier } from "@/lib/data";
+import { PACK_INDEX } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
 
-const DATASETS: { name: string; tier: Tier; role: string; res: string; temporal: string; url: string; license: string }[] = [
-  { name: "NASA POWER", tier: "NASA", role: "Daily rainfall, temperature, solar — onset detection, GDD, heat days, trends", res: "point + 0.5° grid", temporal: "daily, 1981–present", url: "https://power.larc.nasa.gov", license: "NASA open data" },
+/**
+ * The POWER row is read from the built pack index, so its retrieval date, coverage and point
+ * count are the real ones from the requests scripts/build_packs.py made. Every other row below
+ * is still a design plan — the app renders those values from demo fixtures.
+ */
+const ENTRIES = [...PACK_INDEX.farms, ...PACK_INDEX.districts];
+const DAYS = ENTRIES.map((e) => e.covered.daysWithData).filter((n) => typeof n === "number");
+const POWER_STATUS = ENTRIES.length
+  ? {
+      retrieved: `${PACK_INDEX.retrievedRange!.earliest.slice(0, 10)} → ${PACK_INDEX.retrievedRange!.latest.slice(0, 10)} UTC`,
+      covered: `${ENTRIES.map((e) => e.covered.start).sort()[0]} → ${ENTRIES.map((e) => e.covered.end).sort().slice(-1)[0]}`,
+      points: `${ENTRIES.length} points · ${DAYS.reduce((a, b) => a + b, 0).toLocaleString("en")} daily values · ${PACK_INDEX.parameters.length} parameters`,
+    }
+  : null;
+
+const CHIRPS_STATUS = ENTRIES.length
+  ? {
+      points: `${ENTRIES.filter((e) => e.chirps?.available).length} points`,
+      years: `${PACK_INDEX.crossCheck.source} ${PACK_INDEX.crossCheck.grid}`,
+    }
+  : null;
+
+const DATASETS: { name: string; tier: Tier; role: string; res: string; temporal: string; url: string; license: string; status?: string }[] = [
+  {
+    name: "NASA POWER", tier: "NASA", role: "Daily rainfall, temperature, solar — onset detection, GDD, heat days, trends", res: "point + 0.5° grid",
+    temporal: POWER_STATUS ? `daily, ${POWER_STATUS.covered}` : "daily, 1981–present",
+    url: "https://power.larc.nasa.gov", license: "NASA open data",
+    status: POWER_STATUS ? `RETRIEVED ${POWER_STATUS.retrieved} · ${POWER_STATUS.points}` : "not yet (demo fixture)",
+  },
+  {
+    name: "CHIRPS v2.0", tier: "Open", role: "Independent rainfall cross-check — the trend/onset figure is taken from here when POWER’s series is inhomogeneous", res: "0.25° (~25 km)",
+    temporal: CHIRPS_STATUS ? `daily, 1981–2025 (${CHIRPS_STATUS.points})` : "daily, 1981–present",
+    url: "https://www.chc.ucsb.edu/data/chirps", license: "Open (UCSB CHC / USGS) · Funk et al. 2015",
+    status: CHIRPS_STATUS ? `RETRIEVED 2026-09-30 (UTC) · Bangladesh box, local netCDF` : "not retrieved",
+  },
   { name: "GPM IMERG v07", tier: "NASA", role: "Gridded precipitation — onset cross-check, spatial detail", res: "0.1° (~10 km)", temporal: "half-hourly, 2000–present", url: "https://gpm.nasa.gov/data/imerg", license: "NASA open data" },
   { name: "SMAP L4 (SPL4SMGP.008)", tier: "NASA", role: "Root-zone soil moisture — water-adequacy evidence", res: "9 km", temporal: "3-hourly, 2015–present", url: "https://smap.jpl.nasa.gov", license: "NASA open data" },
   { name: "MODIS NDVI (MOD13Q1) / VIIRS VNP13", tier: "NASA", role: "Vegetation greenness — advisory validation, degradation signal", res: "250 m / 463 m", temporal: "16-day, 2000–present", url: "https://lpdaac.usgs.gov", license: "NASA open data" },
@@ -44,6 +78,9 @@ export default function DataPage() {
                   <p className="flex items-center gap-2 font-medium text-ink-hi"><TierBadge tier={d.tier} />{d.name}</p>
                   <p className="mt-1 text-[11px] text-ink-low md:hidden">{d.role}</p>
                   <p className="mt-1 text-[10px] text-ink-low">{d.license}</p>
+                  {d.status && (
+                    <p className={`mt-1 font-mono text-[10px] ${d.status.startsWith("RETRIEVED") ? "text-link" : "text-amber"}`}>{d.status}</p>
+                  )}
                 </td>
                 <td className="hidden max-w-xs px-4 py-3 text-ink-mid md:table-cell">{d.role}</td>
                 <td className="hidden px-4 py-3 font-mono text-xs text-ink-mid lg:table-cell">{d.res}</td>

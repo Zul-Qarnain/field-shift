@@ -2,14 +2,16 @@
 
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
-import { Check, Copy, Droplets, Leaf, Shield, Sprout } from "lucide-react";
-import { CROPS, cropName, districtName, farmName, getFarm } from "@/lib/data";
+import { AlertTriangle, Check, Copy, Droplets, Leaf, Shield, Sprout } from "lucide-react";
+import { CROPS, cropName, districtName, farmContext, farmName, getFarm } from "@/lib/data";
+import { withRealData } from "@/lib/packs";
 import {
-  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
+  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, measuredOnsetShift, onsetShiftSignificant, smsText,
   type Priorities, type RotationResult, type Scenario,
 } from "@/lib/engine";
+import { useCopy } from "@/lib/clipboard";
 import { useLang } from "@/lib/lang";
-import { t, tf, type StringKey } from "@/lib/i18n";
+import { fmtNum, t, tf, type StringKey } from "@/lib/i18n";
 import { Panel, SourceChip, InfoDot } from "@/components/ui";
 import { RotationCard, WhyDrawer } from "@/components/RotationCard";
 
@@ -33,13 +35,14 @@ const SCENARIOS: { label: StringKey; apply: Scenario }[] = [
 ];
 
 function PlanView({ farmId }: { farmId: string }) {
-  const pack = getFarm(farmId);
+  const pack = withRealData(getFarm(farmId));
   const { lang } = useLang();
   const [priorities, setPriorities] = useState<Priorities>(DEFAULT_PRIORITIES);
   const [scenario, setScenario] = useState<Scenario>(DEFAULT_SCENARIO);
   const [pool, setPool] = useState<Set<string>>(new Set(ALL_CROPS));
   const [why, setWhy] = useState<RotationResult | null>(null);
-  const [copied, setCopied] = useState<"adv" | "sms" | null>(null);
+  const copyAdvisory = useCopy();
+  const copySms = useCopy();
 
   const results = useMemo(() => generateRotations(pack, priorities, scenario, pool), [pack, priorities, scenario, pool]);
   const top = results[0] as RotationResult | undefined;
@@ -47,17 +50,11 @@ function PlanView({ farmId }: { farmId: string }) {
   const sms = top ? smsText(pack, top, lang) : "";
   const isBaseline = scenario === DEFAULT_SCENARIO;
 
-  const copy = (text: string, kind: "adv" | "sms") => {
-    navigator.clipboard?.writeText(text);
-    setCopied(kind);
-    setTimeout(() => setCopied(null), 1600);
-  };
-
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
       <p className="text-xs text-ink-low">{t("nav_plan", lang)} <span className="mx-1">›</span> {farmName(pack, lang)} · {districtName(pack, lang)}</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
-        {t("plan_title", lang)} <span className="text-ink-low">— {pack.context}</span>
+        {t("plan_title", lang)} <span className="text-ink-low">— {farmContext(pack, lang)}</span>
       </h1>
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[340px_1fr]">
@@ -72,7 +69,7 @@ function PlanView({ farmId }: { farmId: string }) {
                       <s.icon className="h-3.5 w-3.5" style={{ color: s.color }} />
                       {lang === "bn" ? s.label_bn : s.label_en}
                     </span>
-                    <span className="font-mono tabular text-ink-low">{priorities[s.key]}</span>
+                    <span className="font-mono tabular text-ink-low">{fmtNum(priorities[s.key], lang)}</span>
                   </div>
                   <input
                     type="range" min={0} max={100} value={priorities[s.key]}
@@ -117,6 +114,16 @@ function PlanView({ farmId }: { farmId: string }) {
                 </button>
               ))}
             </div>
+            <p className="mt-2.5 text-[11px] leading-relaxed text-ink-low">
+              {tf("plan_onset_baseline", lang, {
+                days: measuredOnsetShift(pack),
+                unit: t("unit_days_short", lang),
+                median: `${pack.onset.shiftDays > 0 ? "+" : ""}${pack.onset.shiftDays}`,
+                p: fmtNum(pack.onset.pValue.toFixed(3), lang),
+                verdict: onsetShiftSignificant(pack) ? t("significant", lang) : t("not_significant", lang),
+              })}
+              {pack.onset.source ? ` · ${pack.onset.source}` : ""}
+            </p>
             {!isBaseline && (
               <div className="mt-3 rounded-lg border border-amber/40 bg-amber/5 p-2.5 text-[11px] leading-relaxed text-amber">
                 ⚠ {t("stress_test", lang)}
@@ -165,13 +172,30 @@ function PlanView({ farmId }: { farmId: string }) {
               <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi">{advisory}</p>
               <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">{t("advisory_note", lang)}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
-                <button onClick={() => copy(advisory, "adv")} className="flex items-center gap-1.5 rounded-lg bg-lime px-3.5 py-2 text-xs font-bold text-canvas hover:brightness-110">
-                  {copied === "adv" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied === "adv" ? t("copied", lang) : t("copy_advisory", lang)}
+                <button
+                  onClick={() => void copyAdvisory.copy(advisory)}
+                  className={`flex items-center gap-1.5 rounded-lg px-3.5 py-2 text-xs font-bold transition-colors ${
+                    copyAdvisory.state === "failed"
+                      ? "bg-risk text-white hover:brightness-110"
+                      : "bg-lime text-canvas hover:brightness-110"
+                  }`}
+                >
+                  {copyAdvisory.state === "copied" ? <Check className="h-3.5 w-3.5" /> : copyAdvisory.state === "failed" ? <AlertTriangle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copyAdvisory.state === "copied" ? t("copied", lang) : copyAdvisory.state === "failed" ? t("copy_failed", lang) : t("copy_advisory", lang)}
                 </button>
-                <button onClick={() => copy(sms, "sms")} className="flex items-center gap-1.5 rounded-lg border border-line bg-inset px-3.5 py-2 text-xs font-medium text-ink-mid hover:text-ink-hi">
-                  {copied === "sms" ? <Check className="h-3.5 w-3.5 text-earth" /> : <Copy className="h-3.5 w-3.5" />}
-                  {t("sms_version", lang)} · {sms.length}/160
+                <button
+                  onClick={() => void copySms.copy(sms)}
+                  className={`flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-xs font-medium ${
+                    copySms.state === "failed" ? "border-risk/50 bg-risk/10 text-risk" : "border-line bg-inset text-ink-mid hover:text-ink-hi"
+                  }`}
+                >
+                  {copySms.state === "copied" ? <Check className="h-3.5 w-3.5 text-earth" /> : copySms.state === "failed" ? <AlertTriangle className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
+                  {copySms.state === "copied"
+                    ? t("copied", lang)
+                    : copySms.state === "failed"
+                      ? t("copy_failed", lang)
+                      : t("sms_version", lang)}{" "}
+                  · {fmtNum(sms.length, lang)}/{fmtNum(160, lang)}
                 </button>
                 <span className="font-bengali text-xs text-ink-low">{lang === "en" ? advisoryText(pack, top, "bn") : advisoryText(pack, top, "en").slice(0, 80) + "…"}</span>
               </div>
