@@ -1,0 +1,212 @@
+{
+ "_note": "published totals as printed in the same appendix; used to cross-check the upazila rows",
+ "Khulna": {
+  "total_ha": 213820,
+  "uncultivated_ha": 48031,
+  "cultivated_ha": 165789,
+  "saline_ha": 147960,
+  "S1_ha": 24100,
+  "S2_ha": 27520,
+  "S3_ha": 31800,
+  "S4_ha": 33970,
+  "S5_ha": 30570
+ },
+ "Bagerhat": {
+  "total_ha": 201331,
+  "uncultivated_ha": 50587,
+  "cultivated_ha": 150744,
+  "saline_ha": 131120,
+  "S1_ha": 31330,
+  "S2_ha": 41390,
+  "S3_ha": 29890,
+  "S4_ha": 19270,
+  "S5_ha": 9240
+ },
+ "Satkhira": {
+  "total_ha": 229607,
+  "uncultivated_ha": 40981,
+  "cultivated_ha": 184316,
+  "saline_ha": 153110,
+  "S1_ha": 30000,
+  "S2_ha": 31960,
+  "S3_ha": 30650,
+  "S4_ha": 31920,
+  "S5_ha": 28580
+ },
+ "Jessore": {
+  "total_ha": 159465,
+  "uncultivated_ha": 35933,
+  "cultivated_ha": 53249,
+  "saline_ha": 14990,
+  "S1_ha": 10020,
+  "S2_ha": 3980,
+  "S3_ha": 940,
+  "S4_ha": 50,
+  "S5_ha": 0
+ },
+ "Narail": {
+  "total_ha": 97057,
+  "uncultivated_ha": 20026,
+  "cultivated_ha": 51769,
+  "saline_ha": 17710,
+  "S1_ha": 12390,
+  "S2_ha": 3950,
+  "S3_ha": 1370,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Barisal": {
+  "total_ha": 195708,
+  "uncultivated_ha": 124627,
+  "cultivated_ha": 71081,
+  "saline_ha": 12360,
+  "S1_ha": 9750,
+  "S2_ha": 2540,
+  "S3_ha": 70,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Jhalakathi": {
+  "total_ha": 74927,
+  "uncultivated_ha": 49981,
+  "cultivated_ha": 24946,
+  "saline_ha": 4620,
+  "S1_ha": 3700,
+  "S2_ha": 920,
+  "S3_ha": 0,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Pirojpur": {
+  "total_ha": 127808,
+  "uncultivated_ha": 42526,
+  "cultivated_ha": 85282,
+  "saline_ha": 35830,
+  "S1_ha": 23110,
+  "S2_ha": 9940,
+  "S3_ha": 2780,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Bhola": {
+  "total_ha": 308299,
+  "uncultivated_ha": 160190,
+  "cultivated_ha": 148109,
+  "saline_ha": 94570,
+  "S1_ha": 42110,
+  "S2_ha": 28840,
+  "S3_ha": 10850,
+  "S4_ha": 9770,
+  "S5_ha": 3000
+ },
+ "Patuakhali": {
+  "total_ha": 307875,
+  "uncultivated_ha": 113327,
+  "cultivated_ha": 215760,
+  "saline_ha": 155180,
+  "S1_ha": 56730,
+  "S2_ha": 39700,
+  "S3_ha": 22360,
+  "S4_ha": 20620,
+  "S5_ha": 15770
+ },
+ "Barguna": {
+  "total_ha": 167687,
+  "uncultivated_ha": 57550,
+  "cultivated_ha": 135334,
+  "saline_ha": 95620,
+  "S1_ha": 31110,
+  "S2_ha": 30600,
+  "S3_ha": 16470,
+  "S4_ha": 12130,
+  "S5_ha": 5310
+ },
+ "Gopalgonj": {
+  "total_ha": 87072,
+  "uncultivated_ha": 10558,
+  "cultivated_ha": 51554,
+  "saline_ha": 10460,
+  "S1_ha": 6270,
+  "S2_ha": 3660,
+  "S3_ha": 530,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Madaripur": {
+  "total_ha": 22928,
+  "uncultivated_ha": 2855,
+  "cultivated_ha": 12037,
+  "saline_ha": 1200,
+  "S1_ha": 720,
+  "S2_ha": 420,
+  "S3_ha": 60,
+  "S4_ha": 0,
+  "S5_ha": 0
+ },
+ "Laxmipur": {
+  "total_ha": 112672,
+  "uncultivated_ha": 34902,
+  "cultivated_ha": 60344,
+  "saline_ha": 17430,
+  "S1_ha": 8760,
+  "S2_ha": 4230,
+  "S3_ha": 3070,
+  "S4_ha": 1220,
+  "S5_ha": 150
+ },
+ "Noakhali": {
+  "total_ha": 222575,
+  "uncultivated_ha": 90083,
+  "cultivated_ha": 127140,
+  "saline_ha": 52520,
+  "S1_ha": 15360,
+  "S2_ha": 13330,
+  "S3_ha": 15280,
+  "S4_ha": 6930,
+  "S5_ha": 1620
+ },
+ "Feni": {
+  "total_ha": 40091,
+  "uncultivated_ha": 10163,
+  "cultivated_ha": 17401,
+  "saline_ha": 4750,
+  "S1_ha": 1780,
+  "S2_ha": 1880,
+  "S3_ha": 730,
+  "S4_ha": 360,
+  "S5_ha": 0
+ },
+ "Chittagong": {
+  "total_ha": 262317,
+  "uncultivated_ha": 8372,
+  "cultivated_ha": 75351,
+  "saline_ha": 51480,
+  "S1_ha": 18380,
+  "S2_ha": 15730,
+  "S3_ha": 8540,
+  "S4_ha": 7220,
+  "S5_ha": 1610
+ },
+ "Cox's": {
+  "total_ha": 240867,
+  "uncultivated_ha": 6625,
+  "cultivated_ha": 59625,
+  "saline_ha": 55350,
+  "S1_ha": 2810,
+  "S2_ha": 13630,
+  "S3_ha": 14320,
+  "S4_ha": 18520,
+  "S5_ha": 6070
+ },
+ "COASTAL_BELT": {
+  "total_ha": 3072106,
+  "uncultivated_ha": 907317,
+  "cultivated_ha": 1689831,
+  "saline_ha": 1056260,
+  "S1_ha": 328430,
+  "S2_ha": 274220,
+  "S3_ha": 189710,
+  "S4_ha": 161980,
+  "S5_ha": 101920
+ }
+}

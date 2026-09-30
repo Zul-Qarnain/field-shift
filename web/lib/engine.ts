@@ -1,4 +1,14 @@
-import { CROPS, type Crop, type FarmPack, type SeasonKey } from "./data";
+import {
+  CROPS,
+  SALINITY_CLASS_ECE,
+  SALINITY_CLASSES,
+  SALT_UNCITED,
+  type Crop,
+  type FarmPack,
+  type SalinityBlock,
+  type SeasonKey,
+  type SaltTolerance,
+} from "./data";
 
 export interface Priorities {
   water: number;
@@ -85,6 +95,54 @@ const EARLY_ONSET_CREDIT_RATE = 4;
 const EARLY_ONSET_MAX_POINTS = 3;
 /** A season fully watered and fully valued would score 1; this reference keeps the income bar in the same band as the other components. */
 const YIELD_REFERENCE = 0.8;
+
+// --------------------------------------------------------------- soil salinity (SRDI 2010)
+/**
+ * Expected yield loss from soil salinity, on the farm's upazila SRDI class distribution, using the
+ * paper's own straight line Y = 100 − b·(ECe − a) (FAO Irrigation & Drainage Paper 29 Rev.1, eq. 10).
+ * A random point of the upazila falls in class k with probability salineShare × classShares[k], so the
+ * loss is that weighted sum; the non-saline remainder scores no loss because SRDI's own Appendix-6 (p.55)
+ * calls 0–2 dS/m "salt free … salinity effects are mostly negligible". Each class is capped at 100% so a
+ * class beyond the crop's zero-yield ECe cannot add more than a total loss.
+ *
+ * Aman is scored on the same line as the dry seasons. SRDI's classes are a dry-season (May 2009) snapshot
+ * and monsoon flooding leaches salts, so for Aman this is an upper bound — no leaching factor is invented
+ * because no source cited here gives one.
+ *
+ * ESTIMATE — SALINITY_POINTS is the only hand-set coefficient in this block: it converts percent of
+ * expected yield lost into score points, on the scale of the other listed penalties.
+ */
+const SALINITY_POINTS = 16;
+
+/** Relative yield lost (percent, 0–100) at one ECe value: b·(ECe − a), floored at 0, capped at 100. */
+export function salinityYieldLossPct(ece: number, salt: SaltTolerance): number {
+  return Math.max(0, Math.min(100, salt.slopePctPerDs * (ece - salt.thresholdECe)));
+}
+
+/** Expected percent loss for one crop over the farm's SRDI class distribution. 0 when nothing is cited or mapped. */
+export function salinityLossForCrop(sal: SalinityBlock, salt: SaltTolerance): number {
+  if (!sal.classShares || sal.salineShare <= 0) return 0;
+  return SALINITY_CLASSES.reduce((a, c) => a + sal.salineShare * sal.classShares![c] * salinityYieldLossPct(SALINITY_CLASS_ECE[c], salt), 0);
+}
+
+/** The listed penalty for one crop-season, or null when there is nothing to charge. */
+export function salinityPenalty(pack: FarmPack, crop: Crop): Penalty | null {
+  if (!saltIsScored(crop)) return null;
+  const sal = pack.salinity;
+  const loss = salinityLossForCrop(sal, crop.salt!);
+  const amount = points((loss / 100) * SALINITY_POINTS);
+  if (amount <= 0.05) return null;
+  return {
+    rule: `Soil salinity (SRDI 2010, dry season) — ${crop.name_en} loses ~${Math.round(loss)}% yield`,
+    amount,
+    source:
+      `${sal.source} — ${(sal.salineShare * 100).toFixed(1)}% of the upazila saline, ECe read as the area-weighted class midpoint ` +
+      `(derived from SRDI class areas). ${crop.salt!.source}. ESTIMATE — ${SALINITY_POINTS} points per 100% expected yield loss.`,
+  };
+}
+
+/** True when this crop has a cited FAO number to be scored against (fallow is not a crop). */
+const saltIsScored = (crop: Crop) => crop.family !== "none" && crop.salt !== null;
 
 /** Component weight shapes: each slider moves the components it speaks to, then the block is normalised to sum to 1. */
 const WATER_WEIGHT_BASE = 0.2;
@@ -305,6 +363,13 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
         source: "farm onset shift from the fixture + scenario shift you set; ESTIMATE scaling",
       });
     }
+    // Soil salinity, one listed penalty per crop-season the SRDI classes and a cited FAO number allow.
+    const saltPenalties = crops
+      .map((c) => salinityPenalty(pack, c))
+      .filter((p): p is Penalty => p !== null);
+    penalties.push(...saltPenalties);
+    const saltPoints = points(saltPenalties.reduce((a, p) => a + p.amount, 0));
+
     // An earlier onset widens the window, which is worth a small credit to long-duration crops.
     const longest = Math.max(...dry.map((p) => p.crop.durationDays));
     const earlyCredit = shift < 0 ? Math.min(EARLY_ONSET_MAX_POINTS, (-shift / ONSET_HEAT_DAYS) * (longest / 120) * EARLY_ONSET_CREDIT_RATE) : 0;
@@ -342,6 +407,9 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
       dry.some((p) => p.irrigating)
         ? [`At least one dry-season crop depends on pumping here — irrigation reliance ${(s7 * 100).toFixed(0)}/100 (demo access ${pack.irrigation}).`]
         : [],
+      saltPoints > 0.05
+        ? [`Soil salinity costs this sequence ${saltPoints} points on ${pack.salinity.district}/${pack.salinity.upazila} (${(pack.salinity.salineShare * 100).toFixed(0)}% of the upazila saline, representative ECe ${pack.salinity.repECe} dS/m derived from SRDI class areas): ${saltPenalties.map((p) => p.rule).join("; ")}.`]
+        : [],
       onsetPoints > 0.05
         ? [`Late onset (+${shift} days) costs this sequence ${points(onsetPoints)} points — short-duration, heat-tolerant dry-season crops lose less.`]
         : [],
@@ -357,6 +425,12 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
     if (sc.phOverride === null && (pack.soil.ph < 5.8 || pack.soil.ph > 7.6)) risks.push("Modeled soil pH is near tolerance edges — verify with a field test");
     if (dry.some((p) => p.irrigating)) risks.push("Winter crop likely needs irrigation on this farm");
     if (real.length < crops.length) risks.push("Idle season leaves the field bare — weeds and erosion take the foothold");
+    // A saline farm and a crop FAO-29 gives no number for: say so instead of scoring a guess.
+    if (pack.salinity.cited && pack.salinity.salineShare > 0) {
+      for (const c of real.filter((x) => !x.salt)) {
+        risks.push(`${c.name_en}: salt tolerance not cited — ${SALT_UNCITED[c.id]} Not scored against ${pack.salinity.upazila}'s salinity; shown as a risk instead.`);
+      }
+    }
 
     return {
       id: `${pack.id}-rot-${idx}`,

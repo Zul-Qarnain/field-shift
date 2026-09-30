@@ -1,0 +1,6 @@
+# Python dependencies for src/acquire/ and tests/ (venv: /workspace/fs-venv, Python 3.13).
+# src/acquire/salinity.py reads the committed SRDI CSV and the geoBoundaries geojson with the
+# standard library only (csv/json/urllib); shapely does the point-in-polygon.
+
+shapely==2.1.2   # geoBoundaries ADM3/ADM2 point-in-polygon in src/acquire/salinity.py
+pytest==9.1.1    # dev only — tests/test_salinity.py

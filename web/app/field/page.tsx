@@ -5,7 +5,7 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
-import { FARMS, districtName, divisionName, farmName, getFarm } from "@/lib/data";
+import { FARMS, SALINITY_CLASS_BOUNDS, SALINITY_CLASSES, districtName, divisionName, farmName, getFarm, type FarmPack, type SalinityClass } from "@/lib/data";
 import { useLang } from "@/lib/lang";
 import { CONF_KEYS, growthStageLabel, t, tf } from "@/lib/i18n";
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
@@ -57,6 +57,55 @@ function FieldHeader({ farmId }: { farmId: string }) {
         ))}
       </div>
     </div>
+  );
+}
+
+/** SRDI class shares for this farm's upazila — a cited, non-space dataset, so it carries its own badge. */
+const SALINITY_COLOR: Record<SalinityClass, string> = { S1: "#57c785", S2: "#9ac75f", S3: "#f2b84b", S4: "#ef8b4d", S5: "#ef6c4d" };
+
+function SalinityCard({ f }: { f: FarmPack }) {
+  const { lang } = useLang();
+  const s = f.salinity;
+  const shares = s.classShares;
+  const areas = s.classAreasHa;
+  return (
+    <Panel
+      title={<span className="flex items-center gap-2">{t("salinity_title", lang)} <InfoDot text={s.cited ? t("salinity_note", lang) : t("salinity_outside_note", lang)} /></span>}
+      right={
+        <span className="flex items-center gap-1.5">
+          <TierBadge tier="Open" />
+          <span className="rounded border border-line px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-ink-low">{t("salinity_badge", lang)}</span>
+        </span>
+      }
+    >
+      <div className="flex items-baseline gap-2">
+        <span className="font-display text-2xl font-bold tabular">{shares ? `${(s.salineShare * 100).toFixed(1)}%` : "—"}</span>
+        <span className="text-xs text-ink-mid">{t("salinity_share", lang)}</span>
+      </div>
+      <p className="mt-1 text-xs text-ink-mid">
+        {t("salinity_upazila", lang)}: <span className="font-medium text-ink-hi">{s.district} / {s.upazila}</span>
+        {shares && s.repECe !== null && <> · {t("salinity_repec", lang)} <span className="font-mono text-ink-hi">{s.repECe} dS/m</span></>}
+      </p>
+
+      {shares && areas ? (
+        <ul className="mt-3 flex flex-col gap-1.5">
+          <li className="text-[10px] uppercase tracking-wider text-ink-low">{t("salinity_class_heading", lang)}</li>
+          {SALINITY_CLASSES.map((c) => (
+            <li key={c} className="flex items-center gap-2 text-[11px]">
+              <span className="w-24 shrink-0 font-mono text-ink-low">{c} {SALINITY_CLASS_BOUNDS[c]}</span>
+              <span className="h-2 shrink-0 rounded-full" style={{ width: `${Math.max(1.5, shares[c] * 100)}%`, background: SALINITY_COLOR[c] }} />
+              <span className="ml-auto whitespace-nowrap tabular text-ink-mid">{areas[c].toLocaleString("en-US")} ha · {(shares[c] * 100).toFixed(0)}%</span>
+            </li>
+          ))}
+        </ul>
+      ) : (
+        <p className="mt-3 text-[11px] leading-relaxed text-amber">{t("salinity_outside_note", lang)}</p>
+      )}
+
+      <p className="mt-3 border-t border-line-soft pt-2 text-[10px] leading-relaxed text-ink-low">
+        {s.source} · {t("salinity_retrieved", lang)} {s.retrieved} · <Link href="/data" className="text-link hover:underline">{t("view", lang)}</Link>
+      </p>
+    </Panel>
   );
 }
 
@@ -181,6 +230,8 @@ function FieldView({ farmId }: { farmId: string }) {
               ))}
             </dl>
           </Panel>
+
+          <SalinityCard f={f} />
 
           <Panel title={<span className="flex items-center gap-2">{t("data_provenance", lang)} <InfoDot text={t("info_provenance", lang)} /></span>}>
             <ul className="flex flex-col">

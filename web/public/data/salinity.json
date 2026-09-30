@@ -1,0 +1,711 @@
+{
+ "citation": "SRDI (2010) Saline Soils of Bangladesh, Soil Resource Development Institute, SRMAF Project, Ministry of Agriculture, Government of the People's Republic of Bangladesh; Appendix-2 'Upazila wise Soil salinity class and area in coastal saline belt', pp. 31-36",
+ "url": "https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-srdi/2024/12/332b4451bed84807b5846a530c6cc28c.pdf",
+ "retrieved": "2026-09-30",
+ "measured": "dry season - SRDI field survey May 2009; EC on 1:5 soil-water extract",
+ "classBoundsDSm": {
+  "S1": [
+   2.0,
+   4.0
+  ],
+  "S2": [
+   4.1,
+   8.0
+  ],
+  "S3": [
+   8.1,
+   12.0
+  ],
+  "S4": [
+   12.1,
+   16.0
+  ],
+  "S5": [
+   16.0,
+   null
+  ]
+ },
+ "classRepECe": {
+  "S1": 3.0,
+  "S2": 6.05,
+  "S3": 10.05,
+  "S4": 14.05,
+  "S5": 16.0
+ },
+ "derivation": "salineShare = saline_ha / total_ha of the upazila; classShares = class area / saline area; repECe = area-weighted class midpoint over the saline area (S5 uses its 16.0 dS/m lower bound). District values are area-weighted over that district's SRDI upazilas. All derived from SRDI 2010 Appendix-2 class areas.",
+ "sourceNotes": [
+  "SRDI 2010 p.1: 'Most of the land remains fallow in the dry season (January-May) because of soil salinity, lack of good quality irrigation water and late draining condition.'",
+  "SRDI 2010 p.2: the field survey ran in May 2009, 2500 soil samples along 3-4 km traverses; EC was measured on a 1:5 soil-water extract.",
+  "SRDI 2010 p.8: 'most of the vegetable crops are said to be very sensitive to saline condition and their yield decreased from 6-19% with each unit increase in salinity' - the same order as the Maas-Hoffman slopes used here."
+ ],
+ "areaNote": "37 of the SRDI rows print a total area that is not cultivated+uncultivated (hill, forest reserve and char land sit inside the administrative total; five rows that Appendix-1 marks with an asterisk print the opposite way). salineShare divides by the printed total, so on those rows it is a lower bound; agricultural_ha is published with every value.",
+ "geometry": {
+  "source": "geoBoundaries gbOpen BGD (Bangladesh Bureau of Statistics / OCHA ROAP), CC BY 3.0 IGO",
+  "adm3Url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/BGD/ADM3/geoBoundaries-BGD-ADM3.geojson",
+  "adm2Url": "https://github.com/wmgeolab/geoBoundaries/raw/9469f09/releaseData/gbOpen/BGD/ADM2/geoBoundaries-BGD-ADM2.geojson",
+  "retrieved": "2026-09-30",
+  "method": "shapely point-in-polygon on geoBoundaries gbOpen BGD ADM3, district from ADM2"
+ },
+ "surveyedDistricts": [
+  "Bagerhat",
+  "Barguna",
+  "Barisal",
+  "Bhola",
+  "Chittagong",
+  "Cox's Bazar",
+  "Feni",
+  "Gopalganj",
+  "Jessore",
+  "Jhalokati",
+  "Khulna",
+  "Lakshmipur",
+  "Madaripur",
+  "Narail",
+  "Noakhali",
+  "Patuakhali",
+  "Pirojpur",
+  "Satkhira"
+ ],
+ "districtNote": "18 of the 64 districts in the geoBoundaries gbOpen ADM2 register appear in SRDI Appendix-2; the others were outside the coastal saline survey and carry a null value, not a zero.",
+ "districts": {
+  "Bagerhat": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 9,
+   "total_ha": 201331,
+   "saline_ha": 131120,
+   "salineShare": 0.6513,
+   "classShares": {
+    "S1": 0.2389,
+    "S2": 0.3157,
+    "S3": 0.228,
+    "S4": 0.147,
+    "S5": 0.0705
+   },
+   "repECe": 8.11
+  },
+  "Bandarban": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Barguna": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 5,
+   "total_ha": 167687,
+   "saline_ha": 95620,
+   "salineShare": 0.5702,
+   "classShares": {
+    "S1": 0.3254,
+    "S2": 0.32,
+    "S3": 0.1722,
+    "S4": 0.1269,
+    "S5": 0.0555
+   },
+   "repECe": 7.31
+  },
+  "Barisal": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 8,
+   "total_ha": 195708,
+   "saline_ha": 12360,
+   "salineShare": 0.0632,
+   "classShares": {
+    "S1": 0.7888,
+    "S2": 0.2055,
+    "S3": 0.0057,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 3.67
+  },
+  "Bhola": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 7,
+   "total_ha": 308299,
+   "saline_ha": 94570,
+   "salineShare": 0.3067,
+   "classShares": {
+    "S1": 0.4453,
+    "S2": 0.305,
+    "S3": 0.1147,
+    "S4": 0.1033,
+    "S5": 0.0317
+   },
+   "repECe": 6.29
+  },
+  "Bogra": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Brahamanbaria": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Chandpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Chittagong": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 7,
+   "total_ha": 262317,
+   "saline_ha": 51480,
+   "salineShare": 0.1963,
+   "classShares": {
+    "S1": 0.357,
+    "S2": 0.3056,
+    "S3": 0.1659,
+    "S4": 0.1402,
+    "S5": 0.0313
+   },
+   "repECe": 7.06
+  },
+  "Chuadanga": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Comilla": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Cox's Bazar": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 8,
+   "total_ha": 240867,
+   "saline_ha": 55350,
+   "salineShare": 0.2298,
+   "classShares": {
+    "S1": 0.0508,
+    "S2": 0.2463,
+    "S3": 0.2587,
+    "S4": 0.3346,
+    "S5": 0.1097
+   },
+   "repECe": 10.7
+  },
+  "Dhaka": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Dinajpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Faridpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Feni": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 2,
+   "total_ha": 40091,
+   "saline_ha": 4750,
+   "salineShare": 0.1185,
+   "classShares": {
+    "S1": 0.3747,
+    "S2": 0.3958,
+    "S3": 0.1537,
+    "S4": 0.0758,
+    "S5": 0.0
+   },
+   "repECe": 6.13
+  },
+  "Gaibandha": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Gazipur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Gopalganj": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 3,
+   "total_ha": 87072,
+   "saline_ha": 10460,
+   "salineShare": 0.1201,
+   "classShares": {
+    "S1": 0.5994,
+    "S2": 0.3499,
+    "S3": 0.0507,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 4.42
+  },
+  "Habiganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Jamalpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Jessore": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 5,
+   "total_ha": 159465,
+   "saline_ha": 14990,
+   "salineShare": 0.094,
+   "classShares": {
+    "S1": 0.6684,
+    "S2": 0.2655,
+    "S3": 0.0627,
+    "S4": 0.0033,
+    "S5": 0.0
+   },
+   "repECe": 4.29
+  },
+  "Jhalokati": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 4,
+   "total_ha": 74927,
+   "saline_ha": 4620,
+   "salineShare": 0.0617,
+   "classShares": {
+    "S1": 0.8009,
+    "S2": 0.1991,
+    "S3": 0.0,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 3.61
+  },
+  "Jhenaidah": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Joypurhat": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Khagrachhari": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Khulna": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 10,
+   "total_ha": 213820,
+   "saline_ha": 147960,
+   "salineShare": 0.692,
+   "classShares": {
+    "S1": 0.1629,
+    "S2": 0.186,
+    "S3": 0.2149,
+    "S4": 0.2296,
+    "S5": 0.2066
+   },
+   "repECe": 10.31
+  },
+  "Kishoreganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Kurigram": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Kushtia": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Lakshmipur": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 4,
+   "total_ha": 112672,
+   "saline_ha": 17430,
+   "salineShare": 0.1547,
+   "classShares": {
+    "S1": 0.5026,
+    "S2": 0.2427,
+    "S3": 0.1761,
+    "S4": 0.07,
+    "S5": 0.0086
+   },
+   "repECe": 5.87
+  },
+  "Lalmonirhat": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Madaripur": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 1,
+   "total_ha": 22928,
+   "saline_ha": 1200,
+   "salineShare": 0.0523,
+   "classShares": {
+    "S1": 0.6,
+    "S2": 0.35,
+    "S3": 0.05,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 4.42
+  },
+  "Magura": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Manikganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Maulvibazar": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Meherpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Munshiganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Mymensingh": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Naogaon": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Narail": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 3,
+   "total_ha": 97057,
+   "saline_ha": 17710,
+   "salineShare": 0.1825,
+   "classShares": {
+    "S1": 0.6996,
+    "S2": 0.223,
+    "S3": 0.0774,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 4.23
+  },
+  "Narayanganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Narsingdi": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Natore": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Nawabganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Netrakona": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Nilphamari": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Noakhali": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 5,
+   "total_ha": 222575,
+   "saline_ha": 52520,
+   "salineShare": 0.236,
+   "classShares": {
+    "S1": 0.2925,
+    "S2": 0.2538,
+    "S3": 0.2909,
+    "S4": 0.1319,
+    "S5": 0.0308
+   },
+   "repECe": 7.68
+  },
+  "Pabna": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Panchagarh": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Patuakhali": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 7,
+   "total_ha": 307875,
+   "saline_ha": 155180,
+   "salineShare": 0.504,
+   "classShares": {
+    "S1": 0.3656,
+    "S2": 0.2558,
+    "S3": 0.1441,
+    "S4": 0.1329,
+    "S5": 0.1016
+   },
+   "repECe": 7.59
+  },
+  "Pirojpur": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 7,
+   "total_ha": 127808,
+   "saline_ha": 35830,
+   "salineShare": 0.2803,
+   "classShares": {
+    "S1": 0.645,
+    "S2": 0.2774,
+    "S3": 0.0776,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 4.39
+  },
+  "Rajbari": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Rajshahi": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Rangamati": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Rangpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Satkhira": {
+   "status": "in SRDI coastal saline survey",
+   "upazilas": 7,
+   "total_ha": 229607,
+   "saline_ha": 153110,
+   "salineShare": 0.6668,
+   "classShares": {
+    "S1": 0.1959,
+    "S2": 0.2087,
+    "S3": 0.2002,
+    "S4": 0.2085,
+    "S5": 0.1867
+   },
+   "repECe": 9.78
+  },
+  "Shariatpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Sherpur": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Sirajganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Sunamganj": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Sylhet": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Tangail": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  },
+  "Thakurgaon": {
+   "status": "not in SRDI coastal saline survey",
+   "salineShare": null,
+   "repECe": null
+  }
+ },
+ "farms": {
+  "barishal-03": {
+   "lat": 22.8486,
+   "lon": 90.2512,
+   "gbAdm3": "Wazirpur",
+   "gbDistrict": "Barisal",
+   "status": "in SRDI coastal saline survey",
+   "upazila": "Wazirpur",
+   "district": "Barisal",
+   "srdiUpazila": "Wazirpur",
+   "total_ha": 24841,
+   "uncultivated_ha": 4900,
+   "cultivated_ha": 19941,
+   "agricultural_ha": 24841,
+   "saline_ha": 2000,
+   "classAreasHa": {
+    "S1": 1600,
+    "S2": 400,
+    "S3": 0,
+    "S4": 0,
+    "S5": 0
+   },
+   "salineShare": 0.0805,
+   "classShares": {
+    "S1": 0.8,
+    "S2": 0.2,
+    "S3": 0.0,
+    "S4": 0.0,
+    "S5": 0.0
+   },
+   "repECe": 3.61,
+   "page": 32
+  },
+  "farm-12": {
+   "lat": 24.2514,
+   "lon": 89.9152,
+   "gbAdm3": "Tangail Sadar",
+   "gbDistrict": "Tangail",
+   "status": "outside SRDI coastal saline survey area",
+   "upazila": "Tangail Sadar",
+   "district": "Tangail",
+   "total_ha": null,
+   "uncultivated_ha": null,
+   "cultivated_ha": null,
+   "agricultural_ha": null,
+   "saline_ha": null,
+   "classAreasHa": null,
+   "salineShare": null,
+   "classShares": null,
+   "repECe": null
+  },
+  "khulna-09": {
+   "lat": 22.8029,
+   "lon": 89.4018,
+   "gbAdm3": "Dumuria",
+   "gbDistrict": "Khulna",
+   "status": "in SRDI coastal saline survey",
+   "upazila": "Dumuria",
+   "district": "Khulna",
+   "srdiUpazila": "Dumuria",
+   "total_ha": 44797,
+   "uncultivated_ha": 9919,
+   "cultivated_ha": 34878,
+   "agricultural_ha": 44797,
+   "saline_ha": 30610,
+   "classAreasHa": {
+    "S1": 6530,
+    "S2": 7010,
+    "S3": 7110,
+    "S4": 5850,
+    "S5": 4110
+   },
+   "salineShare": 0.6833,
+   "classShares": {
+    "S1": 0.2133,
+    "S2": 0.229,
+    "S3": 0.2323,
+    "S4": 0.1911,
+    "S5": 0.1343
+   },
+   "repECe": 9.19,
+   "page": 31
+  },
+  "rajshahi-07": {
+   "lat": 24.3636,
+   "lon": 88.3277,
+   "gbAdm3": null,
+   "gbDistrict": null,
+   "nearbyDistrict": "Rajshahi (~2.1 km away; no geoBoundaries ADM2 polygon contains the point)",
+   "status": "outside SRDI coastal saline survey area",
+   "upazila": null,
+   "district": null,
+   "total_ha": null,
+   "uncultivated_ha": null,
+   "cultivated_ha": null,
+   "agricultural_ha": null,
+   "saline_ha": null,
+   "classAreasHa": null,
+   "salineShare": null,
+   "classShares": null,
+   "repECe": null
+  },
+  "rangpur-21": {
+   "lat": 25.6486,
+   "lon": 89.3517,
+   "gbAdm3": "Mitha Pukur",
+   "gbDistrict": "Rangpur",
+   "status": "outside SRDI coastal saline survey area",
+   "upazila": "Mitha Pukur",
+   "district": "Rangpur",
+   "total_ha": null,
+   "uncultivated_ha": null,
+   "cultivated_ha": null,
+   "agricultural_ha": null,
+   "saline_ha": null,
+   "classAreasHa": null,
+   "salineShare": null,
+   "classShares": null,
+   "repECe": null
+  },
+  "sylhet-15": {
+   "lat": 24.8026,
+   "lon": 92.0521,
+   "gbAdm3": "Golabganj",
+   "gbDistrict": "Sylhet",
+   "status": "outside SRDI coastal saline survey area",
+   "upazila": "Golabganj",
+   "district": "Sylhet",
+   "total_ha": null,
+   "uncultivated_ha": null,
+   "cultivated_ha": null,
+   "agricultural_ha": null,
+   "saline_ha": null,
+   "classAreasHa": null,
+   "salineShare": null,
+   "classShares": null,
+   "repECe": null
+  }
+ }
+}

@@ -104,6 +104,21 @@ const STRINGS = {
   panel_onset_title: { en: "Usable-rainfall onset — two eras compared", bn: "ব্যবহারযোগ্য বর্ষার শুরু — দুই যুগের তুলনা" },
   panel_ndvi_title: { en: "Season NDVI trend", bn: "মৌসুমের NDVI ধারা" },
   panel_rain_title: { en: "Annual rainfall trend", bn: "বার্ষিক বৃষ্টিপাতের ধারা" },
+  salinity_title: { en: "Soil salinity", bn: "মাটির লবণাক্ততা" },
+  salinity_badge: { en: "non-space · SRDI 2010", bn: "নন-স্পেস · SRDI ২০১০" },
+  salinity_upazila: { en: "Upazila (SRDI survey unit)", bn: "উপজেলা (SRDI জরিপ একক)" },
+  salinity_share: { en: "Saline share of the upazila", bn: "উপজেলার লবণাক্ত জমির ভাগ" },
+  salinity_repec: { en: "Representative ECe", bn: "প্রতিনিধি ECe" },
+  salinity_retrieved: { en: "retrieved", bn: "পড়া হয়েছে" },
+  salinity_class_heading: { en: "SRDI class (dry-season ECe, dS/m)", bn: "SRDI শ্রেণি (খরার মৌসুমের ECe, dS/m)" },
+  salinity_note: {
+    en: "Dry-season classes from SRDI's May 2009 field survey; EC measured on a 1:5 soil-water extract. Representative ECe is the area-weighted class midpoint — derived from SRDI class areas, not a measured value at this field.",
+    bn: "শুষ্ক মৌসুমের শ্রেণি, SRDI-র মে ২০০৯-এর মাঠ জরিপ থেকে; EC মাপা হয়েছিল ১:৫ মাটি-পানির নির্যাসে। প্রতিনিধি ECe = শ্রেণির মধ্যবিন্দুর ক্ষেত্রফল-ভিত্তিক গড় — SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত, এই মাঠে মাপা মান নয়।",
+  },
+  salinity_outside_note: {
+    en: "This upazila is outside SRDI's coastal saline survey, so there is no measured value here. Salinity is not scored — that is absence of data, not an assumption of zero salt.",
+    bn: "এই উপজেলাটি SRDI-র উপকূলীয় লবণাক্ত জরিপের বাইরে, তাই এখানে মাপা কোনো মান নেই। লবণাক্ততা স্কোরে ধরা হয়নি — এটি তথ্যের অভাব, শূন্য লবণের ধারণা নয়।",
+  },
   field_cards_note: {
     en: "Demo fixture values — these four cards are sample data until the pipeline caches the named feeds.",
     bn: "ডেমো ফিক্সচারের মান — নাম লেখা ফিডগুলো পাইপলাইন ক্যাশ করা পর্যন্ত এই চারটি কার্ড নমুনা ডেটা।",

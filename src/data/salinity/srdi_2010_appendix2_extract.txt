@@ -1,0 +1,86 @@
+SRDI (2010) "Saline Soils of Bangladesh" — trimmed extract of Appendix-2
+"Upazila wise Soil salinity class and area in coastal saline belt", printed pp. 31-36.
+Retrieved 2026-09-30 from https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-srdi/2024/12/332b4451bed84807b5846a530c6cc28c.pdf
+Extracted with: pdftotext -layout <pdf> - (this block is the western-district pages, kept for audit of srdi_2010_upazila.csv)
+------------------------------------------------------------------------------------------------------------------------
+                   Appendix -2: Upazila wise Soil salinity class and area in coastal saline belt
+                                                                        Total              Salinity Class and area (ha)
+                                Total     Uncultivated   Cultivated                S1        S2         S3        S4       S5
+District       Upazila                                                 saline
+                              area (ha)    area(ha)      area(ha)                2.0-4.0   4.1-8.0 8.1-12.0 12.1-16.0     >16.0
+                                                                      area(ha)
+                                                                                  dS/m      dS/m       dS/m      dS/m     dS/m
+           Fultala              7438         2291          5147        3230       1700     1130       320        80         0
+           Dighalia             6872         2365          4507        2720       1460      950       250        60         0
+           Metro                7013         4679          2334        1980       890       690       300        100        0
+           Terokhada           18769         2625         16144        12180      5810     4260       1610       500        0
+           Rupsha              12025         3199          8826        6770       2410     2540       1140       540       140
+Khulna     Dumuria             44797         9919         34878        30610      6530     7010       7110      5850      4110
+           Batiaghata          23622         6282         17340        16380      2830     5460       4340      2700      1050
+           Dacope              28557         5800         22757        22760       0       1140       4550      7970      9100
+           Paikgacha           38404         5961         32443        29920      2230     3030       6930      8920      8810
+           Koyra               26323         4910         21413        21410      240      1310       5250      7250      7360
+           Total              213820        48031         165789      147960     24100     27520     31800      33970     30570
+           Mollahat            17687         3666         14021        9460       4780     3310       1070       300        0
+           Fakirhat            15883         5145         10738        9530       3220     2840       2030      1080       360
+           Chitalmari          19039         4450         14589        10200      5060     3570       1220       350        0
+           B. Sadar            26950         8254         18696        16890      4780     6450       3440      1750       470
+           Kachua              12351         3650          8701        7520       3060     2720       1220       470       50
+Bagerhat
+           Rampal              32088         7087         25001        24210      2680     6040       7020      5370      3100
+           Mongla              18242         3659         14583        14330      1080     1660       4380      4130      3080
+           Morrellganj         43962         9916         34046        29630      5360     10670      7320      4530      1750
+           Sharankhola         15129         4760         10369        9350       1310     4130       2190      1290       430
+           Total              201331        50587         150744      131120     31330     41390     29890      19270     9240
+
+
+
+
+                                                              31
+                                                                      Total              Salinity Class and area (ha)
+                              Total     Uncultivated   Cultivated                S1        S2         S3                 S5
+District          Upazila                                            saline                                      S4
+                            area (ha)    area(ha)      area(ha)                2.0-4.0   4.1-8.0 8.1-12.0 12.1-16.0     >16.0
+                                                                    area(ha)
+                                                                                dS/m      dS/m       dS/m       dS/m    dS/m
+           Kalaroa           23153         5732         13111        6550       3930     2290       330         0         0
+           S. Sadar          36609         7290         29319        18530      8930     6340       2210       830       220
+           Tala              33713         4943         28770        18450      9440     6360       2000       590       60
+           Debhata           17107         2346         14761        13450      2420     2950       3200      2800      2080
+Satkhira
+           Ashashuni         40982         6526         34456        33390      1980     3430       9770      10040     8170
+           Kaliganj          32434         5681         26753        25830      2680     7960       5760      5300      4130
+           Shyamnagar        45609         8463         37146        36910      620      2630       7380      12360     13920
+           Total            229607        40981         184316      153110     30000     31960     30650      31920     28580
+           Abhoynagar        24719         6958         17136        4930       3450     1170       310         0         0
+           Monirampur        44499        11473         15025        4160       2700     1180       260        20         0
+           Keshabpur         25853         6445         19408        5480       3580     1520       350        30         0
+Jessore
+           Sharsha           33634         5328           630         160       110        40        10         0         0
+           Jhikargacha       30760         5729          1050         260       180        70        10         0         0
+           Total            159465        35933         53249        14990     10020     3980       940        50         0
+           Narail Sadar      37226         9121         24197        6220       4350     1540       330         0         0
+           Lohagara          28789         5335          2100         660       460       150        50         0         0
+ Narail
+           Kalia             31042         5570         25472        10830      7580     2260       990         0         0
+           Total             97057        20026         51769        17710     12390     3950       1370        0         0
+
+
+
+
+                                                            32
+                                                                     Total              Salinity Class and area (ha)
+                             Total     Uncultivated   Cultivated                S1        S2         S3                 S5
+ District        Upazila                                            saline                                      S4
+                           area (ha)    area(ha)      area(ha)                2.0-4.0   4.1-8.0 8.1-12.0 12.1-16.0     >16.0
+                                                                   area(ha)
+                                                                               dS/m      dS/m       dS/m       dS/m    dS/m
+             Agailjhara     15,780        7,093         8,687       1050       840       210         0         0        0
+             Babuganj       15,247       11,047         4200        1470       1030      370        70         0        0
+             Banaripara     12,977        2,719        10,258        820       660       160         0         0        0
+             Bakerganj      40496        21,526        18970        3850       3080      770         0         0        0
+ Barisal     Gournadi       14,417        7,542         6875        2410       1930      480         0         0        0
+             Wazirpur       24,841        4,900        19,941       2000       1600      400         0         0        0
+             Mehindigang    41,615       40,340         1,275        450       360        90         0         0        0
+             Sadar          30,335       29,460         875          310       250        60         0         0        0
+             Total         195,708       124,627       71,081       12360     9,750     2,540       70         0        0
