@@ -73,21 +73,6 @@ export function Panel({ title, right, children, className = "" }: { title?: Reac
   );
 }
 
-export function MiniSpark({ points, color, width = 120, height = 26 }: { points: number[]; color: string; width?: number; height?: number }) {
-  const min = Math.min(...points);
-  const max = Math.max(...points);
-  const range = max - min || 1;
-  const step = width / (points.length - 1);
-  const d = points
-    .map((v, i) => `${i === 0 ? "M" : "L"}${(i * step).toFixed(1)},${(height - 3 - ((v - min) / range) * (height - 6)).toFixed(1)}`)
-    .join(" ");
-  return (
-    <svg width="100%" height={height} viewBox={`0 0 ${width} ${height}`} preserveAspectRatio="none" aria-hidden>
-      <path d={d} fill="none" stroke={color} strokeWidth="1.5" strokeLinecap="round" />
-    </svg>
-  );
-}
-
 export function InfoDot({ text }: { text: string }) {
   return (
     <span className="group relative inline-flex cursor-help">

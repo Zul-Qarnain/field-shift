@@ -11,7 +11,7 @@ const mono = IBM_Plex_Mono({ subsets: ["latin"], weight: ["400", "500"], variabl
 export const metadata: Metadata = {
   title: "Field Shift — Crop Rotation Decisions from NASA Earth Data",
   description:
-    "Field Shift turns NASA Earth observations into explainable crop-rotation strategies for farms. Built for the NASA Space Apps Challenge.",
+    "Field Shift is designed to turn NASA Earth observations into explainable crop-rotation strategies for farms. This demo build runs on sample data. Built for the NASA Space Apps Challenge.",
 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {

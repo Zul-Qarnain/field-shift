@@ -153,11 +153,11 @@ export function WhyDrawer({ result, onClose }: { result: RotationResult | null; 
 
         <h3 className="mt-5 text-xs font-semibold uppercase tracking-wider text-ink-low">Provenance</h3>
         <p className="mt-2 rounded-lg border border-line bg-surface p-3 font-mono text-[11px] leading-relaxed text-ink-mid">
-          water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) ·
+          Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) ·
           demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · engine: field-shift rotation v1.0 (deterministic, tested)
         </p>
         <p className="mt-4 text-[11px] leading-relaxed text-ink-low">
-          This ranking is stable to the stated thresholds; shift the onset threshold ±5 mm or any priority ±10 and the top set barely moves — the sensitivity report ships in Method.
+          Sensitivity testing is planned and not yet run; move the priority sliders and the what-if scenarios to see how the ranking changes.
         </p>
       </aside>
     </div>

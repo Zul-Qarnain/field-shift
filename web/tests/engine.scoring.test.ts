@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { CROPS, FARMS, type FarmPack } from "@/lib/data";
 import {
-  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
+  DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, confidenceFromQuality, generateRotations, smsText,
   type Priorities,
 } from "@/lib/engine";
 
@@ -30,7 +30,7 @@ describe("rotation engine — sequence constraints", () => {
     expect(new Set(ok[0].crops.map((c) => c.family)).size).toBe(3);
   });
 
-  it("ignores pool ids that are not in the crop register", () => {
+  it("ignores pool ids that are not in the demo crop list", () => {
     const pack = FARMS[0];
     const exact = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence(["aman", "lentil", "sesame"]));
     const extra = generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, sequence(["aman", "lentil", "sesame", "not-a-crop"]));
@@ -182,6 +182,18 @@ describe("rotation engine — confidence, penalties, and advisory copy", () => {
     expect(generateRotations(withQuality(pack, true, true), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool)[0].confidence).toBe("medium");
     expect(generateRotations(withQuality(pack, false, true), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool)[0].confidence).toBe("low");
     expect(generateRotations(withQuality(pack, false, false), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool)[0].confidence).toBe("low");
+  });
+
+  it("confidenceFromQuality applies the same rule the engine uses", () => {
+    expect(confidenceFromQuality({ smapEra: true, soilModeled: false, ndviRecordYears: 24 })).toBe("high");
+    expect(confidenceFromQuality({ smapEra: true, soilModeled: true, ndviRecordYears: 24 })).toBe("medium");
+    expect(confidenceFromQuality({ smapEra: false, soilModeled: true, ndviRecordYears: 4 })).toBe("low");
+    expect(confidenceFromQuality({ smapEra: false, soilModeled: false, ndviRecordYears: 4 })).toBe("low");
+    for (const pack of FARMS) {
+      for (const rotation of generateRotations(pack, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, pool)) {
+        expect(rotation.confidence).toBe(confidenceFromQuality(pack.dataQuality));
+      }
+    }
   });
 
   it("records a flood penalty on the flood-prone farm and skips it on the dry tract", () => {

@@ -5,6 +5,7 @@ import { Copy, Check } from "lucide-react";
 import { useState } from "react";
 import { getFarm } from "@/lib/data";
 import { generateRotations, DEFAULT_PRIORITIES, advisoryText } from "@/lib/engine";
+import { SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
 
 export function AdvisoryPeek({ farmId }: { farmId: string }) {
@@ -15,7 +16,10 @@ export function AdvisoryPeek({ farmId }: { farmId: string }) {
   const text = advisoryText(pack, results[0], lang);
   return (
     <section className="rounded-xl border border-lime/40 bg-surface p-5 fade-up">
-      <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory</p>
+      <div className="flex flex-wrap items-center gap-2">
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory</p>
+        <SourceChip source="fixture" />
+      </div>
       <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi lg:text-xl">{text}</p>
       <div className="mt-3 flex items-center gap-3">
         <button

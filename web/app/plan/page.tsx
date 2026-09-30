@@ -128,7 +128,7 @@ function PlanView({ farmId }: { farmId: string }) {
               {results.length} valid rotations <span className="text-sm font-medium text-ink-low">from {pool.size} crops · top {Math.min(3, results.length)} shown</span>
             </h2>
             {results.length > 1 && Math.abs(results[0].total - results[1].total) < 0.5 && (
-              <span className="text-xs text-amber">Top two are statistically tied — your priorities break the tie.</span>
+              <span className="text-xs text-amber">Top two are less than a point apart — your priorities break the tie.</span>
             )}
           </div>
 
@@ -152,8 +152,14 @@ function PlanView({ farmId }: { farmId: string }) {
           )}
 
           <section className="rounded-xl border border-lime/40 bg-lime/5 p-5">
-            <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory — the takeaway</p>
+            <div className="flex flex-wrap items-center gap-2">
+              <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory — the takeaway</p>
+              <SourceChip source="fixture" />
+            </div>
             <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi">{advisory}</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
+              Ranking math runs for real on this device; the farm values it reads are demo fixtures.
+            </p>
             <div className="mt-3 flex flex-wrap items-center gap-3">
               <button onClick={() => copy(advisory, "adv")} className="flex items-center gap-1.5 rounded-lg bg-lime px-3.5 py-2 text-xs font-bold text-canvas hover:brightness-110">
                 {copied === "adv" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}

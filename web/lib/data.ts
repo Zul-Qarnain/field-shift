@@ -62,12 +62,14 @@ const DAYS = (base: number, spread: number, n: number, seed: number) =>
     return Math.round(base + (((x - Math.floor(x)) * 2 - 1) + Math.sin(i + seed) * 0.5) * spread);
   });
 
+const NOT_RETRIEVED = "not yet (demo fixture)";
+
 const PROV = (place: string): ProvEntry[] => [
-  { id: "power", name: "NASA POWER", detail: "Daily rainfall, T2M, solar — this farm", version: "API 2.0", retrieved: "2026-09-20", tier: "NASA", url: "https://power.larc.nasa.gov" },
-  { id: "imerg", name: "GPM IMERG", detail: "Gridded precipitation cross-check", version: "v07 Final", retrieved: "2026-09-20", tier: "NASA", url: "https://gpm.nasa.gov/data/imerg" },
-  { id: "smap", name: "SMAP L4", detail: "Root-zone soil moisture", version: "SPL4SMGP.008", retrieved: "2026-09-20", tier: "NASA", url: "https://smap.jpl.nasa.gov" },
-  { id: "modis", name: "MODIS + VIIRS NDVI", detail: "Greenness archive 2000–present", version: "MOD13Q1 061", retrieved: "2026-09-20", tier: "NASA", url: "https://lpdaac.usgs.gov" },
-  { id: "soilgrids", name: "SoilGrids 2.0", detail: `Modeled soil properties — ${place}`, version: "2020 release", retrieved: "2026-09-18", tier: "Open", url: "https://soilgrids.org" },
+  { id: "power", name: "NASA POWER", detail: "Daily rainfall, T2M, solar — this farm", version: "API 2.0", retrieved: NOT_RETRIEVED, tier: "NASA", url: "https://power.larc.nasa.gov" },
+  { id: "imerg", name: "GPM IMERG", detail: "Gridded precipitation cross-check", version: "v07 Final", retrieved: NOT_RETRIEVED, tier: "NASA", url: "https://gpm.nasa.gov/data/imerg" },
+  { id: "smap", name: "SMAP L4", detail: "Root-zone soil moisture", version: "SPL4SMGP.008", retrieved: NOT_RETRIEVED, tier: "NASA", url: "https://smap.jpl.nasa.gov" },
+  { id: "modis", name: "MODIS + VIIRS NDVI", detail: "Greenness archive 2000–present", version: "MOD13Q1 061", retrieved: NOT_RETRIEVED, tier: "NASA", url: "https://lpdaac.usgs.gov" },
+  { id: "soilgrids", name: "SoilGrids 2.0", detail: `Modeled soil properties — ${place}`, version: "2020 release", retrieved: NOT_RETRIEVED, tier: "Open", url: "https://soilgrids.org" },
   { id: "method", name: "Onset detection", detail: "Deterministic rule, stated in Method", version: "v1.0", retrieved: "—", tier: "Open", url: "/method" },
 ];
 

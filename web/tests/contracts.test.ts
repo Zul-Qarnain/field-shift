@@ -8,12 +8,13 @@ describe("data pack contracts", () => {
       expect(nasa.length).toBeGreaterThanOrEqual(3);
     });
 
-    it(`${pack.id}: every provenance entry has id, url, version and retrieval date`, () => {
+    it(`${pack.id}: every provenance entry has id, url, version and an honest retrieval status`, () => {
       for (const p of pack.provenance) {
         expect(p.id).toMatch(/^[a-z0-9-]+$/);
         expect(p.url).toMatch(/^(https?:\/\/|\/)/);
         expect(p.version.length).toBeGreaterThan(0);
-        expect(p.retrieved).toMatch(/^(\d{4}-\d{2}-\d{2}|—)$/);
+        expect(p.retrieved.length).toBeGreaterThan(0);
+        expect(p.retrieved).toMatch(/^(—|not yet)/);
       }
     });
 
@@ -33,7 +34,7 @@ describe("data pack contracts", () => {
   }
 });
 
-describe("crop register contracts", () => {
+describe("demo crop trait contracts", () => {
   it("every crop trait value is bounded and has a season", () => {
     for (const c of CROPS) {
       expect(["aman", "rabi", "pre"]).toContain(c.season);

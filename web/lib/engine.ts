@@ -24,15 +24,22 @@ export interface ComponentScore {
   weight: number;
 }
 
+export type Confidence = "high" | "medium" | "low";
+
 export interface RotationResult {
   id: string;
   crops: Crop[];
   total: number;
   components: ComponentScore[];
   penalties: { rule: string; amount: number; source: string }[];
-  confidence: "high" | "medium" | "low";
+  confidence: Confidence;
   why: string[];
   risks: string[];
+}
+
+export function confidenceFromQuality(dq: FarmPack["dataQuality"]): Confidence {
+  if (!dq.smapEra) return "low";
+  return dq.soilModeled ? "medium" : "high";
 }
 
 const clamp01 = (x: number) => Math.min(1, Math.max(0, x));
@@ -122,8 +129,7 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
       { key: "s6", label: "Resilience", value: s6, weight: weights.s6 },
     ];
 
-    const dq = pack.dataQuality;
-    const confidence = dq.smapEra && !dq.soilModeled ? "high" : dq.smapEra ? "medium" : "low";
+    const confidence = confidenceFromQuality(pack.dataQuality);
 
     const sorted = [...components].sort((a, b) => b.value * b.weight - a.value * a.weight);
     const why = [

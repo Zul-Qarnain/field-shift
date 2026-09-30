@@ -9,18 +9,18 @@ import type { FarmPack } from "@/lib/data";
 setWorkerUrl("/maplibre-gl-worker.mjs");
 
 const LAYERS = [
-  { id: "truecolor", label: "True Color (satellite)" },
-  { id: "ndvi", label: "NDVI (vegetation)" },
-  { id: "moisture", label: "Soil moisture" },
-  { id: "lst", label: "Land surface temp." },
-  { id: "precip", label: "Precipitation" },
+  { id: "truecolor", label: "True Color (satellite)", ready: true },
+  { id: "ndvi", label: "NDVI (vegetation)", ready: false },
+  { id: "moisture", label: "Soil moisture", ready: false },
+  { id: "lst", label: "Land surface temp.", ready: false },
+  { id: "precip", label: "Precipitation", ready: false },
 ];
 
 export function MapLive({ pack }: { pack: FarmPack }) {
   const container = useRef<HTMLDivElement>(null);
   const mapRef = useRef<MlMap | null>(null);
   const [open, setOpen] = useState(false);
-  const [active, setActive] = useState<Set<string>>(new Set(["truecolor"]));
+  const [trueColorOn, setTrueColorOn] = useState(true);
 
   const addTrueColor = (map: MlMap) => {
     if (map.getSource("gibs")) return;
@@ -50,27 +50,23 @@ export function MapLive({ pack }: { pack: FarmPack }) {
       map.addLayer({ id: "field-fill", type: "fill", source: "field", paint: { "fill-color": "#d4f94e", "fill-opacity": 0.18 } });
       map.addLayer({ id: "field-line", type: "line", source: "field", paint: { "line-color": "#d4f94e", "line-width": 2 } });
       new Marker({ color: "#d4f94e" }).setLngLat([pack.lon, pack.lat]).addTo(map);
-      if (active.has("truecolor")) addTrueColor(map);
+      if (trueColorOn) addTrueColor(map);
     });
     mapRef.current = map;
     return () => { map.remove(); mapRef.current = null; };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [pack.id]);
 
-  const toggle = (id: string) => {
-    setActive((prev) => {
-      const next = new Set(prev);
-      if (next.has(id)) next.delete(id);
-      else next.add(id);
-      const map = mapRef.current;
-      if (map && map.getSource("gibs")) {
-        if (next.has("truecolor")) { if (!map.getLayer("gibs-layer")) map.addLayer({ id: "gibs-layer", type: "raster", source: "gibs", paint: { "raster-opacity": 0.9 } }, "field-fill"); }
-        else if (map.getLayer("gibs-layer")) map.removeLayer("gibs-layer");
-      } else if (next.has("truecolor") && map && map.isStyleLoaded()) {
-        addTrueColor(map);
-      }
-      return next;
-    });
+  const toggleTrueColor = () => {
+    const next = !trueColorOn;
+    setTrueColorOn(next);
+    const map = mapRef.current;
+    if (map && map.getSource("gibs")) {
+      if (next) { if (!map.getLayer("gibs-layer")) map.addLayer({ id: "gibs-layer", type: "raster", source: "gibs", paint: { "raster-opacity": 0.9 } }, "field-fill"); }
+      else if (map.getLayer("gibs-layer")) map.removeLayer("gibs-layer");
+    } else if (next && map && map.isStyleLoaded()) {
+      addTrueColor(map);
+    }
   };
 
   return (
@@ -86,19 +82,32 @@ export function MapLive({ pack }: { pack: FarmPack }) {
       {open && (
         <div className="absolute bottom-14 left-3 z-20 w-60 rounded-xl border border-line bg-elevated/95 p-2 shadow-drawer backdrop-blur fade-up">
           {LAYERS.map((l) => (
-            <button
-              key={l.id}
-              onClick={() => toggle(l.id)}
-              className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs text-ink-mid hover:bg-surface"
-            >
-              {l.label}
-              <span className={`relative h-4 w-7 rounded-full transition-colors ${active.has(l.id) ? "bg-action" : "bg-line"}`}>
-                <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${active.has(l.id) ? "left-3.5" : "left-0.5"}`} />
-              </span>
-            </button>
+            l.ready ? (
+              <button
+                key={l.id}
+                onClick={toggleTrueColor}
+                className="flex w-full items-center justify-between rounded-lg px-2.5 py-2 text-xs text-ink-mid hover:bg-surface"
+              >
+                {l.label}
+                <span className={`relative h-4 w-7 rounded-full transition-colors ${trueColorOn ? "bg-action" : "bg-line"}`}>
+                  <span className={`absolute top-0.5 h-3 w-3 rounded-full bg-white transition-all ${trueColorOn ? "left-3.5" : "left-0.5"}`} />
+                </span>
+              </button>
+            ) : (
+              <button
+                key={l.id}
+                disabled
+                aria-disabled="true"
+                className="flex w-full cursor-not-allowed items-center justify-between rounded-lg px-2.5 py-2 text-xs text-ink-low opacity-50"
+              >
+                {l.label}
+                <span className="rounded border border-line px-1.5 py-0.5 font-mono text-[10px] uppercase tracking-wide">coming soon</span>
+              </button>
+            )
           ))}
           <p className="px-2.5 pb-1.5 pt-1 text-[10px] leading-snug text-ink-low">
-            True Color streams NASA GIBS when online. Other layers arrive with the data pipeline (pre-tiled PMTiles).
+            Only True Color works today, streamed from NASA GIBS when online. The other layers are placeholders — they
+            arrive with the data pipeline (pre-tiled PMTiles).
           </p>
         </div>
       )}

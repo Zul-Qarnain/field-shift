@@ -20,9 +20,9 @@ export default function Home() {
           <span className="text-lime">Your calendar should too.</span>
         </h1>
         <p className="mt-5 max-w-2xl text-base leading-relaxed text-ink-mid lg:text-lg">
-          Field Shift turns 25 years of NASA Earth observations — rainfall onset, soil moisture, heat days, greenness —
-          into ranked, explainable crop-rotation strategies for a specific farm. Every number traces to its dataset.
-          Works offline.
+          Field Shift is designed to turn NASA Earth observations (POWER, SMAP, MODIS …) — rainfall onset, soil
+          moisture, heat days, greenness — into ranked, explainable crop-rotation strategies for a specific farm.
+          Every number traces to its dataset. This demo runs on sample data; offline mode is planned.
         </p>
         <div className="mt-7 flex flex-wrap items-center gap-3">
           <Link
@@ -73,7 +73,7 @@ export default function Home() {
 
       <section className="mt-12 grid gap-4 md:grid-cols-3">
         {[
-          { icon: TrendingDown, title: "What shifted", body: "Two-era statistical tests on 25 years of daily climate — with the evidence, not just a number." },
+          { icon: TrendingDown, title: "What shifted", body: "Two-era comparisons of onset, heat and greenness — evidence first, not just a number. This demo shows sample distributions." },
           { icon: Sprout, title: "What to plant next", body: "Rotations ranked by water, heat, soil-health and resilience — filtered by hard agronomic rules." },
           { icon: Droplets, title: "What if it changes", body: "Stress-test drier or hotter seasons and watch the ranking respond. Clearly labeled — not a forecast." },
         ].map((c) => (

@@ -8,9 +8,10 @@ import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } 
 import { FARMS, getFarm } from "@/lib/data";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
-import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot, MiniSpark } from "@/components/ui";
+import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
+import { confidenceFromQuality } from "@/lib/engine";
 
 const chartSkeleton = <div className="h-[170px] w-full animate-pulse rounded-lg bg-inset" />;
 const OnsetDistribution = dynamic(
@@ -21,11 +22,6 @@ const SeasonTrend = dynamic(
   () => import("@/components/charts").then((m) => m.SeasonTrend),
   { ssr: false, loading: () => chartSkeleton }
 );
-
-function Spark({ base, color }: { base: number; color: string }) {
-  const data = Array.from({ length: 9 }, (_, i) => base + Math.sin(i * 1.3 + base * 9) * base * 0.12);
-  return <MiniSpark points={data} color={color} />;
-}
 
 function FieldHeader({ farmId }: { farmId: string }) {
   const f = getFarm(farmId);
@@ -44,7 +40,7 @@ function FieldHeader({ farmId }: { farmId: string }) {
           <span className="flex items-center gap-1.5"><MapPin className="h-3.5 w-3.5 text-ink-low" />{f.district}, {f.division}, Bangladesh</span>
           <span className="font-mono text-xs text-ink-low">{f.lat.toFixed(4)}°N, {f.lon.toFixed(4)}°E</span>
           <span className="flex items-center gap-1.5"><Ruler className="h-3.5 w-3.5 text-ink-low" />{f.areaHa} ha</span>
-          <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-ink-low" />{t("last_updated", lang)}: 2001–2025 · POWER daily</span>
+          <span className="flex items-center gap-1.5"><CalendarDays className="h-3.5 w-3.5 text-ink-low" />{t("last_updated", lang)}: 2001–2025 · demo fixture</span>
         </p>
       </div>
       <div className="flex flex-wrap gap-2">
@@ -95,16 +91,21 @@ function FieldView({ farmId }: { farmId: string }) {
                   <DeltaChip value={c.delta} unit={c.unit} inverse={c.label.includes("Heat")} />
                 </div>
                 <div className="mt-1 text-[11px] text-ink-low">{c.sub}</div>
-                <div className="mt-1.5 text-0"><Spark base={Math.abs(c.delta) + 0.5} color={c.color} /></div>
               </Panel>
             ))}
           </div>
+          <p className="-mt-3 text-[11px] leading-relaxed text-ink-low">
+            Demo fixture values — these four cards are sample data until the pipeline caches the named feeds.
+          </p>
 
           <Panel
             title={lang === "bn" ? "বর্ষার শুরু — দুই যুগের তুলনা" : "Usable-rainfall onset — two eras compared"}
             right={<SourceChip source="fixture" />}
           >
             <OnsetDistribution pack={f} />
+            <p className="mt-1 text-[11px] leading-relaxed text-amber">
+              Sample distributions — real POWER onset years arrive with the pipeline.
+            </p>
           </Panel>
 
           <div className="grid gap-5 lg:grid-cols-2">
@@ -116,9 +117,9 @@ function FieldView({ farmId }: { farmId: string }) {
                 <span className="font-display text-2xl font-bold tabular text-water">{m.rainfallTrendPctPerDecade > 0 ? "+" : ""}{m.rainfallTrendPctPerDecade}%</span>
                 <span className="text-xs text-ink-mid">per decade · 1981–2025</span>
               </div>
-              <Spark base={4} color="#4ea8de" />
               <p className="mt-2 text-[11px] leading-relaxed text-ink-low">
-                Mann-Kendall trend over POWER daily rainfall. {m.rainfallTrendPctPerDecade < 0 ? "Declining — raises the water priority." : "Stable or rising on this farm."}
+                Sample value from the demo fixture. The Mann-Kendall trend over daily rainfall is computed by the pipeline.
+                {m.rainfallTrendPctPerDecade < 0 ? " Shown as declining — which raises the water priority." : " Shown as stable or rising on this farm."}
               </p>
             </Panel>
           </div>
@@ -176,7 +177,7 @@ function FieldView({ farmId }: { farmId: string }) {
             </dl>
           </Panel>
 
-          <Panel title={<span className="flex items-center gap-2">{t("data_provenance", lang)} <InfoDot text="Every dataset behind the numbers on this page, with version and retrieval date." /></span>}>
+          <Panel title={<span className="flex items-center gap-2">{t("data_provenance", lang)} <InfoDot text="Every dataset behind the numbers on this page, with its version and retrieval status." /></span>}>
             <ul className="flex flex-col">
               {f.provenance.map((p) => (
                 <li key={p.id} className="flex items-center gap-3 border-b border-line-soft py-2.5 last:border-0">
@@ -193,7 +194,7 @@ function FieldView({ farmId }: { farmId: string }) {
             </ul>
           </Panel>
 
-          <Panel title={<span className="flex items-center gap-2">{t("uncertainty", lang)} <InfoDot text="Data-quality flags lower confidence visibly instead of hiding it." /></span>} right={<span className="rounded border border-amber px-1.5 py-0.5 text-[10px] font-bold text-amber">MEDIUM</span>}>
+          <Panel title={<span className="flex items-center gap-2">{t("uncertainty", lang)} <InfoDot text="Data-quality flags lower confidence visibly instead of hiding it. The flags themselves are demo fixture values." /></span>} right={<span className="rounded border border-amber px-1.5 py-0.5 text-[10px] font-bold text-amber uppercase tracking-wide">{confidenceFromQuality(f.dataQuality)} · demo flags</span>}>
             <p className="text-xs leading-relaxed text-ink-mid">{t("uncertainty_note", lang)}</p>
             <ul className="mt-3 space-y-1.5 text-[11px] text-ink-low">
               <li>· Soil from SoilGrids 250 m model — field test recommended ({f.soil.ph}, {f.soil.texture})</li>

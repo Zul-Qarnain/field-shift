@@ -20,8 +20,9 @@ export default function DataPage() {
     <div className="mx-auto max-w-5xl px-4 py-10 lg:px-8">
       <h1 className="font-display text-3xl font-bold tracking-tight">Data sources</h1>
       <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-mid">
-        Every dataset behind Field Shift, its role, and how it is accessed. NASA data is the compulsory foundation;
-        Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled open non-space layer.
+        Every dataset Field Shift is designed to use, its role, and how it would be accessed. NASA data is the
+        compulsory foundation; Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled
+        open non-space layer. The current build runs on demo fixtures — no dataset below has been retrieved yet.
         OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.
       </p>
       <div className="mt-8 overflow-hidden rounded-xl border border-line">
@@ -53,8 +54,9 @@ export default function DataPage() {
         </table>
       </div>
       <p className="mt-6 text-xs leading-relaxed text-ink-low">
-        Retrieval dates, versions and cache provenance are embedded in every data pack and exposed in the Why drawer.
-        This page is generated from the same manifest that fills the NASA project page fields.
+        This list is a hand-maintained plan of the datasets the app is designed to use — it is not generated from a
+        manifest, and none of it has been retrieved yet. Retrieval dates, versions and cache provenance will be added
+        per farm once the pipeline has cached the data; the in-app provenance drawer says so today.
       </p>
     </div>
   );
