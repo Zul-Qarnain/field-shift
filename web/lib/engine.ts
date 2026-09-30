@@ -20,6 +20,7 @@ export const DEFAULT_SCENARIO: Scenario = { rainfallPct: 0, tempDeltaC: 0, onset
 export interface ComponentScore {
   key: string;
   label: string;
+  label_bn: string;
   value: number;
   weight: number;
 }
@@ -315,14 +316,14 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
       earlyCredit;
 
     const components: ComponentScore[] = [
-      { key: "s1", label: "Water adequacy", value: s1, weight: weights.s1 },
-      { key: "s2", label: "Thermal fit", value: s2, weight: weights.s2 },
-      { key: "s3", label: "Soil compatibility", value: s3, weight: weights.s3 },
-      { key: "s4", label: "Soil health balance", value: s4, weight: weights.s4 },
-      { key: "s5", label: "Diversity & break", value: s5, weight: weights.s5 },
-      { key: "s6", label: "Resilience", value: s6, weight: weights.s6 },
-      { key: "s7", label: "Low irrigation reliance", value: s7, weight: weights.s7 },
-      { key: "s8", label: "Food & income", value: s8, weight: weights.s8 },
+      { key: "s1", label: "Water adequacy", label_bn: "পানির প্রাপ্যতা", value: s1, weight: weights.s1 },
+      { key: "s2", label: "Thermal fit", label_bn: "তাপগত উপযুক্ততা", value: s2, weight: weights.s2 },
+      { key: "s3", label: "Soil compatibility", label_bn: "মাটির সাথে সামঞ্জস্য", value: s3, weight: weights.s3 },
+      { key: "s4", label: "Soil health balance", label_bn: "মাটির স্বাস্থ্যের ভারসাম্য", value: s4, weight: weights.s4 },
+      { key: "s5", label: "Diversity & break", label_bn: "বৈচিত্র্য ও ব্রেক ফসল", value: s5, weight: weights.s5 },
+      { key: "s6", label: "Resilience", label_bn: "সহনশীলতা", value: s6, weight: weights.s6 },
+      { key: "s7", label: "Low irrigation reliance", label_bn: "কম সেচ-নির্ভরতা", value: s7, weight: weights.s7 },
+      { key: "s8", label: "Food & income", label_bn: "খাদ্য ও আয়", value: s8, weight: weights.s8 },
     ];
 
     const confidence = confidenceFromQuality(pack.dataQuality);

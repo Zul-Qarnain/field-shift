@@ -4,9 +4,9 @@ import { useContext, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Home, Sprout, CalendarRange, BookOpen, Database, Search } from "lucide-react";
-import { LangContext, type Lang } from "@/lib/lang";
+import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
-import { FARMS } from "@/lib/data";
+import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
 
 const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] = [
   { href: "/", key: "nav_home", icon: Home },
@@ -42,9 +42,11 @@ function SearchBox() {
     return FARMS.filter(
       (f) =>
         f.district.toLowerCase().includes(needle) ||
+        f.district_bn.includes(q) ||
+        f.division.toLowerCase().includes(needle) ||
+        f.division_bn.includes(q) ||
         f.name_en.toLowerCase().includes(needle) ||
-        f.name_bn.includes(q) ||
-        f.division.toLowerCase().includes(needle)
+        f.name_bn.includes(q)
     ).slice(0, 5);
   }, [q]);
   return (
@@ -66,8 +68,8 @@ function SearchBox() {
               className="flex items-center justify-between px-4 py-2.5 text-sm text-ink-mid hover:bg-surface hover:text-ink-hi"
             >
               <span>
-                <span className="font-semibold">{lang === "bn" ? f.name_bn : f.name_en}</span>
-                <span className="ml-2 text-ink-low">{f.district}, {f.division}</span>
+                <span className="font-semibold">{farmName(f, lang)}</span>
+                <span className="ml-2 text-ink-low">{districtName(f, lang)}, {divisionName(f, lang)}</span>
               </span>
               <span className="text-xs text-ink-low font-mono">{f.lat.toFixed(2)}°N {f.lon.toFixed(2)}°E</span>
             </Link>
@@ -80,8 +82,8 @@ function SearchBox() {
 
 export function Shell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
-  const [lang, setLang] = useState<Lang>("en");
-  const langValue = useMemo(() => ({ lang, setLang }), [lang]);
+  const langValue = usePersistedLang();
+  const { lang } = langValue;
 
   return (
     <LangContext.Provider value={langValue}>
@@ -97,7 +99,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
                 FIELD <span className="text-lime">SHIFT</span>
               </span>
               <span className="block text-[10px] uppercase tracking-[0.18em] text-ink-low">
-                Earth data. Smarter farms.
+                {t("tagline", lang)}
               </span>
             </span>
           </Link>
@@ -121,16 +123,16 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <div className="mt-auto px-5 pb-6">
             <div className="rounded-xl border border-line bg-inset p-4">
               <p className="font-display text-sm font-medium leading-snug">
-                Sample data today.
+                {t("shell_note_1", lang)}
                 <br />
-                NASA feeds next.
+                {t("shell_note_2", lang)}
                 <br />
-                <span className="text-earth">A healthier tomorrow.</span>
+                <span className="text-earth">{t("shell_note_3", lang)}</span>
               </p>
             </div>
             <p className="mt-4 text-[11px] leading-relaxed text-ink-low">{t("footer_line", lang)}</p>
             <p className="mt-2 font-bengali text-[11px] leading-relaxed text-ink-low">
-              NASA স্পেস অ্যাপস চ্যালেঞ্জের জন্য তৈরি — একটি কমিউনিটি সায়েন্স উদ্যোগ। এটি NASA-র কোনো দাপটিক পণ্য নয়।
+              NASA স্পেস অ্যাপস চ্যালেঞ্জের জন্য তৈরি — একটি কমিউনিটি সায়েন্স উদ্যোগ। এটি NASA-র কোনো দাপ্তরিক পণ্য নয়।
             </p>
           </div>
         </aside>

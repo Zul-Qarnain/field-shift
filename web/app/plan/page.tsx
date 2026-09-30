@@ -3,12 +3,13 @@
 import { Suspense, useMemo, useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Check, Copy, Droplets, Leaf, Shield, Sprout } from "lucide-react";
-import { CROPS, getFarm } from "@/lib/data";
+import { CROPS, cropName, districtName, farmName, getFarm } from "@/lib/data";
 import {
   DEFAULT_PRIORITIES, DEFAULT_SCENARIO, advisoryText, generateRotations, smsText,
   type Priorities, type RotationResult, type Scenario,
 } from "@/lib/engine";
 import { useLang } from "@/lib/lang";
+import { t, tf, type StringKey } from "@/lib/i18n";
 import { Panel, SourceChip, InfoDot } from "@/components/ui";
 import { RotationCard, WhyDrawer } from "@/components/RotationCard";
 
@@ -21,14 +22,14 @@ const SLIDERS: { key: keyof Priorities; label_en: string; label_bn: string; icon
   { key: "riskSafety", label_en: "Heat & flood safety", label_bn: "তাপ ও বন্যা নিরাপত্তা", icon: Shield, color: "#ef6c4d" },
 ];
 
-const SCENARIOS: { label: string; apply: Scenario }[] = [
-  { label: "Baseline", apply: DEFAULT_SCENARIO },
-  { label: "Rainfall −10%", apply: { ...DEFAULT_SCENARIO, rainfallPct: -10 } },
-  { label: "Rainfall −20%", apply: { ...DEFAULT_SCENARIO, rainfallPct: -20 } },
-  { label: "Hotter +1°C", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 1 } },
-  { label: "Hotter +2°C", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 2 } },
-  { label: "Onset +7 days", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 7 } },
-  { label: "Onset +15 days", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 15 } },
+const SCENARIOS: { label: StringKey; apply: Scenario }[] = [
+  { label: "sc_baseline", apply: DEFAULT_SCENARIO },
+  { label: "sc_rain10", apply: { ...DEFAULT_SCENARIO, rainfallPct: -10 } },
+  { label: "sc_rain20", apply: { ...DEFAULT_SCENARIO, rainfallPct: -20 } },
+  { label: "sc_hot1", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 1 } },
+  { label: "sc_hot2", apply: { ...DEFAULT_SCENARIO, tempDeltaC: 2 } },
+  { label: "sc_onset7", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 7 } },
+  { label: "sc_onset15", apply: { ...DEFAULT_SCENARIO, onsetShiftDays: 15 } },
 ];
 
 function PlanView({ farmId }: { farmId: string }) {
@@ -54,15 +55,15 @@ function PlanView({ farmId }: { farmId: string }) {
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
-      <p className="text-xs text-ink-low">Crop Planning <span className="mx-1">›</span> {pack.name_en} · {pack.district}</p>
+      <p className="text-xs text-ink-low">{t("nav_plan", lang)} <span className="mx-1">›</span> {farmName(pack, lang)} · {districtName(pack, lang)}</p>
       <h1 className="mt-1 font-display text-3xl font-bold tracking-tight">
-        Plan the rotation <span className="text-ink-low">— {pack.context}</span>
+        {t("plan_title", lang)} <span className="text-ink-low">— {pack.context}</span>
       </h1>
 
       <div className="mt-6 grid gap-5 xl:grid-cols-[340px_1fr]">
         {/* Left: priorities + crops + scenarios */}
         <aside className="flex flex-col gap-5">
-          <Panel title={lang === "bn" ? "আপনার অগ্রাধিকার" : "Your priorities"}>
+          <Panel title={t("priorities", lang)}>
             <div className="flex flex-col gap-4">
               {SLIDERS.map((s) => (
                 <div key={s.key}>
@@ -81,15 +82,11 @@ function PlanView({ farmId }: { farmId: string }) {
                 </div>
               ))}
             </div>
-            <p className="mt-3 text-[11px] text-ink-low">Sliders re-rank instantly, on this device, with the same math every time.</p>
-            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
-              {lang === "bn"
-                ? `পানি সাশ্রয় স্লাইডার শুষ্ক মৌসুমে সেচের পানিও গণনা করে; এই খামারের ডেমো সেচ-প্রবেশাধিকার ${pack.irrigation} (ESTIMATE)। “স্থিতিশীল ফলন” মৌসুমের খাদ্য ও আয়-মূল্য (S8) কে বেশি ওজন দেয়।`
-                : `Water saving also counts dry-season pumping — this farm's demo irrigation access is ${pack.irrigation} (ESTIMATE). Stable harvest is the weight on food & income (S8), the season's crop value graded by the water it can get.`}
-            </p>
+            <p className="mt-3 text-[11px] text-ink-low">{t("plan_sliders_note", lang)}</p>
+            <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">{tf("plan_irrigation_note", lang, { n: pack.irrigation })}</p>
           </Panel>
 
-          <Panel title="Crop pool" right={<InfoDot text="Crops considered for the rotation. Same-family crops may follow each other but lose soil-health points; every sequence must also fit the 365-day calendar (durations + 10-day turnarounds + the onset shift). Fallow leaves the season idle." />}>
+          <Panel title={t("crop_pool", lang)} right={<InfoDot text={t("crop_pool_info", lang)} />}>
             <div className="flex flex-wrap gap-1.5">
               {CROPS.map((c) => {
                 const on = pool.has(c.id);
@@ -99,14 +96,14 @@ function PlanView({ farmId }: { farmId: string }) {
                     onClick={() => setPool((p) => { const n = new Set(p); if (n.has(c.id)) n.delete(c.id); else n.add(c.id); return n; })}
                     className={`rounded-lg border px-2.5 py-1.5 text-xs font-medium transition-colors ${on ? "border-lime/50 bg-lime/10 text-ink-hi" : "border-line bg-inset text-ink-low hover:text-ink-mid"}`}
                   >
-                    {on && <Check className="mr-1 inline h-3 w-3 text-lime" />}{c.name_en}
+                    {on && <Check className="mr-1 inline h-3 w-3 text-lime" />}{cropName(c, lang)}
                   </button>
                 );
               })}
             </div>
           </Panel>
 
-          <Panel title={<span className="flex items-center gap-2">{lang === "bn" ? "যদি এমন হয়" : "What-if"} <InfoDot text="Your observed data with a stated change applied — a stress test, not a forecast." /></span>} right={<SourceChip source="fixture" />}>
+          <Panel title={<span className="flex items-center gap-2">{t("scenarios", lang)} <InfoDot text={t("whatif_info", lang)} /></span>} right={<SourceChip source="fixture" />}>
             <div className="flex flex-wrap gap-1.5">
               {SCENARIOS.map((s) => (
                 <button
@@ -116,13 +113,13 @@ function PlanView({ farmId }: { farmId: string }) {
                     scenario === s.apply ? "border-amber bg-amber/10 text-amber" : "border-line bg-inset text-ink-mid hover:text-ink-hi"
                   }`}
                 >
-                  {s.label}
+                  {t(s.label, lang)}
                 </button>
               ))}
             </div>
             {!isBaseline && (
               <div className="mt-3 rounded-lg border border-amber/40 bg-amber/5 p-2.5 text-[11px] leading-relaxed text-amber">
-                ⚠ Stress test — not a forecast. Ranking recalculated under the stated change.
+                ⚠ {t("stress_test", lang)}
               </div>
             )}
           </Panel>
@@ -132,10 +129,11 @@ function PlanView({ farmId }: { farmId: string }) {
         <div className="flex flex-col gap-5">
           <div className="flex flex-wrap items-baseline justify-between gap-2">
             <h2 className="font-display text-xl font-bold">
-              {results.length} valid rotations <span className="text-sm font-medium text-ink-low">from {pool.size} crops · top {Math.min(3, results.length)} shown</span>
+              {tf("plan_valid_rotations", lang, { n: results.length })}{" "}
+              <span className="text-sm font-medium text-ink-low">{tf("plan_from_crops", lang, { c: pool.size, k: Math.min(3, results.length) })}</span>
             </h2>
             {results.length > 1 && Math.abs(results[0].total - results[1].total) < 0.5 && (
-              <span className="text-xs text-amber">Top two are less than a point apart — your priorities break the tie.</span>
+              <span className="text-xs text-amber">{t("plan_tie", lang)}</span>
             )}
           </div>
 
@@ -144,7 +142,7 @@ function PlanView({ farmId }: { farmId: string }) {
           ))}
           {results.length > 3 && (
             <details className="rounded-xl border border-line bg-surface p-4">
-              <summary className="cursor-pointer text-sm font-medium text-ink-mid">Show all {results.length} valid rotations</summary>
+              <summary className="cursor-pointer text-sm font-medium text-ink-mid">{tf("plan_show_all", lang, { n: results.length })}</summary>
               <div className="mt-3 flex flex-col gap-3">
                 {results.slice(3).map((r, i) => (
                   <RotationCard key={r.id} result={r} rank={i + 4} selected={false} onWhy={() => setWhy(r)} />
@@ -154,28 +152,26 @@ function PlanView({ farmId }: { farmId: string }) {
           )}
           {results.length === 0 && (
             <Panel>
-              <p className="text-sm text-ink-mid">No valid rotation with this pool — every sequence either leaves a season empty or overruns the 365-day calendar at this onset. Re-enable a short-duration crop (mungbean, sesame, fallow) or drop the +15-day onset scenario.</p>
+              <p className="text-sm text-ink-mid">{t("plan_none", lang)}</p>
             </Panel>
           )}
 
           {top && (
             <section className="rounded-xl border border-lime/40 bg-lime/5 p-5">
               <div className="flex flex-wrap items-center gap-2">
-                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory — the takeaway</p>
+                <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">{t("advisory_eyebrow", lang)}</p>
                 <SourceChip source="fixture" />
               </div>
               <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi">{advisory}</p>
-              <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">
-                Ranking math runs for real on this device; the farm values it reads are demo fixtures, including the irrigation access the water score uses.
-              </p>
+              <p className="mt-1.5 text-[11px] leading-relaxed text-ink-low">{t("advisory_note", lang)}</p>
               <div className="mt-3 flex flex-wrap items-center gap-3">
                 <button onClick={() => copy(advisory, "adv")} className="flex items-center gap-1.5 rounded-lg bg-lime px-3.5 py-2 text-xs font-bold text-canvas hover:brightness-110">
                   {copied === "adv" ? <Check className="h-3.5 w-3.5" /> : <Copy className="h-3.5 w-3.5" />}
-                  {copied === "adv" ? "Copied" : "Copy advisory"}
+                  {copied === "adv" ? t("copied", lang) : t("copy_advisory", lang)}
                 </button>
                 <button onClick={() => copy(sms, "sms")} className="flex items-center gap-1.5 rounded-lg border border-line bg-inset px-3.5 py-2 text-xs font-medium text-ink-mid hover:text-ink-hi">
                   {copied === "sms" ? <Check className="h-3.5 w-3.5 text-earth" /> : <Copy className="h-3.5 w-3.5" />}
-                  SMS version · {sms.length}/160
+                  {t("sms_version", lang)} · {sms.length}/160
                 </button>
                 <span className="font-bengali text-xs text-ink-low">{lang === "en" ? advisoryText(pack, top, "bn") : advisoryText(pack, top, "en").slice(0, 80) + "…"}</span>
               </div>
@@ -189,9 +185,14 @@ function PlanView({ farmId }: { farmId: string }) {
   );
 }
 
+function LoadingNote() {
+  const { lang } = useLang();
+  return <div className="p-8 text-sm text-ink-low">{t("loading_plan", lang)}</div>;
+}
+
 export default function PlanPage() {
   return (
-    <Suspense fallback={<div className="p-8 text-sm text-ink-low">Loading planner…</div>}>
+    <Suspense fallback={<LoadingNote />}>
       <PlanInner />
     </Suspense>
   );

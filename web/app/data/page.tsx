@@ -1,5 +1,9 @@
+"use client";
+
 import { TierBadge } from "@/components/ui";
 import type { Tier } from "@/lib/data";
+import { useLang } from "@/lib/lang";
+import { t } from "@/lib/i18n";
 
 const DATASETS: { name: string; tier: Tier; role: string; res: string; temporal: string; url: string; license: string }[] = [
   { name: "NASA POWER", tier: "NASA", role: "Daily rainfall, temperature, solar — onset detection, GDD, heat days, trends", res: "point + 0.5° grid", temporal: "daily, 1981–present", url: "https://power.larc.nasa.gov", license: "NASA open data" },
@@ -16,24 +20,21 @@ const DATASETS: { name: string; tier: Tier; role: string; res: string; temporal:
 ];
 
 export default function DataPage() {
+  const { lang } = useLang();
   return (
     <div className="mx-auto max-w-5xl px-4 py-10 lg:px-8">
-      <h1 className="font-display text-3xl font-bold tracking-tight">Data sources</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-mid">
-        Every dataset Field Shift is designed to use, its role, and how it would be accessed. NASA data is the
-        compulsory foundation; Space Agency Partner data is strictly supplementary; soil and basemaps are the labeled
-        open non-space layer. The current build runs on demo fixtures — no dataset below has been retrieved yet.
-        OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.
-      </p>
+      <h1 className="font-display text-3xl font-bold tracking-tight">{t("data_title", lang)}</h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-mid">{t("data_intro", lang)}</p>
+      {lang === "bn" && <p className="mt-3 text-xs leading-relaxed text-ink-low">{t("english_only_table_note", lang)}</p>}
       <div className="mt-8 overflow-hidden rounded-xl border border-line">
         <table className="w-full text-left text-sm">
           <thead className="bg-surface text-xs uppercase tracking-wider text-ink-low">
             <tr>
-              <th className="px-4 py-3">Dataset</th>
-              <th className="hidden px-4 py-3 md:table-cell">Role in the decision</th>
-              <th className="hidden px-4 py-3 lg:table-cell">Resolution</th>
-              <th className="hidden px-4 py-3 lg:table-cell">Temporal</th>
-              <th className="px-4 py-3">Link</th>
+              <th className="px-4 py-3">{t("th_dataset", lang)}</th>
+              <th className="hidden px-4 py-3 md:table-cell">{t("th_role", lang)}</th>
+              <th className="hidden px-4 py-3 lg:table-cell">{t("th_resolution", lang)}</th>
+              <th className="hidden px-4 py-3 lg:table-cell">{t("th_temporal", lang)}</th>
+              <th className="px-4 py-3">{t("th_link", lang)}</th>
             </tr>
           </thead>
           <tbody>
@@ -47,17 +48,13 @@ export default function DataPage() {
                 <td className="hidden max-w-xs px-4 py-3 text-ink-mid md:table-cell">{d.role}</td>
                 <td className="hidden px-4 py-3 font-mono text-xs text-ink-mid lg:table-cell">{d.res}</td>
                 <td className="hidden px-4 py-3 font-mono text-xs text-ink-mid lg:table-cell">{d.temporal}</td>
-                <td className="px-4 py-3"><a className="text-xs font-medium text-link hover:underline" href={d.url} target="_blank" rel="noreferrer">Open ↗</a></td>
+                <td className="px-4 py-3"><a className="text-xs font-medium text-link hover:underline" href={d.url} target="_blank" rel="noreferrer">{t("open_link", lang)}</a></td>
               </tr>
             ))}
           </tbody>
         </table>
       </div>
-      <p className="mt-6 text-xs leading-relaxed text-ink-low">
-        This list is a hand-maintained plan of the datasets the app is designed to use — it is not generated from a
-        manifest, and none of it has been retrieved yet. Retrieval dates, versions and cache provenance will be added
-        per farm once the pipeline has cached the data; the in-app provenance drawer says so today.
-      </p>
+      <p className="mt-6 text-xs leading-relaxed text-ink-low">{t("data_footnote", lang)}</p>
     </div>
   );
 }

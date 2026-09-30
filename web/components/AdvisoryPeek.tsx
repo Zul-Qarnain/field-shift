@@ -7,6 +7,7 @@ import { getFarm, CROPS } from "@/lib/data";
 import { generateRotations, DEFAULT_PRIORITIES, advisoryText } from "@/lib/engine";
 import { SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
+import { t } from "@/lib/i18n";
 
 export function AdvisoryPeek({ farmId }: { farmId: string }) {
   const pack = getFarm(farmId);
@@ -17,7 +18,7 @@ export function AdvisoryPeek({ farmId }: { farmId: string }) {
   return (
     <section className="rounded-xl border border-lime/40 bg-surface p-5 fade-up">
       <div className="flex flex-wrap items-center gap-2">
-        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">Advisory</p>
+        <p className="font-mono text-[10px] uppercase tracking-[0.2em] text-lime">{t("advisory", lang)}</p>
         <SourceChip source="fixture" />
       </div>
       <p className="mt-2 font-display text-lg font-medium leading-relaxed text-ink-hi lg:text-xl">{text}</p>
@@ -27,10 +28,10 @@ export function AdvisoryPeek({ farmId }: { farmId: string }) {
           className="flex items-center gap-1.5 rounded-lg border border-line bg-inset px-3 py-1.5 text-xs font-medium text-ink-mid hover:text-ink-hi"
         >
           {copied ? <Check className="h-3.5 w-3.5 text-earth" /> : <Copy className="h-3.5 w-3.5" />}
-          {copied ? "Copied" : "Copy advisory"}
+          {copied ? t("copied", lang) : t("copy_advisory", lang)}
         </button>
         <Link href={`/plan?farm=${farmId}`} className="text-xs font-semibold text-link hover:underline">
-          Open full planning →
+          {t("open_full_planning", lang)} →
         </Link>
       </div>
     </section>

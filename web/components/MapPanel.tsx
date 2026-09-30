@@ -3,7 +3,9 @@
 import { useState, useSyncExternalStore } from "react";
 import dynamic from "next/dynamic";
 import { Map as MapIcon } from "lucide-react";
-import type { FarmPack } from "@/lib/data";
+import { districtName, type FarmPack } from "@/lib/data";
+import { useLang } from "@/lib/lang";
+import { t } from "@/lib/i18n";
 
 const MapLive = dynamic(() => import("./MapLive").then((m) => m.MapLive), {
   ssr: false,
@@ -26,6 +28,7 @@ const getHashSnapshot = () => window.location.hash === "#map";
 const getHashServerSnapshot = () => false;
 
 export function MapPanel({ pack }: { pack: FarmPack }) {
+  const { lang } = useLang();
   const isMobile = useSyncExternalStore(subscribe, getSnapshot, getServerSnapshot);
   const anchoredByHash = useSyncExternalStore(subscribeHash, getHashSnapshot, getHashServerSnapshot);
   const [forced, setForced] = useState(false);
@@ -36,15 +39,15 @@ export function MapPanel({ pack }: { pack: FarmPack }) {
         <div className="flex h-[240px] flex-col items-center justify-center gap-3 rounded-xl border border-line bg-inset text-center">
           <MapIcon className="h-6 w-6 text-lime" />
           <p className="px-6 text-sm text-ink-mid">
-            {pack.district} · <span className="font-mono text-xs">{pack.lat.toFixed(4)}°N {pack.lon.toFixed(4)}°E</span> · {pack.areaHa} ha
+            {districtName(pack, lang)} · <span className="font-mono text-xs">{pack.lat.toFixed(4)}°N {pack.lon.toFixed(4)}°E</span> · {pack.areaHa} ha
           </p>
           <button
             onClick={() => setForced(true)}
             className="rounded-lg border border-action px-4 py-2 text-sm font-semibold text-link hover:bg-action/10"
           >
-            Load interactive map
+            {t("map_load", lang)}
           </button>
-          <p className="text-[10px] text-ink-low">Skipped on phones by default to keep the page fast.</p>
+          <p className="text-[10px] text-ink-low">{t("map_skip_note", lang)}</p>
         </div>
       ) : (
         <MapLive key={pack.id} pack={pack} />

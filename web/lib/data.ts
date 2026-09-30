@@ -1,3 +1,5 @@
+import type { Lang } from "./i18n";
+
 export type Tier = "NASA" | "Partner" | "Open" | "You";
 export type Source = "fixture" | "cache" | "live";
 
@@ -16,7 +18,9 @@ export interface FarmPack {
   name_en: string;
   name_bn: string;
   district: string;
+  district_bn: string;
   division: string;
+  division_bn: string;
   lat: number;
   lon: number;
   areaHa: number;
@@ -83,7 +87,7 @@ const PROV = (place: string): ProvEntry[] => [
  */
 export const FARMS: FarmPack[] = [
   {
-    id: "farm-12", name_en: "Farm-12", name_bn: "খামার-১২", district: "Tangail", division: "Dhaka Division",
+    id: "farm-12", name_en: "Farm-12", name_bn: "খামার-১২", district: "Tangail", district_bn: "টাঙ্গাইল", division: "Dhaka Division", division_bn: "ঢাকা বিভাগ",
     lat: 24.2514, lon: 89.9152, areaHa: 2.4, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Vegetative",
     soilType: "Clay Loam", elevationM: 12, context: "Monsoon-fed lowland",
     polygon: [[89.9052, 24.2471], [89.9221, 24.2451], [89.9262, 24.2574], [89.9123, 24.2602], [89.9052, 24.2471]],
@@ -96,7 +100,7 @@ export const FARMS: FarmPack[] = [
     provenance: PROV("Tangail"),
   },
   {
-    id: "rajshahi-07", name_en: "Farm-07", name_bn: "খামার-০৭", district: "Rajshahi", division: "Rajshahi Division",
+    id: "rajshahi-07", name_en: "Farm-07", name_bn: "খামার-০৭", district: "Rajshahi", district_bn: "রাজশাহী", division: "Rajshahi Division", division_bn: "রাজশাহী বিভাগ",
     lat: 24.3636, lon: 88.3277, areaHa: 1.7, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Tillering",
     soilType: "Sandy Loam", elevationM: 18, context: "Dry tract — Barind",
     polygon: [[88.3195, 24.3601], [88.3341, 24.3577], [88.3377, 24.3692], [88.3226, 24.3713], [88.3195, 24.3601]],
@@ -109,7 +113,7 @@ export const FARMS: FarmPack[] = [
     provenance: PROV("Rajshahi"),
   },
   {
-    id: "barishal-03", name_en: "Farm-03", name_bn: "খামার-০৩", district: "Barishal", division: "Barishal Division",
+    id: "barishal-03", name_en: "Farm-03", name_bn: "খামার-০৩", district: "Barishal", district_bn: "বরিশাল", division: "Barishal Division", division_bn: "বরিশাল বিভাগ",
     lat: 22.8486, lon: 90.2512, areaHa: 1.2, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Vegetative",
     soilType: "Silty Clay", elevationM: 3, context: "Coastal wet south",
     polygon: [[90.2444, 22.8441], [90.2578, 22.8421], [90.2614, 22.8552], [90.2471, 22.8571], [90.2444, 22.8441]],
@@ -122,7 +126,7 @@ export const FARMS: FarmPack[] = [
     provenance: PROV("Barishal"),
   },
   {
-    id: "khulna-09", name_en: "Farm-09", name_bn: "খামার-০৯", district: "Khulna", division: "Khulna Division",
+    id: "khulna-09", name_en: "Farm-09", name_bn: "খামার-০৯", district: "Khulna", district_bn: "খুলনা", division: "Khulna Division", division_bn: "খুলনা বিভাগ",
     lat: 22.8029, lon: 89.4018, areaHa: 2.0, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Flowering",
     soilType: "Silty Clay Loam", elevationM: 4, context: "Salinity-prone coastal",
     polygon: [[89.3942, 22.7984], [89.4084, 22.7965], [89.4122, 22.8095], [89.3971, 22.8114], [89.3942, 22.7984]],
@@ -135,7 +139,7 @@ export const FARMS: FarmPack[] = [
     provenance: PROV("Khulna"),
   },
   {
-    id: "rangpur-21", name_en: "Farm-21", name_bn: "খামার-২১", district: "Rangpur", division: "Rangpur Division",
+    id: "rangpur-21", name_en: "Farm-21", name_bn: "খামার-২১", district: "Rangpur", district_bn: "রংপুর", division: "Rangpur Division", division_bn: "রংপুর বিভাগ",
     lat: 25.6486, lon: 89.3517, areaHa: 1.9, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Vegetative",
     soilType: "Loam", elevationM: 34, context: "Cooler north",
     polygon: [[89.3438, 25.6438], [89.3584, 25.6417], [89.3622, 25.6552], [89.3468, 25.6572], [89.3438, 25.6438]],
@@ -148,7 +152,7 @@ export const FARMS: FarmPack[] = [
     provenance: PROV("Rangpur"),
   },
   {
-    id: "sylhet-15", name_en: "Farm-15", name_bn: "খামার-১৫", district: "Sylhet", division: "Sylhet Division",
+    id: "sylhet-15", name_en: "Farm-15", name_bn: "খামার-১৫", district: "Sylhet", district_bn: "সিলেট", division: "Sylhet Division", division_bn: "সিলেট বিভাগ",
     lat: 24.8026, lon: 92.0521, areaHa: 1.5, crop_en: "Rice (Aman)", crop_bn: "ধান (আমন)", growthStage: "Vegetative",
     soilType: "Clay Loam", elevationM: 22, context: "High-rainfall northeast",
     polygon: [[92.0438, 24.7978], [92.0584, 24.7957], [92.0622, 24.8092], [92.0468, 24.8112], [92.0438, 24.7978]],
@@ -205,3 +209,8 @@ export const CROPS: Crop[] = [
 ];
 
 export const getFarm = (id: string) => FARMS.find((f) => f.id === id) ?? FARMS[0];
+
+export const farmName = (f: FarmPack, lang: Lang) => (lang === "bn" ? f.name_bn : f.name_en);
+export const districtName = (f: FarmPack, lang: Lang) => (lang === "bn" ? f.district_bn : f.district);
+export const divisionName = (f: FarmPack, lang: Lang) => (lang === "bn" ? f.division_bn : f.division);
+export const cropName = (c: Crop, lang: Lang) => (lang === "bn" ? c.name_bn : c.name_en);

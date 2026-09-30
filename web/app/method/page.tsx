@@ -1,4 +1,8 @@
+"use client";
+
 import { Panel, SourceChip } from "@/components/ui";
+import { useLang } from "@/lib/lang";
+import { t } from "@/lib/i18n";
 
 const DEFINITIONS = [
   {
@@ -44,19 +48,16 @@ const DEFINITIONS = [
 ];
 
 export default function MethodPage() {
+  const { lang } = useLang();
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 lg:px-8">
-      <h1 className="font-display text-3xl font-bold tracking-tight">Method</h1>
-      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-mid">
-        Every definition the interface uses, stated openly. Onset has a dozen definitions in the literature — naming
-        ours, and saying which parts are computed today versus planned, is the point of this page.
-      </p>
+      <h1 className="font-display text-3xl font-bold tracking-tight">{t("method_title", lang)}</h1>
+      <p className="mt-2 max-w-2xl text-sm leading-relaxed text-ink-mid">{t("method_intro", lang)}</p>
       <div className="mt-6 flex items-start gap-3 rounded-xl border border-amber/40 bg-amber/5 p-4">
         <SourceChip source="fixture" />
-        <p className="text-sm leading-relaxed text-ink-mid">
-          Demo build: numbers on these pages come from sample fixtures, not yet from the NASA data pipeline.
-        </p>
+        <p className="text-sm leading-relaxed text-ink-mid">{t("demo_build_note", lang)}</p>
       </div>
+      {lang === "bn" && <p className="mt-4 text-xs leading-relaxed text-ink-low">{t("english_only_note", lang)}</p>}
       <div className="mt-8 flex flex-col gap-4">
         {DEFINITIONS.map((d) => (
           <Panel key={d.term} title={d.term}>
@@ -64,11 +65,7 @@ export default function MethodPage() {
           </Panel>
         ))}
       </div>
-      <p className="mt-8 text-xs leading-relaxed text-ink-low">
-        The decision engine is deterministic and unit-tested; no language model computes any number in this product.
-        The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation
-        is planned and does not exist yet.
-      </p>
+      <p className="mt-8 text-xs leading-relaxed text-ink-low">{t("method_footnote", lang)}</p>
     </div>
   );
 }

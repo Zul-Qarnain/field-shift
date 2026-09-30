@@ -2,6 +2,8 @@
 
 import { Info } from "lucide-react";
 import type { Tier, Source } from "@/lib/data";
+import { CONF_KEYS, t } from "@/lib/i18n";
+import { useLang } from "@/lib/lang";
 
 export function TierBadge({ tier }: { tier: Tier }) {
   const styles: Record<Tier, string> = {
@@ -47,6 +49,7 @@ export function DeltaChip({ value, unit = "", inverse = false }: { value: number
 }
 
 export function ConfidenceChip({ level }: { level: "high" | "medium" | "low" }) {
+  const { lang } = useLang();
   const map = {
     high: "border-earth text-earth",
     medium: "border-amber text-amber",
@@ -54,7 +57,7 @@ export function ConfidenceChip({ level }: { level: "high" | "medium" | "low" }) 
   } as const;
   return (
     <span className={`inline-flex items-center rounded border px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide ${map[level]}`}>
-      {level} confidence
+      {t(CONF_KEYS[level], lang)}
     </span>
   );
 }
