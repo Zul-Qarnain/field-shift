@@ -1,0 +1,690 @@
+{
+  "model_version": "onset-ml-v2",
+  "issue_date": "25 April",
+  "hyperparameters": {
+    "num_leaves": 15,
+    "learning_rate": 0.05,
+    "min_data_in_leaf": 25,
+    "feature_fraction": 0.9,
+    "extra_seed": 0,
+    "first_metric_only": true,
+    "verbosity": -1,
+    "num_threads": 1,
+    "deterministic": true,
+    "force_row_wise": true,
+    "num_boost_round": 250,
+    "quantiles": [
+      0.1,
+      0.9
+    ]
+  },
+  "features": [
+    "rain_anom_mar_apr",
+    "t2m_anom",
+    "t2m_max_anom",
+    "rh2m_anom",
+    "gwetroot_eow_anom",
+    "prior_onset_doy",
+    "oni_djf",
+    "oni_fma",
+    "dmi_feb_mar",
+    "lat",
+    "lon"
+  ],
+  "primary_variant": "chirps",
+  "status": "experimental",
+  "variants": {
+    "chirps": {
+      "training_years": {
+        "start": 1981,
+        "end": 2025,
+        "count": 45
+      },
+      "districts": 64,
+      "folds": 45,
+      "metrics": {
+        "mae_model_days": 11.59,
+        "mae_clim_days": 10.04,
+        "skill": -0.155,
+        "rmse_days": 15.07,
+        "coverage": 0.55,
+        "n_district_years": 2880,
+        "n_years": 45,
+        "years_beating_climatology": 12,
+        "share_years_beating_climatology": 0.267,
+        "mae_clim2_days": 11.99,
+        "skill_vs_clim2": 0.033,
+        "n_district_years_vs_clim2": 2752,
+        "mae_lag1_days": 13.31,
+        "skill_vs_lag1": 0.129,
+        "n_missing_prior": 64,
+        "status": "experimental"
+      },
+      "per_year": [
+        {
+          "year": 1981,
+          "n": 64,
+          "mae_model": 7.07,
+          "mae_clim": 7.72,
+          "coverage": 0.844
+        },
+        {
+          "year": 1982,
+          "n": 64,
+          "mae_model": 13.51,
+          "mae_clim": 12.04,
+          "coverage": 0.297
+        },
+        {
+          "year": 1983,
+          "n": 64,
+          "mae_model": 21.57,
+          "mae_clim": 16.22,
+          "coverage": 0.219
+        },
+        {
+          "year": 1984,
+          "n": 64,
+          "mae_model": 8.72,
+          "mae_clim": 9.79,
+          "coverage": 0.969
+        },
+        {
+          "year": 1985,
+          "n": 64,
+          "mae_model": 16.76,
+          "mae_clim": 11.71,
+          "coverage": 0.797
+        },
+        {
+          "year": 1986,
+          "n": 64,
+          "mae_model": 12.65,
+          "mae_clim": 10.94,
+          "coverage": 0.391
+        },
+        {
+          "year": 1987,
+          "n": 64,
+          "mae_model": 13.01,
+          "mae_clim": 11.08,
+          "coverage": 0.609
+        },
+        {
+          "year": 1988,
+          "n": 64,
+          "mae_model": 7.6,
+          "mae_clim": 4.58,
+          "coverage": 0.734
+        },
+        {
+          "year": 1989,
+          "n": 64,
+          "mae_model": 6.57,
+          "mae_clim": 7.39,
+          "coverage": 0.594
+        },
+        {
+          "year": 1990,
+          "n": 64,
+          "mae_model": 7.99,
+          "mae_clim": 7.4,
+          "coverage": 0.859
+        },
+        {
+          "year": 1991,
+          "n": 64,
+          "mae_model": 12.84,
+          "mae_clim": 10.58,
+          "coverage": 0.406
+        },
+        {
+          "year": 1992,
+          "n": 64,
+          "mae_model": 16.86,
+          "mae_clim": 18.9,
+          "coverage": 0.266
+        },
+        {
+          "year": 1993,
+          "n": 64,
+          "mae_model": 19.33,
+          "mae_clim": 12.99,
+          "coverage": 0.188
+        },
+        {
+          "year": 1994,
+          "n": 64,
+          "mae_model": 12.89,
+          "mae_clim": 11.08,
+          "coverage": 0.562
+        },
+        {
+          "year": 1995,
+          "n": 64,
+          "mae_model": 10.59,
+          "mae_clim": 10.32,
+          "coverage": 0.547
+        },
+        {
+          "year": 1996,
+          "n": 64,
+          "mae_model": 10.83,
+          "mae_clim": 7.74,
+          "coverage": 0.484
+        },
+        {
+          "year": 1997,
+          "n": 64,
+          "mae_model": 11.04,
+          "mae_clim": 4.27,
+          "coverage": 1.0
+        },
+        {
+          "year": 1998,
+          "n": 64,
+          "mae_model": 10.57,
+          "mae_clim": 8.9,
+          "coverage": 0.609
+        },
+        {
+          "year": 1999,
+          "n": 64,
+          "mae_model": 8.98,
+          "mae_clim": 10.08,
+          "coverage": 0.625
+        },
+        {
+          "year": 2000,
+          "n": 64,
+          "mae_model": 7.38,
+          "mae_clim": 9.47,
+          "coverage": 0.406
+        },
+        {
+          "year": 2001,
+          "n": 64,
+          "mae_model": 15.65,
+          "mae_clim": 13.71,
+          "coverage": 0.281
+        },
+        {
+          "year": 2002,
+          "n": 64,
+          "mae_model": 12.2,
+          "mae_clim": 9.34,
+          "coverage": 0.438
+        },
+        {
+          "year": 2003,
+          "n": 64,
+          "mae_model": 11.14,
+          "mae_clim": 11.06,
+          "coverage": 0.469
+        },
+        {
+          "year": 2004,
+          "n": 64,
+          "mae_model": 5.52,
+          "mae_clim": 5.93,
+          "coverage": 0.875
+        },
+        {
+          "year": 2005,
+          "n": 64,
+          "mae_model": 20.46,
+          "mae_clim": 21.76,
+          "coverage": 0.234
+        },
+        {
+          "year": 2006,
+          "n": 64,
+          "mae_model": 11.11,
+          "mae_clim": 7.06,
+          "coverage": 0.594
+        },
+        {
+          "year": 2007,
+          "n": 64,
+          "mae_model": 9.77,
+          "mae_clim": 9.8,
+          "coverage": 0.531
+        },
+        {
+          "year": 2008,
+          "n": 64,
+          "mae_model": 8.79,
+          "mae_clim": 5.97,
+          "coverage": 0.484
+        },
+        {
+          "year": 2009,
+          "n": 64,
+          "mae_model": 7.6,
+          "mae_clim": 7.78,
+          "coverage": 0.656
+        },
+        {
+          "year": 2010,
+          "n": 64,
+          "mae_model": 12.14,
+          "mae_clim": 8.18,
+          "coverage": 0.516
+        },
+        {
+          "year": 2011,
+          "n": 64,
+          "mae_model": 5.93,
+          "mae_clim": 5.63,
+          "coverage": 0.797
+        },
+        {
+          "year": 2012,
+          "n": 64,
+          "mae_model": 17.54,
+          "mae_clim": 11.46,
+          "coverage": 0.312
+        },
+        {
+          "year": 2013,
+          "n": 64,
+          "mae_model": 12.0,
+          "mae_clim": 9.66,
+          "coverage": 0.297
+        },
+        {
+          "year": 2014,
+          "n": 64,
+          "mae_model": 12.29,
+          "mae_clim": 8.93,
+          "coverage": 0.438
+        },
+        {
+          "year": 2015,
+          "n": 64,
+          "mae_model": 10.75,
+          "mae_clim": 11.54,
+          "coverage": 0.234
+        },
+        {
+          "year": 2016,
+          "n": 64,
+          "mae_model": 9.96,
+          "mae_clim": 8.57,
+          "coverage": 0.688
+        },
+        {
+          "year": 2017,
+          "n": 64,
+          "mae_model": 8.52,
+          "mae_clim": 7.23,
+          "coverage": 0.672
+        },
+        {
+          "year": 2018,
+          "n": 64,
+          "mae_model": 10.93,
+          "mae_clim": 9.16,
+          "coverage": 0.5
+        },
+        {
+          "year": 2019,
+          "n": 64,
+          "mae_model": 12.37,
+          "mae_clim": 11.87,
+          "coverage": 0.141
+        },
+        {
+          "year": 2020,
+          "n": 64,
+          "mae_model": 6.96,
+          "mae_clim": 6.43,
+          "coverage": 0.797
+        },
+        {
+          "year": 2021,
+          "n": 64,
+          "mae_model": 9.91,
+          "mae_clim": 9.24,
+          "coverage": 0.578
+        },
+        {
+          "year": 2022,
+          "n": 64,
+          "mae_model": 8.93,
+          "mae_clim": 9.47,
+          "coverage": 0.797
+        },
+        {
+          "year": 2023,
+          "n": 64,
+          "mae_model": 25.11,
+          "mae_clim": 23.64,
+          "coverage": 0.359
+        },
+        {
+          "year": 2024,
+          "n": 64,
+          "mae_model": 12.1,
+          "mae_clim": 9.74,
+          "coverage": 0.766
+        },
+        {
+          "year": 2025,
+          "n": 64,
+          "mae_model": 7.1,
+          "mae_clim": 5.36,
+          "coverage": 0.875
+        }
+      ],
+      "importance": [
+        {
+          "feature": "lon",
+          "mae_increase_days": 1.22
+        },
+        {
+          "feature": "t2m_max_anom",
+          "mae_increase_days": 1.117
+        },
+        {
+          "feature": "prior_onset_doy",
+          "mae_increase_days": 0.247
+        },
+        {
+          "feature": "rain_anom_mar_apr",
+          "mae_increase_days": 0.168
+        },
+        {
+          "feature": "lat",
+          "mae_increase_days": 0.04
+        },
+        {
+          "feature": "oni_djf",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "oni_fma",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "mae_increase_days": -0.091
+        },
+        {
+          "feature": "t2m_anom",
+          "mae_increase_days": -0.195
+        },
+        {
+          "feature": "rh2m_anom",
+          "mae_increase_days": -0.245
+        }
+      ],
+      "top_features": [
+        "lon",
+        "t2m_max_anom",
+        "prior_onset_doy"
+      ],
+      "source": "CHIRPS v2.0 (UCSB Climate Hazards Center)"
+    },
+    "power": {
+      "training_years": {
+        "start": 2001,
+        "end": 2025,
+        "count": 25
+      },
+      "districts": 64,
+      "folds": 25,
+      "metrics": {
+        "mae_model_days": 14.97,
+        "mae_clim_days": 13.2,
+        "skill": -0.134,
+        "rmse_days": 18.65,
+        "coverage": 0.4,
+        "n_district_years": 1600,
+        "n_years": 25,
+        "years_beating_climatology": 9,
+        "share_years_beating_climatology": 0.36,
+        "mae_clim2_days": 14.07,
+        "skill_vs_clim2": -0.064,
+        "n_district_years_vs_clim2": 1472,
+        "mae_lag1_days": 15.89,
+        "skill_vs_lag1": 0.058,
+        "n_missing_prior": 64,
+        "status": "experimental"
+      },
+      "per_year": [
+        {
+          "year": 2001,
+          "n": 64,
+          "mae_model": 25.62,
+          "mae_clim": 14.89,
+          "coverage": 0.266
+        },
+        {
+          "year": 2002,
+          "n": 64,
+          "mae_model": 7.74,
+          "mae_clim": 7.94,
+          "coverage": 0.75
+        },
+        {
+          "year": 2003,
+          "n": 64,
+          "mae_model": 22.91,
+          "mae_clim": 20.38,
+          "coverage": 0.062
+        },
+        {
+          "year": 2004,
+          "n": 64,
+          "mae_model": 10.61,
+          "mae_clim": 11.01,
+          "coverage": 0.688
+        },
+        {
+          "year": 2005,
+          "n": 64,
+          "mae_model": 22.86,
+          "mae_clim": 28.59,
+          "coverage": 0.172
+        },
+        {
+          "year": 2006,
+          "n": 64,
+          "mae_model": 12.91,
+          "mae_clim": 6.7,
+          "coverage": 0.469
+        },
+        {
+          "year": 2007,
+          "n": 64,
+          "mae_model": 8.31,
+          "mae_clim": 11.11,
+          "coverage": 0.766
+        },
+        {
+          "year": 2008,
+          "n": 64,
+          "mae_model": 18.63,
+          "mae_clim": 14.9,
+          "coverage": 0.109
+        },
+        {
+          "year": 2009,
+          "n": 64,
+          "mae_model": 16.8,
+          "mae_clim": 13.68,
+          "coverage": 0.438
+        },
+        {
+          "year": 2010,
+          "n": 64,
+          "mae_model": 7.08,
+          "mae_clim": 7.25,
+          "coverage": 0.672
+        },
+        {
+          "year": 2011,
+          "n": 64,
+          "mae_model": 10.35,
+          "mae_clim": 11.01,
+          "coverage": 0.656
+        },
+        {
+          "year": 2012,
+          "n": 64,
+          "mae_model": 26.55,
+          "mae_clim": 23.18,
+          "coverage": 0.047
+        },
+        {
+          "year": 2013,
+          "n": 64,
+          "mae_model": 17.99,
+          "mae_clim": 12.59,
+          "coverage": 0.297
+        },
+        {
+          "year": 2014,
+          "n": 64,
+          "mae_model": 8.21,
+          "mae_clim": 6.15,
+          "coverage": 0.609
+        },
+        {
+          "year": 2015,
+          "n": 64,
+          "mae_model": 15.24,
+          "mae_clim": 12.95,
+          "coverage": 0.297
+        },
+        {
+          "year": 2016,
+          "n": 64,
+          "mae_model": 12.27,
+          "mae_clim": 9.06,
+          "coverage": 0.312
+        },
+        {
+          "year": 2017,
+          "n": 64,
+          "mae_model": 9.89,
+          "mae_clim": 10.4,
+          "coverage": 0.359
+        },
+        {
+          "year": 2018,
+          "n": 64,
+          "mae_model": 10.79,
+          "mae_clim": 16.52,
+          "coverage": 0.188
+        },
+        {
+          "year": 2019,
+          "n": 64,
+          "mae_model": 10.56,
+          "mae_clim": 14.69,
+          "coverage": 0.344
+        },
+        {
+          "year": 2020,
+          "n": 64,
+          "mae_model": 17.01,
+          "mae_clim": 15.84,
+          "coverage": 0.094
+        },
+        {
+          "year": 2021,
+          "n": 64,
+          "mae_model": 18.44,
+          "mae_clim": 12.33,
+          "coverage": 0.438
+        },
+        {
+          "year": 2022,
+          "n": 64,
+          "mae_model": 14.89,
+          "mae_clim": 12.96,
+          "coverage": 0.344
+        },
+        {
+          "year": 2023,
+          "n": 64,
+          "mae_model": 22.63,
+          "mae_clim": 16.04,
+          "coverage": 0.453
+        },
+        {
+          "year": 2024,
+          "n": 64,
+          "mae_model": 14.24,
+          "mae_clim": 13.19,
+          "coverage": 0.219
+        },
+        {
+          "year": 2025,
+          "n": 64,
+          "mae_model": 11.62,
+          "mae_clim": 6.6,
+          "coverage": 0.953
+        }
+      ],
+      "importance": [
+        {
+          "feature": "rh2m_anom",
+          "mae_increase_days": 0.837
+        },
+        {
+          "feature": "lat",
+          "mae_increase_days": 0.537
+        },
+        {
+          "feature": "gwetroot_eow_anom",
+          "mae_increase_days": 0.507
+        },
+        {
+          "feature": "t2m_anom",
+          "mae_increase_days": 0.271
+        },
+        {
+          "feature": "prior_onset_doy",
+          "mae_increase_days": 0.254
+        },
+        {
+          "feature": "rain_anom_mar_apr",
+          "mae_increase_days": 0.195
+        },
+        {
+          "feature": "t2m_max_anom",
+          "mae_increase_days": 0.176
+        },
+        {
+          "feature": "lon",
+          "mae_increase_days": 0.154
+        },
+        {
+          "feature": "oni_djf",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "oni_fma",
+          "mae_increase_days": 0.0
+        },
+        {
+          "feature": "dmi_feb_mar",
+          "mae_increase_days": 0.0
+        }
+      ],
+      "top_features": [
+        "rh2m_anom",
+        "lat",
+        "gwetroot_eow_anom"
+      ],
+      "source": "NASA POWER PRECTOTCORR, 2001\u20132025 only"
+    }
+  }
+}

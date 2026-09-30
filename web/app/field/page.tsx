@@ -11,6 +11,7 @@ import { CONF_KEYS, growthStageLabel, t, tf } from "@/lib/i18n";
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
+import { OnsetOutlookCard } from "@/components/OnsetOutlookCard";
 import { confidenceFromQuality } from "@/lib/engine";
 
 const chartSkeleton = <div className="h-[170px] w-full animate-pulse rounded-lg bg-inset" />;
@@ -163,6 +164,8 @@ function FieldView({ farmId }: { farmId: string }) {
               {t("view_analysis", lang)} →
             </Link>
           </section>
+
+          <OnsetOutlookCard farmId={farmId} />
 
           <Panel title={t("field_details", lang)}>
             <dl className="text-sm">

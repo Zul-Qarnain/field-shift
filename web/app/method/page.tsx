@@ -3,6 +3,7 @@
 import { Panel, SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
 import { t } from "@/lib/i18n";
+import { OUTLOOK, num } from "@/lib/outlook";
 
 const DEFINITIONS = [
   {
@@ -49,6 +50,7 @@ const DEFINITIONS = [
 
 export default function MethodPage() {
   const { lang } = useLang();
+  const top = (OUTLOOK.variants.chirps?.top_features ?? []).join(", ");
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 lg:px-8">
       <h1 className="font-display text-3xl font-bold tracking-tight">{t("method_title", lang)}</h1>
@@ -65,6 +67,79 @@ export default function MethodPage() {
           </Panel>
         ))}
       </div>
+
+      <Panel className="mt-4" title={<span className="flex items-center gap-2">{t("ml_heading", lang)} · {OUTLOOK.model_version}</span>}>
+        <p className="text-sm leading-relaxed text-ink-mid">
+          {OUTLOOK.onset_rule}. (The first entry above describes the earlier v1 rule; this build uses v2.) The
+          outlook is issued on {OUTLOOK.issue_date}, before the window opens at DOY 121, so
+          every feature is cut off at that date: CHIRPS and POWER rainfall and weather for 1 Mar – 20 Apr, last
+          season&apos;s onset, ONI DJF and FMA, and DMI Feb–Mar. Weather anomalies are measured against a climatology
+          rebuilt inside each backtest fold from that fold&apos;s training years only — and for a training row, with its
+          own year dropped from the baseline it is compared to.
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-mid">{OUTLOOK.issue_before_onset}</p>
+        <table className="mt-3 w-full border-collapse text-xs">
+          <thead>
+            <tr className="border-b border-line text-left text-ink-low">
+              <th className="py-1.5 pr-2 font-medium">Arm</th>
+              <th className="py-1.5 pr-2 font-medium">MAE (d)</th>
+              <th className="py-1.5 pr-2 font-medium">Climatology (d)</th>
+              <th className="py-1.5 pr-2 font-medium">Skill</th>
+              <th className="py-1.5 pr-2 font-medium">RMSE (d)</th>
+              <th className="py-1.5 pr-2 font-medium">10–90 coverage</th>
+              <th className="py-1.5 font-medium">Years won</th>
+            </tr>
+          </thead>
+          <tbody className="tabular">
+            {Object.entries(OUTLOOK.variants).map(([name, v]) => (
+              <tr key={name} className="border-b border-line-soft last:border-0">
+                <td className="py-1.5 pr-2 text-ink-mid">
+                  {v.source}
+                  {v.training_years && (
+                    <span className="text-ink-low"> · {v.training_years.start}–{v.training_years.end}</span>
+                  )}
+                </td>
+                <td className="py-1.5 pr-2">{num(v.metrics.mae_model_days, 2)}</td>
+                <td className="py-1.5 pr-2">{num(v.metrics.mae_clim_days, 2)}</td>
+                <td className="py-1.5 pr-2">{num(v.metrics.skill, 3)}</td>
+                <td className="py-1.5 pr-2">{num(v.metrics.rmse_days, 2)}</td>
+                <td className="py-1.5 pr-2">{num(v.metrics.coverage, 2)}</td>
+                <td className="py-1.5">
+                  {v.metrics.years_beating_climatology ?? "—"} / {v.metrics.n_years ?? "—"}
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+        <p className="mt-3 text-sm leading-relaxed text-ink-mid">
+          Leave-one-year-out holds a whole year back across every district at once ({OUTLOOK.backtest}); the baseline
+          is each district&apos;s own mean onset over the fold&apos;s training years. Because last season&apos;s onset is
+          itself a feature, two stricter baselines are reported too: the district&apos;s mean of the two seasons before
+          the one predicted ({num(OUTLOOK.metrics.mae_clim2_days, 2)} d, skill {num(OUTLOOK.metrics.skill_vs_clim2, 3)})
+          and last season&apos;s onset on its own ({num(OUTLOOK.metrics.mae_lag1_days, 2)} d, skill{" "}
+          {num(OUTLOOK.metrics.skill_vs_lag1, 3)}).
+        </p>
+        <p className={`mt-2 text-sm leading-relaxed ${OUTLOOK.status === "shipped" ? "text-lime" : "text-amber"}`}>
+          {OUTLOOK.status === "shipped" ? t("ml_shipped_note", lang) : t("ml_experimental_note", lang)}
+        </p>
+        <p className="mt-2 text-sm leading-relaxed text-ink-mid">
+          Read this next to the feature ranking on the held-out years: the top movers are {top} — mostly
+          <em>where</em> a district sits, which the climatology baseline already knows for free. In the labels,
+          districts differ from each other by about 5.8 days while the year-to-year scatter inside one district is
+          about 13.0 days: the hard part of the problem is the part these April features do not explain.
+        </p>
+        <p className="mt-2 text-xs leading-relaxed text-ink-low">{OUTLOOK.label_note}</p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-low">{OUTLOOK.sources.power_rainfall_excluded}</p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-low">{OUTLOOK.sources.power_weather_note}</p>
+        <p className="mt-1 text-xs leading-relaxed text-ink-low">
+          Predictions are explained with LightGBM tree SHAP ({OUTLOOK.contribution_method}). The model is built
+          offline and shipped as a static file — nothing runs in the browser. This is the only place in the app where
+          a trained model produces a number; the rotation engine and every other figure on these pages stay
+          deterministic rules over the data shown. Full method, leakage controls and limitations:{" "}
+          <code className="text-ink-mid">docs/science/onset_ml.md</code>.
+        </p>
+      </Panel>
+
       <p className="mt-8 text-xs leading-relaxed text-ink-low">{t("method_footnote", lang)}</p>
     </div>
   );
