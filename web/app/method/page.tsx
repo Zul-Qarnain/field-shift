@@ -129,10 +129,10 @@ export default function MethodPage() {
           and last season&apos;s onset on its own ({num(OUTLOOK.metrics.mae_lag1_days, 2)} d, skill{" "}
           {num(OUTLOOK.metrics.skill_vs_lag1, 3)}).
         </p>
-        <p className={`mt-2 text-sm leading-relaxed ${OUTLOOK.status === "shipped" ? "text-lime" : "text-amber"}`}>
+        <p className="mt-2 text-sm leading-relaxed text-ink-mid">
           {OUTLOOK.status === "shipped"
             ? t("ml_shipped_note", lang)
-            : tf("ml_experimental_note", lang, {
+            : tf("ml_backtest_note", lang, {
                 model: num(OUTLOOK.metrics.mae_model_days) ?? "—",
                 clim: num(OUTLOOK.metrics.mae_clim_days) ?? "—",
               })}

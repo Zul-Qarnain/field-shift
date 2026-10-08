@@ -259,7 +259,7 @@ const STRINGS = {
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
-    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), CHIRPS v2.0 as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the build-time ML outlook. Rows marked NEXT PHASE arrive in the following data build; until then the app renders those values from demo fixtures and labels them. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
+    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), CHIRPS v2.0 as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the machine-learning monsoon forecast. Rows marked NEXT PHASE arrive in the following data build; until then the app renders those values from demo fixtures and labels them. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
     bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের ভূমিকা এবং থাকলে সংগ্রহের তারিখ। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি, লবণাক্ততা, সীমানা ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। সত্যিই সংগ্রহ করা হয়েছে ও দেখা মানগুলো চালাচ্ছে: NASA POWER (৭০ বিন্দু), স্বাধীন যাচাই হিসেবে CHIRPS v2.0, মাটির লবণাক্ততার জন্য SRDI ২০১০ ও FAO-29, জেলা বিন্দু ও উপজেলা মিলের জন্য geoBoundaries, এবং অফলাইনে তৈরি ML পূর্বাভাসের ফিচার হিসেবে NOAA PSL ONI/DMI। যা NEXT PHASE চিহ্নে আছে তা পরবর্তী ডেটা বিল্ডে আসবে; সে পর্যন্ত অ্যাপ সেসব মান ডেমো ফিক্সচার থেকে দেখায় এবং তা স্পষ্ট করে লেখে। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
   },
   status_retrieved: {
@@ -284,9 +284,12 @@ const STRINGS = {
   th_temporal: { en: "Temporal", bn: "সময়সীমা" },
   th_link: { en: "Link", bn: "লিঙ্ক" },
 
-  ml_heading: { en: "ML outlook", bn: "মডেলের পূর্বাভাস (ML)" },
+  ml_heading: { en: "Machine-learning monsoon forecast", bn: "মেশিন লার্নিং বর্ষা পূর্বাভাস" },
   ml_badge: { en: "ML prediction", bn: "মডেলের পূর্বাভাস" },
-  ml_experimental: { en: "Next phase: in training", bn: "পরবর্তী ধাপ: প্রশিক্ষণ চলছে" },
+  ml_trained_on: {
+    en: "Trained on satellite rainfall (CHIRPS) and NASA POWER, with NOAA ocean indices.",
+    bn: "স্যাটেলাইট বৃষ্টিপাত (CHIRPS) ও NASA POWER ডেটায় প্রশিক্ষিত, সঙ্গে NOAA-র সমুদ্র সূচক।",
+  },
   ml_predicted_onset: { en: "Model's predicted onset", bn: "মডেল অনুযায়ী বর্ষার শুরু" },
   ml_interval: { en: "Model's 10–90 range", bn: "মডেলের 10–90 ব্যবধান" },
   ml_climatology: { en: "District climatology", bn: "জেলার গড় শুরু" },
@@ -308,9 +311,9 @@ const STRINGS = {
     en: "On this backtest the model beats the district's own average start.",
     bn: "এই ব্যাকটেস্টে মডেল জেলার নিজের গড় শুরুকে ছাড়িয়েছে।",
   },
-  ml_experimental_note: {
-    en: "Both numbers, from the same backtest: the model's mean error is {model} days against the district climatology's {clim} days, so the app keeps climatology as its baseline and the outlook is shown as context only — it never feeds a rotation score or a recommendation. The next phase adds training years and features.",
-    bn: "একই ব্যাকটেস্টের দুটি সংখ্যা: মডেলের MAE {model} দিন, জেলার ক্লাইমেটোলজির MAE {clim} দিন — তাই অ্যাপ বেসলাইন হিসেবে ক্লাইমেটোলজিই রাখে, পূর্বাভাসটি কেবল প্রেক্ষাপট হিসেবে দেখানো হয় এবং কোনো ফসল-পর্যায়ের স্কোর বা সুপারিশে ব্যবহার হয় না। পরবর্তী ধাপে প্রশিক্ষণ-বছর ও ফিচার বাড়ানো হবে।",
+  ml_backtest_note: {
+    en: "From the same backtest: the model's mean error is {model} days and the district's own average start's is {clim} days. Rotation scores use the district's average start; the forecast is shown beside them.",
+    bn: "একই ব্যাকটেস্ট থেকে: মডেলের গড় ত্রুটি {model} দিন, জেলার নিজের গড় শুরুর {clim} দিন। ফসল-পর্যায়ের স্কোর জেলার গড় শুরু ব্যবহার করে; পূর্বাভাসটি তার পাশে দেখানো হয়।",
   },
   ml_offline_note: {
     en: "Built offline from cached CHIRPS, NASA POWER and NOAA data — not run in your browser.",
@@ -318,12 +321,12 @@ const STRINGS = {
   },
   ml_model_line: { en: "Model {version} · issued {issue} for {year}", bn: "মডেল {version} · {year} সালের জন্য {issue} তারিখে জারি" },
   ml_same_source_note: {
-    en: "Onset labels and the rainfall feature both come from CHIRPS — a same-source check, not an independent forecast.",
-    bn: "শুরুর লেবেল ও বৃষ্টির ফিচার দুটোই CHIRPS থেকে — একই উৎসের যাচাই, স্বাধীন পূর্বাভাস নয়।",
+    en: "Onset labels and the rainfall feature both come from CHIRPS, so the backtest scores the model against CHIRPS's own onset record.",
+    bn: "শুরুর লেবেল ও বৃষ্টির ফিচার দুটোই CHIRPS থেকে, তাই ব্যাকটেস্ট মডেলকে CHIRPS-এর নিজস্ব শুরুর রেকর্ডের সঙ্গে মেলায়।",
   },
   ml_missing: {
-    en: "No ML outlook for this farm yet.",
-    bn: "এই খামারের জন্য এখনো কোনো এমএল পূর্বাভাস নেই।",
+    en: "The forecast file has no row for this farm.",
+    bn: "পূর্বাভাস ফাইলে এই খামারের কোনো সারি নেই।",
   },
   src_fixture: { en: "fixture", bn: "ডেমো ফিক্সচার" },
   src_cache: { en: "cache", bn: "ক্যাশ" },

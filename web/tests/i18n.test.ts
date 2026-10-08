@@ -73,6 +73,21 @@ describe("the string table", () => {
     }
   });
 
+  it("presents the ML monsoon forecast as built, with its training data, and never as a winner", () => {
+    expect(t("ml_heading", "en")).toBe("Machine-learning monsoon forecast");
+    for (const lang of ["en", "bn"] as const) {
+      const trained = t("ml_trained_on", lang);
+      expect(trained).toContain("CHIRPS");
+      expect(trained).toContain("NASA POWER");
+    }
+    const ML_KEYS = STRING_KEYS.filter((key) => key.startsWith("ml_") && key !== "ml_shipped_note");
+    for (const key of ML_KEYS) {
+      const text = `${t(key, "en")} ${t(key, "bn")}`;
+      expect(/(experimental|in training|next phase|পরবর্তী ধাপ|প্রশিক্ষণ চলছে|পরীক্ষামূলক)/i.test(text), key).toBe(false);
+      expect(/(beats|outperform|ছাড়িয়েছে)/i.test(text), key).toBe(false);
+    }
+  });
+
   it("fills every slot with the language's own digits", () => {
     for (const key of STRING_KEYS) {
       const names = [...t(key, "en").matchAll(/\{(\w+)\}/g)].map((m) => m[1]);

@@ -4,9 +4,12 @@ A build-time experiment: can the *date* of Bangladesh's usable-rainfall onset be
 in April, from what April already knows? It is trained and scored offline; the browser only
 reads the JSON it writes. Nothing in the app runs a model.
 
-**Status: `experimental`.** On the leave-one-year-out backtest the model does **not** beat
-each district's own mean onset, so the UI says so. The numbers are in
-[Backtest](#backtest) and in `src/compute/ml/metrics.json`.
+**Status: built and shown in the app** as the "Machine-learning monsoon forecast" card on every
+farm page. On the leave-one-year-out backtest its mean error is above that of each district's own
+mean onset, so the payload's internal `status` field is `experimental` (the rule in
+[Backtest](#backtest)), the card prints both errors side by side, and the rotation engine keeps
+the district mean as its onset baseline. The numbers are in [Backtest](#backtest) and in
+`src/compute/ml/metrics.json`.
 
 ## Data
 
@@ -127,7 +130,9 @@ record in each fold's past.
 So the model beats *repeating last year*, and edges past the two-season mean, but it is
 **worse than the district's long-run mean** — which is the baseline the app's own onset
 display already uses. The decision rule is applied to the CHIRPS arm's headline skill, so
-the status is `experimental` and the card says the model does not beat climatology.
+the payload status is `experimental`; the card (since v1.5, 9 Oct 2026) presents the forecast as
+built, under the heading "Machine-learning monsoon forecast", and prints the model's and the
+district mean's errors side by side without claiming either way.
 
 ### What the features actually rank
 

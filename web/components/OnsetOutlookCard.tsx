@@ -7,11 +7,11 @@ import { t, tf } from "@/lib/i18n";
 import { Panel, SourceChip } from "@/components/ui";
 
 /**
- * The monsoon-onset ML outlook for one demo farm.
+ * The machine-learning monsoon-onset forecast for one demo farm.
  *
  * Every number here was computed offline by scripts/build_onset_ml.py and shipped in
- * web/public/data/onset_outlook.json — the model does not run in the browser. When the
- * backtest says the model loses to climatology, the card says so too.
+ * web/public/data/onset_outlook.json — the model does not run in the browser. The backtest
+ * errors are shown beside the district's own average start, as plain numbers.
  */
 export function OnsetOutlookCard({ farmId }: { farmId: string }) {
   const { lang } = useLang();
@@ -44,17 +44,15 @@ export function OnsetOutlookCard({ farmId }: { farmId: string }) {
       right={
         <span className="flex items-center gap-2">
           <span
-            className={`rounded-full border px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide ${
-              shipped ? "border-lime text-lime" : "border-amber text-amber"
-            }`}
+            className="rounded-full border border-violet px-2 py-0.5 text-[10px] font-bold uppercase tracking-wide text-violet"
           >
             {t("ml_badge", lang)}
-            {!shipped && ` · ${t("ml_experimental", lang)}`}
           </span>
           <SourceChip source="cache" />
         </span>
       }
     >
+      <p className="mb-1 text-[11px] leading-relaxed text-ink-mid">{t("ml_trained_on", lang)}</p>
       <dl className="text-sm">
         <div className="flex items-baseline justify-between gap-3 border-b border-line-soft py-2">
           <dt className="text-ink-mid">{t("ml_predicted_onset", lang)}</dt>
@@ -110,10 +108,10 @@ export function OnsetOutlookCard({ farmId }: { farmId: string }) {
         <p className="mt-1 text-[11px] leading-relaxed text-ink-low">
           {tf("ml_coverage_line", lang, { pct: num((m.coverage ?? 0) * 100, 0) ?? "—" })}
         </p>
-        <p className={`mt-1.5 text-[11px] leading-relaxed ${shipped ? "text-lime" : "text-amber"}`}>
+        <p className="mt-1.5 text-[11px] leading-relaxed text-ink-mid">
           {shipped
             ? t("ml_shipped_note", lang)
-            : tf("ml_experimental_note", lang, { model: num(m.mae_model_days) ?? "—", clim: num(m.mae_clim_days) ?? "—" })}
+            : tf("ml_backtest_note", lang, { model: num(m.mae_model_days) ?? "—", clim: num(m.mae_clim_days) ?? "—" })}
         </p>
       </div>
 

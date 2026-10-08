@@ -39,6 +39,9 @@ test("a farm card opens /field, and the nowcast card reads the live response", a
   await expect(page.getByTestId("nowcast-source")).toContainText("Live");
   await expect(page.getByTestId("nowcast-card")).not.toContainText("NaN");
   await expect(page.getByTestId("outage-banner")).toHaveCount(0);
+  await expect(page.getByText("Machine-learning monsoon forecast", { exact: true })).toBeVisible();
+  await expect(page.getByText(/Trained on satellite rainfall \(CHIRPS\) and NASA POWER/)).toBeVisible();
+  await expect(page.getByText(/in training|experimental/i)).toHaveCount(0);
 });
 
 test("a what-if re-ranks the plan and labels itself a stress test", async ({ page }) => {
