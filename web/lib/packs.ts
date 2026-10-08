@@ -413,15 +413,12 @@ export function trendView(pack: PowerPack): {
 }
 
 /**
- * Overlay the real pack on a demo farm. Fields with no real source yet (SMAP soil moisture,
- * NDVI, SoilGrids soil, water availability, flood index, irrigation access) are left exactly as
- * the fixture had them, so they keep their fixture labelling. Returns the input untouched when
- * no pack exists, and never mutates it.
+ * Overlay a real POWER pack on any pack-shaped farm — the six demo farms and the district profiles
+ * built by lib/quick.ts both come through here. Fields with no real source yet (SMAP soil moisture,
+ * NDVI, SoilGrids soil, water availability, flood index, irrigation access) are left exactly as the
+ * fixture had them, so they keep their fixture labelling. Never mutates its input.
  */
-export function withRealData(farm: FarmPack): FarmPack {
-  const pack = packForFarm(farm.id);
-  if (!pack) return farm;
-
+export function withPowerPack(farm: FarmPack, pack: PowerPack): FarmPack {
   const view = onsetView(pack);
   const trend = trendView(pack);
   const onsetPart = view
@@ -479,17 +476,29 @@ export function withRealData(farm: FarmPack): FarmPack {
   };
 }
 
-const districtCache = new Map<string, PowerPack | null>();
+/** The demo farm with its own committed pack overlaid, or the fixture untouched when no pack exists. */
+export function withRealData(farm: FarmPack): FarmPack {
+  const pack = packForFarm(farm.id);
+  return pack ? withPowerPack(farm, pack) : farm;
+}
+
+const districtCache = new Map<string, PowerPack>();
+const districtWithoutPack = new Set<string>();
 
 /**
  * District packs are fetched at runtime (70 files would bloat the bundle); callers must handle
  * null and keep their fixture labelling in that case.
+ *
+ * Only successes and "this slug has no pack in the index" are remembered: a failed fetch returns
+ * null and is tried again on the next call, so a Retry after a network blip can actually recover.
  */
 export async function loadDistrictPack(slug: string): Promise<PowerPack | null> {
-  if (districtCache.has(slug)) return districtCache.get(slug) ?? null;
+  if (districtWithoutPack.has(slug)) return null;
+  const cached = districtCache.get(slug);
+  if (cached) return cached;
   const entry = PACK_INDEX.districts.find((d) => d.slug === slug);
   if (!entry) {
-    districtCache.set(slug, null);
+    districtWithoutPack.add(slug);
     return null;
   }
   try {
@@ -499,7 +508,6 @@ export async function loadDistrictPack(slug: string): Promise<PowerPack | null> 
     districtCache.set(slug, pack);
     return pack;
   } catch {
-    districtCache.set(slug, null);
     return null;
   }
 }

@@ -27,6 +27,8 @@ export interface SalinityBlock {
   /** SRDI's printed upazila name, or the geoBoundaries ADM3 name when the farm is outside the survey. */
   upazila: string;
   district: string;
+  /** What the areas are summed over: one upazila (the demo farms) or a whole district (the district profiles). */
+  scope?: "upazila" | "district";
   /** ha of the upazila in each salinity class, exactly as printed (null when the upazila was not surveyed). */
   classAreasHa: Record<SalinityClass, number> | null;
   /** saline_ha / total_ha of the upazila. SRDI's total area includes uncultivated land, so this is a lower bound. */
@@ -105,7 +107,8 @@ const DAYS = (base: number, spread: number, n: number, seed: number) =>
     return Math.round(base + (((x - Math.floor(x)) * 2 - 1) + Math.sin(i + seed) * 0.5) * spread);
   });
 
-const NOT_RETRIEVED = "not yet (demo fixture)";
+/** The provenance `retrieved` value for a feed this build reads from a demo fixture; the next data build replaces it with a date. */
+export const NOT_RETRIEVED = "next phase (demo value shown)";
 /** Onset definition v2 (see docs/science/onset.md). It replaces the fixed 7-day/20 mm rule, which measured as censored in 50–91% of years. */
 const ONSET_RULE = "5-day rainfall ≥ local Jun–Sep mean (2001–2025), no break ≥ 10 days under 5 mm";
 const ONSET_RULE_BN = "৫ দিনের বৃষ্টি ≥ স্থানীয় জুন–সেপ্টেম্বর গড় (২০০১–২০২৫), পরে ১০ দিনের মধ্যে ৫ মিমির কম বৃষ্টির বিরতি নয়";

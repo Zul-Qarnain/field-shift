@@ -62,6 +62,8 @@ export interface RotationResult {
   irrigationShare: number;
   /** Crop durations + turnarounds + this season's onset shift, in days. */
   calendarDays: number;
+  /** The early-onset window credit already inside `total`, exposed so a score can be shown as its parts. */
+  earlyCredit: number;
 }
 
 export function confidenceFromQuality(dq: FarmPack["dataQuality"]): Confidence {
@@ -162,6 +164,7 @@ export function salinityPenalty(pack: FarmPack, crop: Crop): Penalty | null {
   if (amount <= 0.05) return null;
   const lost = Math.round(loss);
   const share = (sal.salineShare * 100).toFixed(1);
+  const area = salinityArea(sal);
   return {
     rule: bi(
       `Soil salinity (SRDI 2010, dry season) — ${crop.name_en} loses ~${num(lost)}% yield`,
@@ -169,12 +172,31 @@ export function salinityPenalty(pack: FarmPack, crop: Crop): Penalty | null {
     ),
     amount,
     source: bi(
-      `${sal.source} — ${share}% of the upazila saline, ECe read as the area-weighted class midpoint (derived from SRDI class areas). ` +
+      `${sal.source} — ${share}% of the ${area.en} saline, ECe read as the area-weighted class midpoint (derived from SRDI class areas). ` +
         `${crop.salt!.source}. ESTIMATE — ${SALINITY_POINTS} points per 100% expected yield loss.`,
-      `${sal.source} — উপজেলার ${toBnDigits(share)}% লবণাক্ত; ECe ধরা হয়েছে শ্রেণির মধ্যবিন্দুর ক্ষেত্রফল-ভিত্তিক গড় হিসেবে (SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত)। ` +
+      `${sal.source} — ${area.bn} ${toBnDigits(share)}% লবণাক্ত; ECe ধরা হয়েছে শ্রেণির মধ্যবিন্দুর ক্ষেত্রফল-ভিত্তিক গড় হিসেবে (SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত)। ` +
         `${crop.salt!.source}। ESTIMATE — ${numBn(SALINITY_POINTS)} পয়েন্ট, প্রতি ১০০% প্রত্যাশিত ফলন ক্ষতির জন্য।`,
     ),
   };
+}
+
+/** The survey unit SRDI's areas are summed over: one upazila on the demo farms, a whole district on a district profile. */
+function salinityArea(sal: SalinityBlock): BiText {
+  return sal.scope === "district"
+    ? { en: "district", bn: "জেলার" }
+    : { en: "upazila", bn: "উপজেলার" };
+}
+
+/** The place the salinity sentences name: district/upazila for a farm, the district itself for a district profile. */
+function salinityPlace(sal: SalinityBlock): string {
+  return sal.scope === "district" ? sal.district : `${sal.district}/${sal.upazila}`;
+}
+
+/** The same place in the genitive each language uses inside the uncited-tolerance risk line. */
+function salinityRiskPlace(sal: SalinityBlock): BiText {
+  return sal.scope === "district"
+    ? { en: `${sal.district} district`, bn: `${sal.district} জেলার` }
+    : { en: sal.upazila, bn: `${sal.upazila}-এর` };
 }
 
 /** True when this crop has a cited FAO number to be scored against (fallow is not a crop). */
@@ -563,8 +585,8 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
         : [],
       saltPoints > 0.05
         ? [bi(
-            `Soil salinity costs this sequence ${num(saltPoints)} points on ${pack.salinity.district}/${pack.salinity.upazila} (${num(pct(pack.salinity.salineShare))}% of the upazila saline, representative ECe ${num(pack.salinity.repECe ?? 0)} dS/m derived from SRDI class areas): ${saltPenalties.map((p) => p.rule.en).join("; ")}.`,
-            `মাটির লবণাক্ততার জন্য এই ক্রমের ${numBn(saltPoints)} পয়েন্ট কাটা যাচ্ছে — ${pack.salinity.district}/${pack.salinity.upazila} উপজেলার ${numBn(pct(pack.salinity.salineShare))}%, প্রতিনিধি ECe ${numBn(pack.salinity.repECe ?? 0)} dS/m (SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত): ${saltPenalties.map((p) => p.rule.bn).join("; ")}।`,
+            `Soil salinity costs this sequence ${num(saltPoints)} points on ${salinityPlace(pack.salinity)} (${num(pct(pack.salinity.salineShare))}% of the ${salinityArea(pack.salinity).en} saline, representative ECe ${num(pack.salinity.repECe ?? 0)} dS/m derived from SRDI class areas): ${saltPenalties.map((p) => p.rule.en).join("; ")}.`,
+            `মাটির লবণাক্ততার জন্য এই ক্রমের ${numBn(saltPoints)} পয়েন্ট কাটা যাচ্ছে — ${salinityPlace(pack.salinity)} ${salinityArea(pack.salinity).bn} ${numBn(pct(pack.salinity.salineShare))}%, প্রতিনিধি ECe ${numBn(pack.salinity.repECe ?? 0)} dS/m (SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত): ${saltPenalties.map((p) => p.rule.bn).join("; ")}।`,
           )]
         : [],
       onsetPoints > 0.05
@@ -590,10 +612,11 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
     if (real.length < crops.length) risks.push(bi("Idle season leaves the field bare — weeds and erosion take the foothold", "মৌসুম ফাঁকা থাকলে মাঠ নগ্ন থাকে — আগাছা ও মাটি ধুয়ে-যাওয়া বাধ পায়"));
     // A saline upazila and a crop FAO-29 gives no number for: say so in both languages instead of scoring a guess.
     if (pack.salinity.cited && pack.salinity.salineShare > 0) {
+      const riskPlace = salinityRiskPlace(pack.salinity);
       for (const c of real.filter((x) => !x.salt)) {
         risks.push(bi(
-          `${c.name_en}: salt tolerance not cited — ${SALT_UNCITED[c.id]} Not scored against ${pack.salinity.upazila}'s salinity; shown as a risk instead.`,
-          `${c.name_bn}: লবণ-সহনশীলতার উদ্ধৃত মান নেই — ${SALT_UNCITED_BN[c.id]} ${pack.salinity.upazila}-এর লবণাক্ততার হিসাবে এটি ধরা হয়নি, শুধু ঝুঁকি হিসেবে দেখানো হয়েছে।`,
+          `${c.name_en}: salt tolerance not cited — ${SALT_UNCITED[c.id]} Not scored against ${riskPlace.en}'s salinity; shown as a risk instead.`,
+          `${c.name_bn}: লবণ-সহনশীলতার উদ্ধৃত মান নেই — ${SALT_UNCITED_BN[c.id]} ${riskPlace.bn} লবণাক্ততার হিসাবে এটি ধরা হয়নি, শুধু ঝুঁকি হিসেবে দেখানো হয়েছে।`,
         ));
       }
     }
@@ -609,6 +632,7 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
       risks,
       irrigationShare: Math.round(irrigationShare * 1000) / 1000,
       calendarDays: used,
+      earlyCredit: Math.round(earlyCredit * 100) / 100,
     };
   });
 

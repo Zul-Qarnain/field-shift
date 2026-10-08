@@ -1,10 +1,11 @@
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { readFileSync } from "node:fs";
 import { CROPS, FARMS, type FarmPack } from "@/lib/data";
 import {
   DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ONSET_ALPHA, advisoryText, effectiveOnsetShift, generateRotations, measuredOnsetShift, onsetShiftSignificant, smsText,
 } from "@/lib/engine";
 import {
-  PACK_INDEX, coveredWindow, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData,
+  PACK_INDEX, coveredWindow, loadDistrictPack, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData,
 } from "@/lib/packs";
 
 const FARM_IDS = ["farm-12", "rajshahi-07", "barishal-03", "khulna-09", "rangpur-21", "sylhet-15"];
@@ -200,10 +201,10 @@ describe("withRealData merge", () => {
     expect(chirps.name).toBe("CHIRPS v2.0");
     expect(chirps.tier).toBe("Open");
     expect(chirps.retrieved).toMatch(/^\d{4}-\d{2}-\d{2} \(UTC\)$/);
-    // IMERG is still a plan, not a retrieval: its row must not look real
-    expect(merged.provenance.find((p) => p.id === "imerg")!.retrieved).toMatch(/^not yet/);
+    // IMERG is a next-phase row, not a retrieval: its row must not look like a real one
+    expect(merged.provenance.find((p) => p.id === "imerg")!.retrieved).toMatch(/^next phase/);
     for (const entry of merged.provenance.filter((p) => !["power", "chirps"].includes(p.id))) {
-      expect(entry.retrieved).toMatch(/^(—|not yet)/);
+      expect(entry.retrieved).toMatch(/^(—|next phase)/);
     }
   });
 
@@ -356,5 +357,50 @@ describe("A1 guarantees under the real onset data", () => {
     for (const id of FARM_IDS) {
       expect(keyOf(ranked(real(id), { ...DEFAULT_PRIORITIES, water: 100 })[0].crops)).not.toContain("boro");
     }
+  });
+});
+
+/**
+ * The runtime fetch is the only path a district pack takes, so its cache decides whether a Retry can
+ * recover: failures must not be remembered as "no pack".
+ */
+describe("loadDistrictPack caching", () => {
+  afterEach(() => vi.unstubAllGlobals());
+
+  it("returns null on a failed fetch and loads the pack on the next call", async () => {
+    const pack = JSON.parse(readFileSync(new URL("../public/data/packs/districts/tangail.json", import.meta.url), "utf8"));
+    let calls = 0;
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      calls += 1;
+      if (calls === 1) throw new Error("network down");
+      return { ok: true, status: 200, json: async () => pack } as Response;
+    }));
+
+    await expect(loadDistrictPack("tangail")).resolves.toBeNull();
+    await expect(loadDistrictPack("tangail")).resolves.toMatchObject({ slug: "tangail", kind: "district" });
+    // the success is cached now, so a third call does not fetch again
+    await expect(loadDistrictPack("tangail")).resolves.toMatchObject({ slug: "tangail" });
+    expect(calls).toBe(2);
+  });
+
+  it("treats an HTTP error the same way: not cached, retried next call", async () => {
+    const pack = JSON.parse(readFileSync(new URL("../public/data/packs/districts/feni.json", import.meta.url), "utf8"));
+    let calls = 0;
+    vi.stubGlobal("fetch", vi.fn(async () => {
+      calls += 1;
+      return calls === 1
+        ? ({ ok: false, status: 503, json: async () => ({}) } as Response)
+        : ({ ok: true, status: 200, json: async () => pack } as Response);
+    }));
+    await expect(loadDistrictPack("feni")).resolves.toBeNull();
+    await expect(loadDistrictPack("feni")).resolves.toMatchObject({ slug: "feni" });
+  });
+
+  it("remembers that a slug the index has no pack for is not fetchable", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+    await expect(loadDistrictPack("no-such-district")).resolves.toBeNull();
+    await expect(loadDistrictPack("no-such-district")).resolves.toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 });

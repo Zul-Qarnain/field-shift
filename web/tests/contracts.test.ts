@@ -14,7 +14,7 @@ describe("data pack contracts", () => {
         expect(p.url).toMatch(/^(https?:\/\/|\/)/);
         expect(p.version.length).toBeGreaterThan(0);
         expect(p.retrieved.length).toBeGreaterThan(0);
-        expect(p.retrieved).toMatch(/^(—|not yet)/);
+        expect(p.retrieved).toMatch(/^(—|next phase)/);
       }
     });
 

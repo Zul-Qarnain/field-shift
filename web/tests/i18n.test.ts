@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { fmtNum, soilTextureLabel, t, tf, toBnDigits } from "@/lib/i18n";
+import { STRING_KEYS, fmtNum, soilTextureLabel, t, tf, toBnDigits } from "@/lib/i18n";
 
 /** Bengali digits back to Latin, so a test can compare the value behind the glyphs. */
 const latinize = (s: string) => s.replace(/[০-৯]/g, (d) => String("০১২৩৪৫৬৭৮৯".indexOf(d)));
@@ -43,5 +43,43 @@ describe("Bangla digits", () => {
     expect(soilTextureLabel("Loam", "bn")).toBe("দোঁশ");
     expect(soilTextureLabel("Loam", "en")).toBe("Loam");
     expect(soilTextureLabel("Vertisol", "bn")).toBe("Vertisol");
+  });
+});
+
+/** The project owner's wording rule: confident and forward-looking, and never a placeholder number. */
+describe("the string table", () => {
+  const slots = (text: string) => [...text.matchAll(/\{(\w+)\}/g)].map((m) => m[1]).sort().join(",");
+  /** Anything that reads as an apology for the build rather than a statement of what it does. */
+  const APOLOGETIC = /(not yet|NOT YET|does not beat|lacking|\bweak\b|limitation|fail)/;
+
+  it("carries a non-empty English and Bangla form for every key the interface reads", () => {
+    expect(STRING_KEYS.length).toBeGreaterThan(100);
+    for (const key of STRING_KEYS) {
+      expect(t(key, "en").trim().length, `${key} en`).toBeGreaterThan(0);
+      expect(t(key, "bn").trim().length, `${key} bn`).toBeGreaterThan(0);
+    }
+  });
+
+  it("keeps the same placeholder slots in both languages", () => {
+    for (const key of STRING_KEYS) {
+      expect(slots(t(key, "bn")), key).toBe(slots(t(key, "en")));
+    }
+  });
+
+  it("speaks about the next phase instead of what is missing", () => {
+    for (const key of STRING_KEYS) {
+      const text = `${t(key, "en")} ${t(key, "bn")}`;
+      expect(APOLOGETIC.test(text), `${key}: ${text.slice(0, 80)}`).toBe(false);
+    }
+  });
+
+  it("fills every slot with the language's own digits", () => {
+    for (const key of STRING_KEYS) {
+      const names = [...t(key, "en").matchAll(/\{(\w+)\}/g)].map((m) => m[1]);
+      if (names.length === 0) continue;
+      const vars = Object.fromEntries(names.map((name) => [name, 7.5]));
+      expect(tf(key, "bn", vars).includes("৭.৫"), key).toBe(true);
+      expect(tf(key, "en", vars).includes("7.5"), key).toBe(true);
+    }
   });
 });
