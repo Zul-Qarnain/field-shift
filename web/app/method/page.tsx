@@ -2,7 +2,7 @@
 
 import { Panel, SourceChip } from "@/components/ui";
 import { useLang } from "@/lib/lang";
-import { t } from "@/lib/i18n";
+import { t, tf } from "@/lib/i18n";
 import { OUTLOOK, num } from "@/lib/outlook";
 
 const DEFINITIONS = [
@@ -16,7 +16,7 @@ const DEFINITIONS = [
   },
   {
     term: "Season calendar (durationDays)",
-    body: "A rotation is only generated if it fits one 365-day year: Aman's duration plus the rabi and pre-monsoon durations plus two 10-day turnarounds, plus the effective onset shift, must stay under 365 days. So Boro (140 d) cannot be followed by Aus (105 d); Boro + Mungbean (70 d) fits with ten days to spare, and stops fitting once the onset is 11 days late. With the real packs the significance gate hands every demo farm 0 days — no farm's preferred product passes its era test — so the budget binds on the crop durations alone, not on a measured shift: Boro + Aman + Jute (110 d) and Boro + Aman + Sesame (85 d) never fit even at 0 shift, while Boro + Aman + Mungbean does, and the +7/+15 day what-ifs are the only way an onset change rules out more. Fallow (পতিত) is in the pool as an idle pre-monsoon season with 0 duration and 0 water: it exists so Boro–Fallow–T.Aman, where the calendar has no room for a third crop, can be represented at all, and it is charged through the idle-land rule below rather than banned. ESTIMATE — durations and the 10-day turnaround are demo values, not cited to a crop register. Growing-degree-day sums are planned and are not used by this build.",
+    body: "A rotation is only generated if it fits one 365-day year: Aman's duration plus the rabi and pre-monsoon durations plus two 10-day turnarounds, plus the effective onset shift, must stay under 365 days. So Boro (140 d) cannot be followed by Aus (105 d); Boro + Mungbean (70 d) fits with ten days to spare, and stops fitting once the onset is 11 days late. With the real packs the significance gate hands every demo farm 0 days — no farm's preferred product passes its era test — so the budget binds on the crop durations alone, not on a measured shift: Boro + Aman + Jute (110 d) and Boro + Aman + Sesame (85 d) never fit even at 0 shift, while Boro + Aman + Mungbean does, and the +7/+15 day what-ifs are the only way an onset change rules out more. Fallow (পতিত) is in the pool as an idle pre-monsoon season with 0 duration and 0 water: it exists so Boro–Fallow–T.Aman, where the calendar has no room for a third crop, can be represented at all, and it is charged through the idle-land rule below rather than banned. ESTIMATE — durations and the 10-day turnaround are demo values; the cited crop register arrives with the next phase. Growing-degree-day sums come with it.",
   },
   {
     term: "Water adequacy (S1)",
@@ -32,7 +32,7 @@ const DEFINITIONS = [
   },
   {
     term: "Soil health balance (S4)",
-    body: "Sequence-level nitrogen budget: legume fixation credit, residue-return indices, and the demand of non-fixing crops, minus the same-family and idle-land hits below. A simplified, demonstration-grade budget — the crop coefficients in this demo are ESTIMATE values, not yet cited to a source register.",
+    body: "Sequence-level nitrogen budget: legume fixation credit, residue-return indices, and the demand of non-fixing crops, minus the same-family and idle-land hits below. A simplified, demonstration-grade budget — the crop coefficients in this demo are ESTIMATE values, cited to a source register in the next phase.",
   },
   {
     term: "Same-family sequence & idle fallow",
@@ -48,7 +48,7 @@ const DEFINITIONS = [
   },
   {
     term: "Soil salinity penalty (SRDI 2010 × FAO-29)",
-    body: "For a farm inside SRDI's coastal saline survey the engine reads its UPZILA, not a field sample: SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2, prints the area of each upazila in classes S1 2.0–4.0 … S5 >16.0 dS/m (field survey May 2009, EC on a 1:5 soil-water extract — a dry-season snapshot, 102 upazilas in 18 districts). Each class is read at its area-weighted midpoint ECe (S5 uses its 16.0 lower bound, so the figure is a lower estimate there) and turned into expected yield loss with FAO Irrigation & Drainage Paper 29 Rev.1 (Ayers & Westcot 1985) Table 4 and the paper's own equation (10), Y = 100 − b·(ECe − a): a = the crop's 100 %-yield ECe, b = 100 / (ECe at 0 % yield − a). The loss is summed over the upazila's class mix weighted by its saline share, and the non-saline remainder costs nothing because SRDI's Appendix-6 (p.55) calls 0–2 dS/m salt free with effects \"mostly negligible\". Aman is scored on the same dry-season classes, which makes its figure an upper bound — monsoon flooding leaches salts and no cited leaching factor was found, so none is invented. Worked from the committed values: at Khulna / Dumuria (68.3 % of the upazila is saline — 30 610 of 44 797 ha) a rice season loses ~42 % expected yield and costs 6.8 points, maize or potato ~49 % and 7.8 points, wheat ~19 % and 3.0 points; at Barishal / Wazirpur (8.1 % saline) rice loses ~0.6 % and 0.1 points. An upazila outside the surveyed belt carries no value at all — the penalty is skipped and the reason printed, because absent data is not zero salt. Crops FAO-29 publishes no ECe for (mustard, lentil, mungbean, sesame, jute) are never scored against salinity either; they appear as risk lines quoting the source's own gap. ESTIMATE — SALINITY_POINTS, 16 score points per 100 % expected yield loss, is the hand-set scale that converts percent loss into points; the ECe thresholds and slopes themselves are cited.",
+    body: "For a farm inside SRDI's coastal saline survey the engine reads its UPZILA, not a field sample: SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2, prints the area of each upazila in classes S1 2.0–4.0 … S5 >16.0 dS/m (field survey May 2009, EC on a 1:5 soil-water extract — a dry-season snapshot, 102 upazilas in 18 districts). Each class is read at its area-weighted midpoint ECe (S5 uses its 16.0 lower bound, so the figure is a lower estimate there) and turned into expected yield loss with FAO Irrigation & Drainage Paper 29 Rev.1 (Ayers & Westcot 1985) Table 4 and the paper's own equation (10), Y = 100 − b·(ECe − a): a = the crop's 100 %-yield ECe, b = 100 / (ECe at 0 % yield − a). The loss is summed over the upazila's class mix weighted by its saline share, and the non-saline remainder costs nothing because SRDI's Appendix-6 (p.55) calls 0–2 dS/m salt free with effects \"mostly negligible\". Aman is scored on the same dry-season classes, which makes its figure an upper bound — monsoon flooding leaches salts, and a cited leaching factor arrives with the next phase, so none is invented here. Worked from the committed values: at Khulna / Dumuria (68.3 % of the upazila is saline — 30 610 of 44 797 ha) a rice season loses ~42 % expected yield and costs 6.8 points, maize or potato ~49 % and 7.8 points, wheat ~19 % and 3.0 points; at Barishal / Wazirpur (8.1 % saline) rice loses ~0.6 % and 0.1 points. An upazila outside the surveyed belt carries no value at all — the penalty is skipped and the reason printed, because absent data is not zero salt. Crops FAO-29 publishes no ECe for (mustard, lentil, mungbean, sesame, jute) are never scored against salinity either; they appear as risk lines quoting the source's own gap. ESTIMATE — SALINITY_POINTS, 16 score points per 100 % expected yield loss, is the hand-set scale that converts percent loss into points; the ECe thresholds and slopes themselves are cited.",
   },
   {
     term: "What-if scenarios",
@@ -79,8 +79,8 @@ export default function MethodPage() {
       <Panel className="mt-4" title={<span className="flex items-center gap-2">{t("ml_heading", lang)} · {OUTLOOK.model_version}</span>}>
         <p className="text-sm leading-relaxed text-ink-mid">
           {OUTLOOK.onset_rule}. That is the same v2 rule the first entry defines — applied here to CHIRPS v2.0 daily
-          rainfall to make the training labels. The rejected v1 rule (7-day ≥ 20 mm from DOY 145) could not be used:
-          measured on the cached series it pinned 50–91 % of Bangladeshi years to its own window floor. The
+          rainfall to make the training labels. The rejected v1 rule (7-day ≥ 20 mm from DOY 145) was set aside on
+          measurement: run over the cached series it pinned 50–91 % of Bangladeshi years to its own window floor. The
           outlook is issued on {OUTLOOK.issue_date}, before the window opens at DOY 121, so
           every feature is cut off at that date: CHIRPS and POWER rainfall and weather for 1 Mar – 20 Apr, last
           season&apos;s onset, ONI DJF and FMA, and DMI Feb–Mar. Weather anomalies are measured against a climatology
@@ -130,7 +130,12 @@ export default function MethodPage() {
           {num(OUTLOOK.metrics.skill_vs_lag1, 3)}).
         </p>
         <p className={`mt-2 text-sm leading-relaxed ${OUTLOOK.status === "shipped" ? "text-lime" : "text-amber"}`}>
-          {OUTLOOK.status === "shipped" ? t("ml_shipped_note", lang) : t("ml_experimental_note", lang)}
+          {OUTLOOK.status === "shipped"
+            ? t("ml_shipped_note", lang)
+            : tf("ml_experimental_note", lang, {
+                model: num(OUTLOOK.metrics.mae_model_days) ?? "—",
+                clim: num(OUTLOOK.metrics.mae_clim_days) ?? "—",
+              })}
         </p>
         <p className="mt-2 text-sm leading-relaxed text-ink-mid">
           Read this next to the feature ranking on the held-out years: the top movers are {top} — mostly
@@ -145,7 +150,7 @@ export default function MethodPage() {
           Predictions are explained with LightGBM tree SHAP ({OUTLOOK.contribution_method}). The model is built
           offline and shipped as a static file — nothing runs in the browser. This is the only place in the app where
           a trained model produces a number; the rotation engine and every other figure on these pages stay
-          deterministic rules over the data shown. Full method, leakage controls and limitations:{" "}
+          deterministic rules over the data shown. Full method, leakage controls and stated caveats:{" "}
           <code className="text-ink-mid">docs/science/onset_ml.md</code>.
         </p>
       </Panel>

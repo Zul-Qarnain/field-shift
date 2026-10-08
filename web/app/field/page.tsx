@@ -5,13 +5,15 @@ import Link from "next/link";
 import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
-import { FARMS, SALINITY_CLASS_BOUNDS, SALINITY_CLASSES, districtName, divisionName, farmContext, farmName, getFarm, provDetail, type FarmPack, type SalinityClass } from "@/lib/data";
+import { FARMS, NOT_RETRIEVED, SALINITY_CLASS_BOUNDS, SALINITY_CLASSES, districtName, divisionName, farmContext, farmName, getFarm, provDetail, type FarmPack, type SalinityClass } from "@/lib/data";
 import { coveredWindow, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
 import { CONF_KEYS, fmtNum, fmtUnit, growthStageLabel, soilTextureLabel, t, tf } from "@/lib/i18n";
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
 import { MapPanel } from "@/components/MapPanel";
 import { AdvisoryPeek } from "@/components/AdvisoryPeek";
+import { LiveDataBanner } from "@/components/LiveDataBanner";
+import { NowcastCard } from "@/components/NowcastCard";
 import { OnsetOutlookCard } from "@/components/OnsetOutlookCard";
 import { HomogeneityNote, OnsetSensitivity, PackMethodNote } from "@/components/PackNotes";
 import { confidenceFromQuality, onsetShiftSignificant } from "@/lib/engine";
@@ -175,6 +177,8 @@ function FieldView({ farmId }: { farmId: string }) {
     <div className="mx-auto max-w-7xl px-4 py-8 lg:px-8">
       <FieldHeader farmId={farmId} />
 
+      <div className="mt-4"><LiveDataBanner pointId={farmId} /></div>
+
       <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_340px]">
         <div className="flex flex-col gap-5">
           <MapPanel pack={f} />
@@ -198,6 +202,8 @@ function FieldView({ farmId }: { farmId: string }) {
           <p className="-mt-3 text-[11px] leading-relaxed text-ink-low">
             {realPack ? t("field_cards_note_real", lang) : t("field_cards_note", lang)}
           </p>
+
+          <NowcastCard pointId={farmId} label={farmName(f, lang)} />
 
           <Panel
             title={t("panel_onset_title", lang)}
@@ -358,7 +364,7 @@ function FieldView({ farmId }: { farmId: string }) {
                       <span className="truncate">{p.name}</span> <TierBadge tier={p.tier} />
                     </p>
                     <p className="truncate text-[11px] text-ink-low">{provDetail(p, lang)}</p>
-                    <p className="font-mono text-[10px] text-ink-low">{p.version} · {p.retrieved === "—" ? "—" : t("not_retrieved", lang)}</p>                  </div>
+                    <p className="font-mono text-[10px] text-ink-low">{p.version} · {p.retrieved === "—" ? "—" : p.retrieved === NOT_RETRIEVED ? t("not_retrieved", lang) : fmtNum(p.retrieved, lang)}</p>                  </div>
                   <a href={p.url} target="_blank" rel="noreferrer" className="text-xs font-medium text-link hover:underline">{t("view", lang)}</a>
                 </li>
               ))}

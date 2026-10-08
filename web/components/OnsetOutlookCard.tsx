@@ -111,7 +111,9 @@ export function OnsetOutlookCard({ farmId }: { farmId: string }) {
           {tf("ml_coverage_line", lang, { pct: num((m.coverage ?? 0) * 100, 0) ?? "—" })}
         </p>
         <p className={`mt-1.5 text-[11px] leading-relaxed ${shipped ? "text-lime" : "text-amber"}`}>
-          {shipped ? t("ml_shipped_note", lang) : t("ml_experimental_note", lang)}
+          {shipped
+            ? t("ml_shipped_note", lang)
+            : tf("ml_experimental_note", lang, { model: num(m.mae_model_days) ?? "—", clim: num(m.mae_clim_days) ?? "—" })}
         </p>
       </div>
 

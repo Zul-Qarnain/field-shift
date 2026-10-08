@@ -3,7 +3,7 @@
 import { useContext, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Home, Sprout, CalendarRange, BookOpen, Database, Search } from "lucide-react";
+import { Home, Sprout, CalendarRange, BookOpen, Database, Search, MapPin, Zap } from "lucide-react";
 import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
 import { fmtNum, t } from "@/lib/i18n";
 import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
@@ -12,6 +12,8 @@ const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] =
   { href: "/", key: "nav_home", icon: Home },
   { href: "/field", key: "nav_field", icon: Sprout },
   { href: "/plan", key: "nav_plan", icon: CalendarRange },
+  { href: "/locate", key: "nav_locate", icon: MapPin },
+  { href: "/quick", key: "nav_quick", icon: Zap },
   { href: "/method", key: "nav_method", icon: BookOpen },
   { href: "/data", key: "nav_data", icon: Database },
 ];

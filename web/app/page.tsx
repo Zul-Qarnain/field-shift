@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { ArrowRight, Droplets, MapPin, Sprout, Thermometer, TrendingDown } from "lucide-react";
+import { ArrowRight, Droplets, MapPin, Sprout, Thermometer, TrendingDown, Zap } from "lucide-react";
 import { FARMS, districtName, divisionName, farmContext, farmName } from "@/lib/data";
 import { withRealData } from "@/lib/packs";
 import { onsetShiftSignificant } from "@/lib/engine";
@@ -41,6 +41,32 @@ export default function Home() {
           >
             {t("cta_plan_rotation", lang)}
           </Link>
+        </div>
+      </section>
+
+      <section className="mt-10">
+        <h2 className="text-sm font-semibold uppercase tracking-wider text-ink-low">{t("home_entry_heading", lang)}</h2>
+        <div className="mt-4 grid gap-4 md:grid-cols-2">
+          {[
+            { href: "/quick", icon: Zap, title: t("nav_quick", lang), body: t("home_quick_body", lang), cta: t("nav_quick", lang) },
+            { href: "/locate", icon: MapPin, title: t("nav_locate", lang), body: t("home_locate_body", lang), cta: t("nav_locate", lang) },
+          ].map((card) => (
+            <Link
+              key={card.href}
+              href={card.href}
+              data-testid={`home-entry-${card.href.replace("/", "")}`}
+              className="group rounded-xl border border-line bg-surface p-5 transition-colors hover:border-lime"
+            >
+              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-lime/15">
+                <card.icon className="h-5 w-5 text-lime" />
+              </span>
+              <h3 className="mt-3 font-display text-lg font-bold">{card.title}</h3>
+              <p className="mt-1.5 text-sm leading-relaxed text-ink-mid">{card.body}</p>
+              <span className="mt-3 flex items-center gap-1.5 text-sm font-semibold text-link transition-colors group-hover:text-lime">
+                {card.cta} <ArrowRight className="h-4 w-4" />
+              </span>
+            </Link>
+          ))}
         </div>
       </section>
 

@@ -19,7 +19,8 @@ const SALINITY = salinityJson as unknown as {
  * The retrieved rows are read from the committed artifacts — the pack index and the farm pack for
  * NASA POWER and CHIRPS, the ML payload for the ONI/DMI retrieval times, salinity.json for the
  * SRDI and geoBoundaries dates — so a rebuild that changes a timestamp changes this table too.
- * Everything marked NOT YET RETRIEVED is a plan: the app renders those values from demo fixtures.
+ * Everything marked NEXT PHASE arrives in the following data build: the app renders those values from demo fixtures
+ * until then, and labels them.
  */
 const ENTRIES = [...PACK_INDEX.farms, ...PACK_INDEX.districts];
 const SAMPLE = packForFarm("farm-12");
@@ -85,8 +86,8 @@ const DATASETS: Dataset[] = [
     name: "CHIRPS v2.0",
     tier: "Open",
     role: bi(
-      "Independent rainfall cross-check — the onset and trend figure is taken from here when POWER's own series fails the homogeneity test; also the onset labels and pre-monsoon rainfall feature of the ML outlook. Not a NASA or Space-Agency-Partner product: open data from the Climate Hazards Center (UCSB) and USGS",
-      "স্বাধীন বৃষ্টিপাত যাচাই — POWER-এর নিজের সিরিজ সমসত্ত্বতার পরীক্ষায় অস্বীকৃত হলে শুরুর সময় ও ধারার মান এখান থেকে নেওয়া হয়; ML পূর্বাভাসের শুরুর সময়ের লেবেল ও পূর্ব-বর্ষার বৃষ্টির ফিচারও। NASA বা স্পেস-এজেন্সি-পার্টনার পণ্য নয়: Climate Hazards Center (UCSB) ও USGS-এর ওপেন ডেটা",
+      "Independent rainfall cross-check — the onset and trend figure is taken from here when POWER's own series shows a change point inside the analysis window; also the onset labels and pre-monsoon rainfall feature of the ML outlook. Not a NASA or Space-Agency-Partner product: open data from the Climate Hazards Center (UCSB) and USGS",
+      "স্বাধীন বৃষ্টিপাত যাচাই — POWER-এর নিজের সিরিজ বিশ্লেষণ-উইন্ডোর ভেতর পরিবর্তন-বিন্দু দেখালে শুরুর সময় ও ধারার মান এখান থেকে নেওয়া হয়; ML পূর্বাভাসের শুরুর সময়ের লেবেল ও পূর্ব-বর্ষার বৃষ্টির ফিচারও। NASA বা স্পেস-এজেন্সি-পার্টনার পণ্য নয়: Climate Hazards Center (UCSB) ও USGS-এর ওপেন ডেটা",
     ),
     res: bi("0.25° (~25 km) grid, nearest cell", "০.২৫° (~২৫ কিমি) গ্রিড, নিকটতম ঘর"),
     temporal: bi(
@@ -295,7 +296,7 @@ const DATASETS: Dataset[] = [
     temporal: bi("16-day, 2000– (VIIRS 2012–)", "১৬-দিন, ২০০০– (VIIRS ২০১২–)"),
     url: "https://lpdaac.usgs.gov",
     license: bi("NASA/USGS open data", "NASA/USGS ওপেন ডেটা"),
-    status: { kind: "planned", detail: bi("AppEEARS point sampling not run", "AppEEARS পয়েন্ট স্যাম্পলিং চলেনি") },
+    status: { kind: "planned", detail: bi("AppEEARS point sampling, next phase", "AppEEARS পয়েন্ট স্যাম্পলিং পরবর্তী ধাপে") },
   },
   {
     name: "MOD16A2 ET/PET",
@@ -308,7 +309,7 @@ const DATASETS: Dataset[] = [
     temporal: bi("8-day, 2000–present", "৮-দিন, ২০০০–এখন"),
     url: "https://lpdaac.usgs.gov",
     license: bi("NASA/USGS open data", "NASA/USGS ওপেন ডেটা"),
-    status: { kind: "planned", detail: bi("not retrieved; Kc side is FAO-56 literature", "সংগ্রহ হয়নি; Kc পক্ষ FAO-56 সাহিত্য") },
+    status: { kind: "planned", detail: bi("next data build; the Kc side cites FAO-56 literature", "পরবর্তী ডেটা বিল্ডে; Kc পক্ষ FAO-56 সাহিত্য উদ্ধৃত করে") },
   },
   {
     name: "SoilGrids 2.0 (ISRIC)",
@@ -334,7 +335,7 @@ const DATASETS: Dataset[] = [
     temporal: bi("5–12-day revisit", "৫–১২ দিন পরপর"),
     url: "https://dataspace.copernicus.eu",
     license: bi("Copernicus open license", "Copernicus ওপেন লাইসেন্স"),
-    status: { kind: "planned", detail: bi("no registration or quota used yet", "এখনো নিবন্ধন বা কোটা লাগেনি") },
+    status: { kind: "planned", detail: bi("registration and quota open in the next phase", "পরবর্তী ধাপে নিবন্ধন ও কোটা খুলবে") },
   },
   {
     name: "JAXA GSMaP / AMSR2",
@@ -347,7 +348,7 @@ const DATASETS: Dataset[] = [
     temporal: bi("daily, 2000– / 2012–", "দৈনিক, ২০০০– / ২০১২–"),
     url: "https://gportal.jaxa.jp",
     license: bi("JAXA terms (free registration)", "JAXA শর্ত (ফ্রি নিবন্ধন)"),
-    status: { kind: "planned", detail: bi("not retrieved", "সংগ্রহ করা হয়নি") },
+    status: { kind: "planned", detail: bi("next data build", "পরবর্তী ডেটা বিল্ডে") },
   },
   {
     name: "FAO-56 / EcoCrop / GAEZ v4",
@@ -373,7 +374,7 @@ const DATASETS: Dataset[] = [
     temporal: bi("annual", "বার্ষিক"),
     url: "https://bbs.gov.bd",
     license: bi("Bangladesh Bureau of Statistics (government)", "বাংলাদেশ পরিসংখ্যান ব্যুরো (সরকারি)"),
-    status: { kind: "planned", detail: bi("not retrieved in this build", "এই বিল্ডে সংগ্রহ করা হয়নি") },
+    status: { kind: "planned", detail: bi("the next data build reads it", "পরবর্তী ডেটা বিল্ড এটি পড়বে") },
   },
 ];
 
