@@ -17,6 +17,15 @@ Companion to `docs/AI_USE.md` — the "Use of AI" disclosure asks for the tools,
 | 30 Sep 2026 | Cursor/Grok (review) | "Bilingual salinity penalty and card; single requirements.txt; keep the honesty features intact." | `83139b1`, `126c14d`, `c4ad663` — merge commits bringing the audit cleanup into the salinity and ML workstreams |
 | 30 Sep 2026 | Qoder CLI (this worktree), docs only | "Docs last: record v1.4 in the architecture (crop pool, ML vs ADR-005, onset v2 + homogeneity + cross-check + gate + salinity), rewrite the README against real counts and real findings, make the Data page show each dataset's real retrieval date and mark the unretrieved ones, fix the Method page, and disclose the AI use truthfully." | the docs change on `wip/docs` (uncommitted here — `docs/FIELD_SHIFT_SYSTEM_ARCHITECTURE.md` v1.4 + ADR-008/009/010, `README.md`, `docs/AI_USE.md`, `docs/prompts_used.md`, `web/app/data/page.tsx`, `web/app/method/page.tsx`, `web/lib/i18n.ts`) |
 
+## Entries — 9 October 2026 ("next improvements" round, branch `feat/next-improvements`)
+
+| Date | Tool | Prompt (condensed) | Result |
+| --- | --- | --- | --- |
+| 9 Oct 2026 | Cursor/Grok (reviewer) | "Build a 'this season so far' nowcast on NASA POWER with a committed fallback: one request per point for PRECTOTCORR/T2M/GWETTOP 2017→yesterday, a 2017–2025 calendar-day normal after POWER's precipitation step, last-60-day window ending at the last complete day, summaries the browser must reproduce exactly; a 64-district table from the geoBoundaries CSV with Bangla names." | `src/compute/nowcast.py`, `scripts/build_nowcast.py`, `scripts/build_district_table.py`, `tests/test_nowcast.py`, 70 packs in `web/public/data/nowcast/`, `web/public/data/districts.json` |
+| 9 Oct 2026 | Qoder CLI (Qwen3.8-Flash), reviewed by Cursor/Grok | "Port the nowcast summary to TypeScript and fetch POWER live with a timeout; nowcast card, outage banner with retry and no fake numbers; location picker snapping to the nearest of 70 points with the distance; quick answer (district → crop → priority → top 3) with a stacked score that adds up to the total and the full analysis behind 'See why'; forward-looking wording without claiming the ML model beats climatology." | web/lib (`nowcast.ts`, `useNowcast.ts`, `locate.ts`, `quick.ts`), components and the `/quick` and `/locate` routes, Vitest tests |
+| 9 Oct 2026 | Qoder CLI, reviewed by Cursor/Grok | "Review fixes (retry must recover from a failed load; never rank a district on a borrowed onset fixture; rounded labels) and a Playwright suite against the production build: home → Bangla → farm → what-if changes the ranking, quick answer arithmetic, location snapping, outage banner and retry — with NASA POWER always mocked." | `web/e2e/`, `web/playwright.config.ts`, `test:e2e` script |
+| 9 Oct 2026 | Cursor/Grok (reviewer) | "Record it: ADR-011 (live nowcast + fallback), ADR-012 (quick answer + location picker), README and test counts." | `docs/FIELD_SHIFT_SYSTEM_ARCHITECTURE.md` v1.5, README |
+
 ## What to append, oldest first
 
 For every significant prompt:
@@ -30,7 +39,7 @@ For every significant prompt:
 
 ## Where the reasoning already lives
 
-- `docs/FIELD_SHIFT_SYSTEM_ARCHITECTURE.md` — decisions, data contracts and ADRs (ADR-008/009/010 are the v1.4 records).
+- `docs/FIELD_SHIFT_SYSTEM_ARCHITECTURE.md` — decisions, data contracts and ADRs (ADR-008/009/010 are the v1.4 records; ADR-011/012 the v1.5 ones).
 - `docs/AI_USE.md` — what the AI did and, equally, what it did not do.
 - `docs/science/onset.md`, `docs/science/onset_ml.md` — the measurements behind the findings, with the commands that reproduce them.
 - Git history — what actually landed, per reviewed commit.
