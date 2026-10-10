@@ -44,4 +44,4 @@ For every significant prompt:
 - `docs/science/onset.md`, `docs/science/onset_ml.md` — the measurements behind the findings, with the commands that reproduce them.
 - Git history — what actually landed, per reviewed commit.
 
-*(TEAM TO FILL IN: link the verbatim session exports, and name the AI video tool, before the submission is locked.)*
+The prompts for the project video — the Gemini text-to-speech style prompt and every narration line, verbatim, and the scene descriptions of the Google Veo clips — are in [`AI_USE.md`](AI_USE.md), section 3.

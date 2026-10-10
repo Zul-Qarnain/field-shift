@@ -10,24 +10,35 @@
 
 **Live demo → https://field-shift-tan.vercel.app** · Challenge: *Field Shift: Adapting Farms with NASA Data* · NASA Space Apps Challenge 2026, Bangladesh local event.
 
+The feature descriptions and screenshots below describe the code on `main`. Run it yourself in two commands (see [Quickstart](#quickstart)) to see exactly that build.
+
 Field Shift is a decision-support web app for Bangladesh's three-season farming calendar. Every displayed figure names the dataset it came from, its version and the day it was retrieved; every recommendation opens a **"See why"** panel with the arithmetic behind it. There is no backend, no API key and no runtime language model — the science runs in Python before the build, ships as committed JSON data packs, and is scored deterministically in the browser.
 
 ### Contents
 
 | | | |
 |---|---|---|
-| [The problem](#the-problem) | [Data sources](#data-sources) | [Testing](#testing) |
-| [How we answer the challenge](#how-we-answer-the-challenge) | [Tech stack](#tech-stack) | [Roadmap](#roadmap) |
-| [Features](#features) | [Project structure](#project-structure) | [Team](#team) |
-| [How it works](#how-it-works) | [Quickstart](#quickstart) | [Documentation](#documentation) |
-| [The scoring and rotation engine](#the-scoring-and-rotation-engine) | | [Acknowledgments, license and disclaimer](#acknowledgments-license-and-disclaimer) |
-| [Machine-learning monsoon forecast](#machine-learning-monsoon-forecast) | | |
+| [Challenge](#challenge) | [Machine-learning monsoon forecast](#machine-learning-monsoon-forecast) | [Testing](#testing) |
+| [The problem](#the-problem) | [Data sources](#data-sources) | [Roadmap](#roadmap) |
+| [How we answer the challenge](#how-we-answer-the-challenge) | [Tech stack](#tech-stack) | [Team](#team) |
+| [NASA data used](#nasa-data-used) | [Project structure](#project-structure) | [Documentation](#documentation) |
+| [Features](#features) | [Quickstart](#quickstart) | [Use of AI](#use-of-ai) |
+| [How it works](#how-it-works) | [References](#references) | [Acknowledgments, license and disclaimer](#acknowledgments-license-and-disclaimer) |
+| [The scoring and rotation engine](#the-scoring-and-rotation-engine) | | |
+
+---
+
+## Challenge
+
+**Field Shift: Adapting Farms with NASA Data** — [NASA Space Apps Challenge 2026](https://www.spaceappschallenge.org/2026/challenges/field-shift-adapting-farms-with-nasa-data/), Bangladesh local event.
+
+The challenge asks for a decision-support tool that uses NASA Earth observations together with local soil information, crop characteristics and farmer priorities to help farmers explore rotation strategies that strengthen soil health and adapt their farms to changing conditions. Field Shift is that tool for Bangladesh: pick a farm or a district, set what matters, and read ranked rotations with the arithmetic and the data source behind every score.
 
 ---
 
 ## The problem
 
-**Karim, a farmer in Satkhira, has to decide in April what to plant for the next three seasons — while the rains, the heat and the salt in his soil keep shifting.**
+**Karim, a farmer in Bangladesh, has to decide in April what to plant for the next three seasons — while the rains, the heat and the salt in his soil keep shifting.** *(Karim is the fictional farmer of our project video — see [Use of AI](#use-of-ai).)*
 
 By 2050, one-third of Bangladesh's agricultural GDP may be lost due to climate variability and extreme events — [World Bank, *Country Climate and Development Report for Bangladesh* (2022)](https://www.worldbank.org/en/news/feature/2022/10/31/key-highlights-country-climate-and-development-report-for-bangladesh).
 
@@ -51,6 +62,22 @@ Karim's real questions are not "what is the rainfall anomaly". They are: *has my
 
 ---
 
+## NASA data used
+
+Every NASA product in Field Shift, and what it is used for. The non-NASA layers (CHIRPS, SRDI, FAO, NOAA, geoBoundaries, OpenStreetMap) are listed with their licences under [Data sources](#data-sources).
+
+| NASA dataset | Parameters / product | Used for |
+|---|---|---|
+| **NASA POWER** daily point API (v2.10.0, community AG), 1981-01-01 → 2026-09-27, 70 locations | `PRECTOTCORR` — corrected precipitation | Monsoon-onset detection (rule v2), the two-era Mann-Whitney comparison, rainfall trend and change-point statistics |
+| | `T2M`, `T2M_MAX` — 2 m mean and maximum temperature | Mean-temperature change, heat days above 35 °C, the engine's thermal-fit and resilience components, and ML features |
+| | `GWETROOT` — root-zone soil wetness | Modelled root-zone wetness on every farm and district card, and an ML feature |
+| | `RH2M` — 2 m relative humidity | ML feature (humidity anomaly) |
+| | `T2M_MIN`, `ALLSKY_SFC_SW_DWN` | Retrieved with the series and kept in the local cache for reproducibility |
+| **NASA POWER** nowcast series, 2017-01-01 → 2026-10-07, 70 locations; also called live from the browser | `PRECTOTCORR`, `T2M`, `GWETTOP` — surface soil wetness | The "This season so far" card: last 30/60 days against each point's own 2017–2025 calendar normal |
+| **NASA GIBS** — VIIRS NOAA-20 True Color (EOSDIS) | WMTS `GoogleMapsCompatible_Level9` tiles | Satellite imagery overlay on the location picker and farm map |
+
+---
+
 ## Features
 
 ### Start here — two ways in
@@ -70,7 +97,7 @@ The home page offers the quick answer and the location picker next to the six de
 
 ### Quick answer — `/quick`
 
-Three choices on one screen: a district (any of the 64), the crop standing in the field now, and what matters most. The answer is the top three rotations that keep that crop in its season, each drawn as a **stacked score bar** — the eight component contributions, the penalties as a subtraction, the early-onset credit — with the equation printed underneath so the parts visibly add up to the total. *See why* opens the full analysis: every component's value × weight, every penalty with its rule and source, the reasons, the risks and the inputs used — that district's own NASA POWER pack and onset verdict, SRDI's district-level salinity rollup, and the nearest demo farm's soil, water and irrigation inputs, named with its distance (district-level soil layers are in progress for the next phase).
+Three choices on one screen: a district (any of the 64), the crop standing in the field now, and what matters most. The answer is the top three rotations that keep that crop in its season, each drawn as a **stacked score bar** — the eight component contributions, the penalties as a subtraction, the early-onset credit — with the equation printed underneath so the parts visibly add up to the total. *See why* opens the full analysis: every component's value × weight, every penalty with its rule and source, the reasons, the risks and the inputs used — that district's own NASA POWER pack and onset verdict, SRDI's district-level salinity rollup, and the nearest demo farm's soil, water and irrigation inputs, named with its distance.
 
 <table>
   <tr>
@@ -482,6 +509,42 @@ In the next phase we plan to add the satellite layers above as scored inputs, di
 - [Use of AI — `docs/AI_USE.md`](docs/AI_USE.md) — tools, what they did and did not do; prompt log in [`docs/prompts_used.md`](docs/prompts_used.md)
 
 **Project video:** linked on our Space Apps project page.
+
+---
+
+## Use of AI
+
+Field Shift follows the NASA Space Apps rule on AI: every AI tool is named, with its prompts, its reasoning and the data it worked on, and no generated content is left unexplained. The full disclosure is in [`docs/AI_USE.md`](docs/AI_USE.md).
+
+| Where AI was used | Tool | Data it worked on |
+|---|---|---|
+| **Machine learning** — the monsoon-onset forecast | **LightGBM** gradient boosting, trained offline | CHIRPS rainfall, NASA POWER weather, NOAA ONI / DMI ocean indices |
+| **Coding, audits and documentation** | **Qoder CLI** (Qwen3.8-Flash) for implementation; Cursor / Grok agents for planning and review — all under human direction | This repository's code, documents and the public datasets above |
+| **Story clips** in the project video | **Google Veo** — AI-generated video; the farmer "Karim" is fictional, not a real person | Text descriptions of scenes |
+| **Narration voice** in the project video | **Google Gemini text-to-speech**, voice *Sulafat* | The team's narration script |
+| **Video support tools** | **faster-whisper** (speech-to-text, to time and check subtitles), **Demucs** (to confirm the clip audio held no speech) | The video's own audio |
+| **UI concept image** (`docs/Codex Image…png`) | AI image generation; a design sketch with illustrative values | None — it is not a data product |
+| Background music | *Inspired* by Kevin MacLeod, CC BY 4.0 — **not AI** | — |
+
+**No AI-generated data is used as a scientific input.** Every figure in the app comes from a named dataset through deterministic code; no language model runs in the app. The team's own work — the data pipeline, the scoring engine, the app design, the script, the editing and the demo — is described in `docs/AI_USE.md`, with the prompt log in [`docs/prompts_used.md`](docs/prompts_used.md).
+
+---
+
+## References
+
+- World Bank (2022). *Country Climate and Development Report for Bangladesh.* [Key highlights](https://www.worldbank.org/en/news/feature/2022/10/31/key-highlights-country-climate-and-development-report-for-bangladesh).
+- NASA Langley Research Center. *Prediction Of Worldwide Energy Resources (POWER) Project*, daily API. [power.larc.nasa.gov](https://power.larc.nasa.gov/).
+- NASA EOSDIS — *Global Imagery Browse Services (GIBS)*. [earthdata.nasa.gov/gibs](https://earthdata.nasa.gov/gibs).
+- Funk, C. et al. (2015). The climate hazards infrared precipitation with stations — a new environmental record for monitoring extremes. *Scientific Data* 2:150066.
+- Moron, V. & Robertson, A. W. (2014). Interannual variability of Indian summer monsoon rainfall onset date at local scale. *International Journal of Climatology* 34(4):1050–1061. [doi:10.1002/joc.3745](https://doi.org/10.1002/joc.3745)
+- Pettitt, A. N. (1979). A non-parametric approach to the change-point problem. *Journal of the Royal Statistical Society C* 28(2):126–135.
+- Mann, H. B. & Whitney, D. R. (1947). On a test of whether one of two random variables is stochastically larger than the other. *Annals of Mathematical Statistics* 18(1):50–60.
+- Soil Resource Development Institute, Ministry of Agriculture, Government of Bangladesh (2010). *Saline Soils of Bangladesh*, Appendix-2.
+- Ayers, R. S. & Westcot, D. W. (1985). *Water quality for agriculture.* FAO Irrigation and Drainage Paper 29 Rev. 1, Table 4.
+- Runfola, D. et al. (2020). geoBoundaries: a global database of political administrative boundaries. *PLoS ONE* 15(4): e0231866.
+- Ke, G. et al. (2017). LightGBM: a highly efficient gradient boosting decision tree. *Advances in Neural Information Processing Systems* 30.
+- Lundberg, S. M. et al. (2020). From local explanations to global understanding with explainable AI for trees. *Nature Machine Intelligence* 2:56–67.
+- NOAA Physical Sciences Laboratory — Oceanic Niño Index (ERSSTv6 Niño 3.4) and Dipole Mode Index (HadISST1.1). [psl.noaa.gov/data/climateindices](https://psl.noaa.gov/data/climateindices/list/).
 
 ---
 
