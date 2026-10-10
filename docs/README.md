@@ -10,7 +10,7 @@ Start at the [README](../README.md). This folder holds the long-form detail behi
 | [science/onset.md](science/onset.md) | Monsoon-onset science — the definition rule, the homogeneity finding, the CHIRPS cross-check, and the significance gate. |
 | [science/onset_ml.md](science/onset_ml.md) | Machine-learning onset outlook — data, features, leakage controls and the backtest design. |
 | [AI_USE.md](AI_USE.md) | Use of AI — every AI tool named, what it did and did not do, and the data it worked on. |
-| [prompts_used.md](prompts_used.md) | The coding prompt log behind each workstream, oldest first, with the commit it produced. |
+| [prompts_used.md](prompts_used.md) | The coding prompt log behind each workstream, oldest first, with the commit it produced; the full [master architecture prompt](prompts/master_architecture_prompt.md) is alongside. |
 | [screenshots/](screenshots/) | `readme/` holds the nine captures used in the README; the folder also has per-page desktop, mobile and scenario captures. |
 | [lighthouse/](lighthouse/) | Lighthouse performance reports for the local and production builds. |
 
