@@ -242,11 +242,11 @@ def test_status_rule_ships_only_when_the_model_beats_climatology():
     bad = [_pred(2000, "a", 170.0, 179.0, 175.0), _pred(2000, "b", 176.0, 169.0, 172.0)]
     assert M.metrics_from_predictions(good)["status"] == "shipped"
     assert M.metrics_from_predictions(good)["skill"] > 0
-    assert M.metrics_from_predictions(bad)["status"] == "experimental"
+    assert M.metrics_from_predictions(bad)["status"] == "validating"
     assert M.metrics_from_predictions(bad)["skill"] <= 0
-    assert M.status_from_skill(0.0) == "experimental"
-    assert M.status_from_skill(-0.2) == "experimental"
-    assert M.status_from_skill(float("nan")) == "experimental"
+    assert M.status_from_skill(0.0) == "validating"
+    assert M.status_from_skill(-0.2) == "validating"
+    assert M.status_from_skill(float("nan")) == "validating"
 
 
 def _pred(year: int, district: str, observed: float, predicted: float, clim: float) -> M.Prediction:

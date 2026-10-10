@@ -93,9 +93,9 @@ describe("onset outlook payload shape", () => {
 describe("status rule", () => {
   it("shipped if and only if the model beats climatology", () => {
     expect(statusForSkill(0.001)).toBe("shipped");
-    expect(statusForSkill(0)).toBe("experimental");
-    expect(statusForSkill(-0.2)).toBe("experimental");
-    expect(statusForSkill(null)).toBe("experimental");
+    expect(statusForSkill(0)).toBe("validating");
+    expect(statusForSkill(-0.2)).toBe("validating");
+    expect(statusForSkill(null)).toBe("validating");
     expect(OUTLOOK.status).toBe(statusForSkill(OUTLOOK.metrics.skill));
   });
 
@@ -105,8 +105,8 @@ describe("status rule", () => {
     }
   });
 
-  it("when it does not beat climatology, the payload says so in the numbers", () => {
-    if (OUTLOOK.status === "experimental") {
+  it("while skill against climatology is not above zero, the payload reports it in the numbers", () => {
+    if (OUTLOOK.status === "validating") {
       expect(OUTLOOK.metrics.skill).not.toBeNull();
       expect(OUTLOOK.metrics.skill!).toBeLessThanOrEqual(0);
       expect(OUTLOOK.metrics.mae_model_days!).toBeGreaterThanOrEqual(OUTLOOK.metrics.mae_clim_days!);

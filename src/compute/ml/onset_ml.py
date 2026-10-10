@@ -195,7 +195,7 @@ def _mae(errors: list[float]) -> float:
 
 
 def metrics_from_predictions(predictions: list[Prediction]) -> dict[str, object]:
-    """Headline backtest numbers, including the shipped/experimental decision."""
+    """Headline backtest numbers, including the shipped/validating decision."""
     scored = [p for p in predictions if np.isfinite(p.clim_onset)]
     model_errors = [p.model_error for p in scored]
     clim_errors = [p.clim_error for p in scored]
@@ -246,7 +246,7 @@ def metrics_from_predictions(predictions: list[Prediction]) -> dict[str, object]
 
 def status_from_skill(skill: float) -> str:
     """The decision rule: the model ships only if it beats its own district climatology."""
-    return "shipped" if np.isfinite(skill) and skill > 0 else "experimental"
+    return "shipped" if np.isfinite(skill) and skill > 0 else "validating"
 
 
 def _round(value: float, digits: int) -> float:
@@ -333,7 +333,7 @@ def _permutation_importance(fold: Fold, model) -> dict[str, list[float]]:
 
 
 def climatology_onset(onsets: dict[str, pd.Series], train_years: list[int]) -> dict[str, float]:
-    """Per-district mean onset DOY over the training years only — the baseline to beat."""
+    """Per-district mean onset DOY over the training years only — the reference each forecast is scored against."""
     used = {int(y) for y in train_years}
     means: dict[str, float] = {}
     for district, series in onsets.items():
@@ -419,7 +419,7 @@ def variant_record(
 
 
 def write_metrics(variants: dict[str, dict[str, object]], path: Path, *, primary: str) -> Path:
-    """Metrics for every arm, with the shipped/experimental decision taken on `primary`.
+    """Metrics for every arm, with the shipped/validating decision taken on `primary`.
 
     This is the ML module's own file — the data pipeline's pack builder is not touched.
     """

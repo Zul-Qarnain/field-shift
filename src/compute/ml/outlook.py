@@ -215,7 +215,7 @@ def build_payload(
 
     return {
         "model_version": MODEL_VERSION,
-        "status": str(metrics.get("status", "experimental")),
+        "status": str(metrics.get("status", "validating")),
         "issue_date": issue_date,
         "outlook_year": OUTLOOK_YEAR,
         "trained_on": {

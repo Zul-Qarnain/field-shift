@@ -4,7 +4,7 @@ import outlookJson from "../public/data/onset_outlook.json";
  * The outlook the offline build wrote into web/public/data/onset_outlook.json.
  * The browser reads a statement about a model; it does not run the model.
  */
-export type OutlookStatus = "shipped" | "experimental";
+export type OutlookStatus = "shipped" | "validating";
 
 export interface FeatureContribution {
   feature: string;
@@ -117,7 +117,7 @@ export const OUTLOOK = outlookJson as unknown as OnsetOutlook;
 
 /** The rule the build applies, restated here so the UI cannot claim more than the code means. */
 export const statusForSkill = (skill: number | null): OutlookStatus =>
-  skill !== null && Number.isFinite(skill) && skill > 0 ? "shipped" : "experimental";
+  skill !== null && Number.isFinite(skill) && skill > 0 ? "shipped" : "validating";
 
 export const beatsClimatology = (outlook: OnsetOutlook): boolean => outlook.status === "shipped";
 

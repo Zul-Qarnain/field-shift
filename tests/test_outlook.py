@@ -119,7 +119,7 @@ def test_payload_splits_districts_and_farms(fitted, records):
 
 
 def test_observed_onset_is_reported_alongside_the_prediction(fitted, records):
-    metrics = {"status": "experimental", "mae_model_days": 9.0}
+    metrics = {"status": "validating", "mae_model_days": 9.0}
     payload = O.build_payload(
         fitted, metrics, records, issue_date="2026-04-25", observed={"dhaka": 168.4}, label_note="x"
     )
@@ -132,11 +132,11 @@ def test_observed_onset_is_reported_alongside_the_prediction(fitted, records):
 
 
 def test_write_payload_produces_browser_safe_json(tmp_path, fitted, records):
-    metrics = {"status": "experimental", "mae_clim_days": float("nan")}
+    metrics = {"status": "validating", "mae_clim_days": float("nan")}
     payload = O.build_payload(fitted, metrics, records, issue_date="2026-04-25", label_note="x")
     path = O.write_payload(payload, tmp_path / "onset_outlook.json")
     text = path.read_text()
     assert "NaN" not in text
     parsed = json.loads(text)
     assert parsed["metrics"]["mae_clim_days"] is None
-    assert parsed["status"] == "experimental"
+    assert parsed["status"] == "validating"

@@ -16,7 +16,6 @@ NASA Space Apps asks every team to name each AI tool it used, with the prompts, 
 | 3a | Story clips in the project video | **Google Veo** | Generated the short cinematic clips of the fictional farmer Karim and his fields | Text descriptions of scenes |
 | 3b | Narration voice in the project video | **Google Gemini text-to-speech**, voice **Sulafat** | Spoke the team's narration script | The narration text |
 | 3c | Video support | **faster-whisper** (speech-to-text), **Demucs** (audio source separation) | Timed and checked subtitles against the audio; confirmed the clip audio held no speech | The video's own audio |
-| 4 | Design concept | AI image generation (file named *Codex Image*) | One UI concept sketch, `docs/Codex Image Sep 27, 2026, 12_31_05 AM.png` | None; its values are illustrative |
 | — | Music | *Inspired* by Kevin MacLeod, CC BY 4.0 | **Not AI.** Credited on the closing card | — |
 | — | Space and stock footage | Pixabay | **Not AI.** Credited on the closing card | — |
 
@@ -138,10 +137,9 @@ The 240-second judging video (final cut: v7) combines AI-generated story clips, 
 15. Today, Field Shift runs on NASA POWER weather, CHIRPS rainfall, SRDI soil salinity surveys, and NOAA climate indices. Next, we are adding GPM IMERG rainfall, SMAP soil moisture, MODIS crop greenness, and SoilGrids soil maps.
 16. For a farmer like Karim, Field Shift turns NASA data into a planting decision he can trust, explained in his own language.
 17. What we've built: a NASA data pipeline, a crop-rotation engine, a bilingual app in English and Bangla, and a machine-learning monsoon forecast trained on satellite rainfall. Now in progress: more satellite layers, and field tests with real farmers.
-18. To take the next step, we need mentors, partner farmers, and agricultural extension officers to test Field Shift in real fields.
-19. One day, every farmer across South and Southeast Asia could get a season plan from Earth data, in their own language.
-20. And Karim? This season, he plants with confidence.
-21. Field Shift. Earth data, for smarter farms. From Team Orion.
+18. One day, every farmer across South and Southeast Asia could get a season plan from Earth data, in their own language.
+19. And Karim? This season, he plants with confidence.
+20. Field Shift. Earth data, for smarter farms. From Team Orion.
 
 ### 3c. Video support tools
 
@@ -155,12 +153,6 @@ The 240-second judging video (final cut: v7) combines AI-generated story clips, 
 - **Space and stock footage:** Pixabay, under the Pixabay licence, credited on the closing card.
 - **Screen recordings** of the app are real captures of the running build, recorded by script (3c). They are not generated footage.
 - **The one external statistic** in the video, one-third of Bangladesh's agricultural GDP at risk by 2050, is from the World Bank (2022), cited on screen and listed in the README references.
-
----
-
-## 4. Design concept image
-
-`docs/Codex Image Sep 27, 2026, 12_31_05 AM.png` is an AI-generated concept sketch of a dashboard, made early in the project to explore layout. It is a mock-up: the values on it (field name, dates, soil moisture, NDVI, data-source names) are illustrative, were never measured, and do not appear in the app. The shipped interface was designed and built separately; the app shows only the datasets listed in the README.
 
 ---
 

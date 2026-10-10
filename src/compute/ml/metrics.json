@@ -32,7 +32,7 @@
     "lon"
   ],
   "primary_variant": "chirps",
-  "status": "experimental",
+  "status": "validating",
   "variants": {
     "chirps": {
       "training_years": {
@@ -58,7 +58,7 @@
         "mae_lag1_days": 13.31,
         "skill_vs_lag1": 0.129,
         "n_missing_prior": 64,
-        "status": "experimental"
+        "status": "validating"
       },
       "per_year": [
         {
@@ -454,7 +454,7 @@
         "mae_lag1_days": 15.89,
         "skill_vs_lag1": 0.058,
         "n_missing_prior": 64,
-        "status": "experimental"
+        "status": "validating"
       },
       "per_year": [
         {

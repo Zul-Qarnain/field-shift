@@ -1,6 +1,6 @@
 {
   "model_version": "onset-ml-v2",
-  "status": "experimental",
+  "status": "validating",
   "issue_date": "2026-04-25",
   "outlook_year": 2026,
   "trained_on": {
@@ -49,7 +49,7 @@
     "mae_lag1_days": 13.31,
     "skill_vs_lag1": 0.129,
     "n_missing_prior": 64,
-    "status": "experimental"
+    "status": "validating"
   },
   "backtest": "leave-one-year-out, all districts of a year held out together",
   "features": [
@@ -107,7 +107,7 @@
         "mae_lag1_days": 13.31,
         "skill_vs_lag1": 0.129,
         "n_missing_prior": 64,
-        "status": "experimental"
+        "status": "validating"
       },
       "per_year": [
         {
@@ -503,7 +503,7 @@
         "mae_lag1_days": 15.89,
         "skill_vs_lag1": 0.058,
         "n_missing_prior": 64,
-        "status": "experimental"
+        "status": "validating"
       },
       "per_year": [
         {

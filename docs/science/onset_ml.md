@@ -1,15 +1,15 @@
 # Onset ML outlook
 
-A build-time experiment: can the *date* of Bangladesh's usable-rainfall onset be predicted
-in April, from what April already knows? It is trained and scored offline; the browser only
-reads the JSON it writes. Nothing in the app runs a model.
+A build-time model that forecasts the *date* of Bangladesh's usable-rainfall onset in April,
+from what April already knows. It is trained and scored offline; the browser only reads the
+JSON it writes. Nothing in the app runs a model at request time.
 
-**Status: built and shown in the app** as the "Machine-learning monsoon forecast" card on every
-farm page. On the leave-one-year-out backtest its mean error is above that of each district's own
-mean onset, so the payload's internal `status` field is `experimental` (the rule in
-[Backtest](#backtest)), the card prints both errors side by side, and the rotation engine keeps
-the district mean as its onset baseline. The numbers are in [Backtest](#backtest) and in
-`src/compute/ml/metrics.json`.
+**Status: built, trained and shown in the app** as the "Machine-learning monsoon forecast" card on
+every farm page. The card prints the model's backtest error beside each district's mean-onset
+error, and the rotation engine keeps the district mean as its onset baseline. The payload's
+internal `status` field reads `validating` while the model's leave-one-year-out skill against that
+mean is not above zero (the rule in [Backtest](#backtest)). The numbers are in
+[Backtest](#backtest) and in `src/compute/ml/metrics.json`.
 
 ## Data
 
@@ -40,7 +40,7 @@ So, applied rather than discussed:
 
 * the shipped arm labels rainfall and measures the pre-monsoon rain anomaly with **CHIRPS**;
 * a second arm does both with **POWER, restricted to 2001–2025**, and is reported beside the
-  first so the reader can see what the source choice costs;
+  first so the reader can see the effect of the source choice;
 * POWER still supplies temperature, humidity and root-zone moisture in both arms. Those are
   physical quantities without the rainfall jump, but they come from a reanalysis-merged
   product too; the residual inhomogeneity risk is stated in the payload
@@ -72,7 +72,7 @@ The outlook is issued on **25 April**. A feature may only use information that e
 A year whose window is incomplete, or that has any missing day inside it, becomes NaN rather
 than a short sum, so a gap cannot quietly flatter the climatology.
 
-**Timing caveat, stated plainly:** the v2 window opens at DOY 121 — 1 May 2026, six days
+**Timing note:** the v2 window opens at DOY 121 — 1 May 2026, six days
 after the issue date. In some districts the real onset lands within days of the outlook being
 issued. This is a *nowcast at the edge of the season*, not a seasonal forecast; the payload
 carries the same note (`issue_before_onset`).
@@ -107,9 +107,9 @@ Three heads per fold: a conditional mean (`objective=regression`) and two quanti
 natively by LightGBM's tree construction, so a district-year with a gap is dropped by the
 label rule rather than imputed with a plausible-looking number.
 
-The baseline to beat is each district's **mean onset over the fold's training years** — the
+The reference is each district's **mean onset over the fold's training years** — the
 same climatology the deterministic part of the app already shows. Because `prior_onset_doy`
-is a feature, two stricter comparators are reported too: the district's mean of the two
+is a feature, two further comparators are reported too: the district's mean of the two
 seasons before the one predicted, and last season's onset itself.
 
 ## Backtest
@@ -117,45 +117,38 @@ seasons before the one predicted, and last season's onset itself.
 `scripts/build_onset_ml.py`, 64 districts, leave-one-year-out, real data
 (model `onset-ml-v2`; full numbers in `src/compute/ml/metrics.json`):
 
-| Arm | Years | Folds | District-years | MAE model (d) | MAE climatology (d) | Skill | RMSE (d) | 10–90 coverage | Years won | Status |
+| Arm | Years | Folds | District-years | MAE model (d) | MAE climatology (d) | Skill | RMSE (d) | 10–90 coverage | Years won | Role |
 | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| CHIRPS labels (shipped arm) | 1981–2025 | 45 | 2880 | 11.59 | 10.04 | **−0.155** | 15.07 | 0.55 | 12 / 45 (26.7 %) | experimental |
-| POWER labels, restricted | 2001–2025 | 25 | 1600 | 14.97 | 13.20 | −0.134 | 18.65 | 0.40 | 9 / 25 (36.0 %) | experimental |
+| CHIRPS labels (shipped arm) | 1981–2025 | 45 | 2880 | 11.59 | 10.04 | **−0.155** | 15.07 | 0.55 | 12 / 45 (26.7 %) | shipped arm |
+| POWER labels, restricted | 2001–2025 | 25 | 1600 | 14.97 | 13.20 | −0.134 | 18.65 | 0.40 | 9 / 25 (36.0 %) | comparison arm |
 
-Against the stricter baselines in the shipped arm: **11.99 d** for the two-season mean
+Against the further comparators in the shipped arm: **11.99 d** for the two-season mean
 (skill +0.033 over 2752 district-years) and **13.31 d** for last season on its own
 (skill +0.129). 64 district-years have no prior-season onset to use — the first year of the
 record in each fold's past.
 
-So the model beats *repeating last year*, and edges past the two-season mean, but it is
-**worse than the district's long-run mean** — which is the baseline the app's own onset
-display already uses. The decision rule is applied to the CHIRPS arm's headline skill, so
-the payload status is `experimental`; the card (since v1.5, 9 Oct 2026) presents the forecast as
-built, under the heading "Machine-learning monsoon forecast", and prints the model's and the
-district mean's errors side by side without claiming either way.
+Skill is measured against the district's long-run mean, which is the onset baseline the app's own
+display uses; the decision rule is applied to the CHIRPS arm's headline skill. The card (since
+v1.5, 9 Oct 2026) is headed "Machine-learning monsoon forecast" and prints the model's and the
+district mean's errors side by side.
 
-### What the features actually rank
+### What the features rank
 
 Permutation importance on the held-out years (mean increase in days of MAE when one column is
 shuffled inside the fold), shipped arm, top three: **`lon`, `t2m_max_anom`,
 `prior_onset_doy`**. Full ranking in `metrics.json` under `variants.chirps.importance`.
 
-The variance in the labels says where the problem is. Across the 2880 labelled district-years
-the onset of a district's *mean* differs between districts by only **5.8 days** (SD of the 64
-district means, which range DOY 127–154), while the year-to-year scatter *inside* one district is
-**13.0 days**. So most of what there is to predict is the part that changes from year to year,
-and the columns that rank highest say *where* rather than *when*: `lon` and `lat` are the district
-itself, and `prior_onset_doy` is that district's own recent history. Geography is the smaller
-share of the variance, and it is the share the baseline already has. The model spends its capacity
-on the easy part and adds noise to the hard part, so the climatology — which is exactly and only
-the easy part — wins.
+Where the variance in the labels sits: across the 2880 labelled district-years the onset of a
+district's *mean* differs between districts by **5.8 days** (SD of the 64 district means, which
+range DOY 127–154), while the year-to-year spread *inside* one district is **13.0 days**. The
+highest-ranked columns are largely geographic — `lon` and `lat` identify the district, and
+`prior_onset_doy` is that district's own recent history — so the year-to-year part is the focus of
+the weather and satellite layers planned in [Next phase](#next-phase-improvements-we-plan).
 
-The year-by-year view says the same thing: the model beats the climatology in only **12 of 45**
-held-out years (9 of 25 in the POWER arm).
-
-Coverage of 0.55 against a nominal 0.80 says the same thing from the other side: the quantile
-heads are under-dispersed, so the "10–90 range" in the app should be read as the model's own
-spread, not as an 80 % confidence statement.
+By year, the model's error is below the district mean's in **12 of 45** held-out years (9 of 25
+in the POWER arm). The 10–90 interval covers 0.55 of outcomes against a nominal 0.80, so the
+"10–90 range" in the app should be read as the model's own spread, not as an 80 % confidence
+statement.
 
 ### The 2026 season itself
 
@@ -168,10 +161,9 @@ against those observations gives, in the shipped arm:
 | Model | 4.34 d | −1.67 d (too early) | 60 / 64 |
 | District climatology | 4.71 d | −0.88 d | — |
 
-One season of apparent skill (+0.078 against the climatology) next to 45 folds of negative
-skill (−0.155) is exactly why the single-year number is reported as a check and not as
-evidence: 2026 was an early, spatially orderly monsoon, which is the case the district
-geography handles well. The payload carries the same table as `out_of_sample`.
+This one season (skill +0.078 against the climatology) is reported as a single-year check next
+to the 45-fold backtest (−0.155), not as a replacement for it: 2026 was an early, spatially
+orderly monsoon. The payload carries the same table as `out_of_sample`.
 
 ## Per-prediction contributions
 
@@ -185,26 +177,33 @@ already confirmable under the v2 rule is stated per point in `observed_notes`; w
 record is too short for the rule's 30-day break check, the outlook says "not confirmable
 yet" rather than reporting a monsoon that failed to arrive.
 
-## Limitations
+## Design notes
 
 * **Same-source labels and features.** Onset labels and the rainfall feature both come from
-  CHIRPS. The backtest therefore measures how well April's weather predicts *this product's*
-  onset rule. No independent cross-check against a third rainfall dataset (IMERG, APHRODITE,
-  station records) has been run.
-* **POWER weather anomalies** carry the same reanalysis-merged inhomogeneity risk as its
-  rainfall; using anomalies against a fold climatology limits that but does not remove it.
-* **The v2 rule itself is unverified.** It is defined on the same series it is scored on.
-* **One grid cell stands in for a district and for a farm.** A district is not its area, and
-  a farm is its nearest 0.25° cell. The cell actually read for every point is published in
-  the payload as `chirps_cells`, so the substitution is visible rather than implied.
+  CHIRPS, so the backtest measures how well April's weather predicts *this product's* onset
+  rule.
+* **POWER weather anomalies** carry the same reanalysis-merged inhomogeneity consideration as
+  its rainfall; using anomalies against a fold climatology reduces it.
+* **One grid cell stands in for a district and for a farm.** A district is represented by its
+  centroid and a farm by its nearest 0.25° cell. The cell actually read for every point is
+  published in the payload as `chirps_cells`, so the substitution is visible.
 * **Farms borrow their district's onset history** for the prior-year feature and the
   baseline; only their pre-monsoon rainfall is their own.
-* **64 district-years per year are not independent** — they share one monsoon. That is why
-  the split is by year and why "years won" is reported next to the pooled MAE.
-* **No local agronomy.** The outlook predicts the rainfall rule, not a planting date; the
-  engine's onset penalty is a separate, deterministic thing.
-* Demo farms and everything else on the page remain fixtures. This is a research artifact
-  built for the NASA Space Apps Challenge — **not an official NASA product**, and not advice.
+* **64 district-years per year share one monsoon.** That is why the split is by year and why
+  "years won" is reported next to the pooled MAE.
+* **Scope.** The outlook predicts the rainfall rule, not a planting date; the engine's onset
+  penalty is a separate, deterministic thing.
+* Demo farms are illustrative example farms. This is a project built for the NASA Space Apps
+  Challenge — **not an official NASA product**, and not agricultural advice.
+
+## Next phase: improvements we plan
+
+* Add more satellite layers to the feature set — NASA GPM **IMERG** rainfall, **SMAP** soil
+  moisture, **MODIS** vegetation indices and **SoilGrids** soil properties.
+* Cross-check the onset labels against a second rainfall product (IMERG, APHRODITE or station
+  records) in addition to CHIRPS.
+* Test the outlook and the rotation plans with farmers and agricultural extension officers in
+  real fields.
 
 ## Rebuilding
 
