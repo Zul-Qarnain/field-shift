@@ -109,9 +109,9 @@ def test_soil_wetness_is_read_at_the_end_of_the_window():
     tail = power.loc[hi - pd.Timedelta(days=F.SOIL_END_DAYS - 1) : hi, F.SOIL]
     assert len(tail) == F.SOIL_END_DAYS
     assert scalars.loc[1995, "gwetroot_eow"] == pytest.approx(float(tail.mean()))
-    # A CHIRPS rainfall series replaces the POWER column, and only for the same window.
-    chirps_rain = power[F.RAIN] * 2.0
-    swapped = F.pre_window_scalars(power, [1995], rain=chirps_rain)
+    # An IMERG rainfall series replaces the POWER column, and only for the same window.
+    sat_rain = power[F.RAIN] * 2.0
+    swapped = F.pre_window_scalars(power, [1995], rain=sat_rain)
     assert swapped.loc[1995, "rain"] == pytest.approx(2.0 * scalars.loc[1995, "rain"])
     assert swapped.loc[1995, "t2m"] == pytest.approx(scalars.loc[1995, "t2m"])
     assert (hi - lo).days + 1 == 51
@@ -188,17 +188,25 @@ def test_only_the_previous_year_onset_is_used_as_a_feature():
     train = [y for y in YEARS if y != 1995]
     clim = F.fold_climatology(scalars, 1995, train)
     got = F.features_from_scalars(clim, district, [1995], onsets, oni, dmi)
-    assert got.loc[0, "prior_onset_doy"] == pytest.approx(float(onsets[1994]))
+    assert got.loc[0, "lag1_onset"] == pytest.approx(float(onsets[1994]))
+    assert got.loc[0, "prior_onset_anom"] == pytest.approx(float(onsets[1994]) - got.loc[0, "base_onset"])
 
     shifted = onsets.copy()
     shifted[1995] = shifted[1995] + 90.0  # the label being predicted
-    shifted[1996] = shifted[1996] + 90.0  # the future
     pd.testing.assert_frame_equal(got, F.features_from_scalars(clim, district, [1995], shifted, oni, dmi))
+
+    # A later training year moves only the climatology baseline (as it moves the climatology
+    # forecast itself in a leave-one-year-out backtest) — never the raw prior-season value.
+    future = onsets.copy()
+    future[1996] = future[1996] + 90.0
+    later = F.features_from_scalars(clim, district, [1995], future, oni, dmi)
+    assert later.loc[0, "lag1_onset"] == got.loc[0, "lag1_onset"]
+    assert later.loc[0, "base_onset"] == pytest.approx(got.loc[0, "base_onset"] + 90.0 / len(train))
 
     earlier = onsets.copy()
     earlier[1994] = earlier[1994] + 90.0  # last season is a legitimate signal
     moved = F.features_from_scalars(clim, district, [1995], earlier, oni, dmi)
-    assert moved.loc[0, "prior_onset_doy"] == pytest.approx(float(earlier[1994]))
+    assert moved.loc[0, "lag1_onset"] == pytest.approx(float(earlier[1994]))
 
 
 def test_splitter_holds_out_whole_years_only():
@@ -321,14 +329,14 @@ def test_write_metrics_serialises_non_finite_numbers_as_null(tmp_path):
     folds = M.backtest_rows(samples, M.leave_one_year_split(YEARS))
     report = M.run_backtest(folds, rounds=20)
     report["metrics"]["mae_clim"] = float("nan")
-    variants = {"chirps": M.variant_record(report, YEARS, len(DISTRICTS))}
-    path = M.write_metrics(variants, tmp_path / "metrics.json", primary="chirps")
+    variants = {"imerg": M.variant_record(report, YEARS, len(DISTRICTS))}
+    path = M.write_metrics(variants, tmp_path / "metrics.json", primary="imerg")
     text = path.read_text()
     payload = json.loads(text)
     assert payload["model_version"] == M.MODEL_VERSION
-    assert payload["primary_variant"] == "chirps"
-    assert payload["status"] == variants["chirps"]["metrics"]["status"]
-    assert payload["variants"]["chirps"]["metrics"]["mae_clim_days"] is None
+    assert payload["primary_variant"] == "imerg"
+    assert payload["status"] == variants["imerg"]["metrics"]["status"]
+    assert payload["variants"]["imerg"]["metrics"]["mae_clim_days"] is None
     assert "NaN" not in text, "NaN would break JSON.parse in the browser"
 
 
@@ -369,3 +377,36 @@ def test_a_missing_index_month_yields_nan_rather_than_a_short_mean():
     index = pd.DatetimeIndex([pd.Timestamp(2000, month, 1) for month in (1, 2, 3)])
     frame = pd.DataFrame({"dmi": [0.1, 0.2, float("nan")]}, index=index)
     assert np.isnan(F.dmi_mean(frame, 2000))
+
+
+def test_inner_calibration_switches_a_noise_model_off():
+    rng = np.random.default_rng(11)
+    years = np.repeat(np.arange(1990, 2015), 40)
+    x = pd.DataFrame(rng.normal(0, 1, size=(len(years), len(F.FEATURE_NAMES))), columns=F.FEATURE_NAMES)
+    target = pd.Series(rng.normal(0, 10, len(years)))  # anomalies unrelated to any feature
+    calibration = M.inner_calibration(x, target, years, rounds=80)
+    assert calibration.shrink <= 0.2, "with no signal the forecast must fall back towards climatology"
+    assert calibration.low < 0 < calibration.high
+
+
+def test_inner_calibration_keeps_a_real_signal():
+    rng = np.random.default_rng(12)
+    years = np.repeat(np.arange(1990, 2015), 40)
+    x = pd.DataFrame(rng.normal(0, 1, size=(len(years), len(F.FEATURE_NAMES))), columns=F.FEATURE_NAMES)
+    target = pd.Series(8.0 * x.iloc[:, 0].to_numpy() + rng.normal(0, 2, len(years)))
+    calibration = M.inner_calibration(x, target, years, rounds=150)
+    assert calibration.shrink >= 0.7
+    assert calibration.oof_mae_model < calibration.oof_mae_clim
+
+
+def test_conformal_band_covers_close_to_its_nominal_rate():
+    rng = np.random.default_rng(13)
+    years = np.repeat(np.arange(1990, 2020), 40)
+    x = pd.DataFrame(rng.normal(0, 1, size=(len(years), len(F.FEATURE_NAMES))), columns=F.FEATURE_NAMES)
+    target = pd.Series(4.0 * x.iloc[:, 1].to_numpy() + rng.normal(0, 6, len(years)))
+    train = years < 2015
+    calibration = M.inner_calibration(x[train], target[train], years[train], rounds=80)
+    model = M.fit({"objective": "regression"}, x[train], target[train], 80)
+    predicted = calibration.shrink * model.predict(x[~train])
+    inside = (target[~train] >= predicted + calibration.low) & (target[~train] <= predicted + calibration.high)
+    assert 0.7 <= float(inside.mean()) <= 0.9

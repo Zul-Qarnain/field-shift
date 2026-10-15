@@ -26,9 +26,9 @@ def daily(onset_doy: int, seed: int, scale: float = 1.0) -> pd.Series:
 
 
 def frames() -> tuple[dict[str, pd.DataFrame], dict[str, pd.Series]]:
-    """POWER frames whose rain is twice the CHIRPS rain, so the source is identifiable."""
+    """POWER frames whose rain is twice the IMERG rain, so the source is identifiable."""
     power: dict[str, pd.DataFrame] = {}
-    chirps: dict[str, pd.Series] = {}
+    sat: dict[str, pd.Series] = {}
     for position, point in enumerate(POINTS):
         onset = 150 + 8 * position
         rain = daily(onset, seed=position)
@@ -41,38 +41,38 @@ def frames() -> tuple[dict[str, pd.DataFrame], dict[str, pd.Series]]:
         frame[F.SOIL] = 0.4
         power[point.key] = frame
         # A farm reads the same grid cell as its district here, so give it its own series
-        # only for the districts; the farm's CHIRPS entry is its own nearest cell.
-        chirps[point.key] = rain
-    return power, chirps
+        # only for the districts; the farm's IMERG entry is its own nearest cell.
+        sat[point.key] = rain
+    return power, sat
 
 
-def test_chirps_arm_uses_chirps_rain_and_power_weather():
-    power, chirps = frames()
-    variant = D.build_variant("chirps", POINTS, power, chirps, outlook_year=2013)
+def test_imerg_arm_uses_chirps_rain_and_power_weather():
+    power, sat = frames()
+    variant = D.build_variant("imerg", POINTS, power, sat, outlook_year=2013)
     scalars = variant.scalars["dha"]
     window = F.window_bounds(2000)
-    assert scalars.loc[2000, "rain"] == pytest.approx(float(chirps["dha"].loc[window[0] : window[1]].sum()))
+    assert scalars.loc[2000, "rain"] == pytest.approx(float(sat["dha"].loc[window[0] : window[1]].sum()))
     assert scalars.loc[2000, "t2m"] == pytest.approx(float(power["dha"].loc[window[0] : window[1], "T2M"].mean()))
-    assert variant.source == D.SOURCE_NAMES["chirps"]
+    assert variant.source == D.SOURCE_NAMES["imerg"]
 
 
 def test_power_arm_uses_power_rain_and_starts_only_after_the_inhomogeneity():
-    power, chirps = frames()
-    variant = D.build_variant("power", POINTS, power, chirps, outlook_year=2013)
+    power, sat = frames()
+    variant = D.build_variant("power", POINTS, power, sat, outlook_year=2013)
     scalars = variant.scalars["dha"]
     lo, hi = F.window_bounds(2005)
     assert scalars.loc[2005, "rain"] == pytest.approx(float(power["dha"].loc[lo:hi, F.RAIN].sum()))
     assert min(variant.years) >= D.POWER_FIRST_YEAR, "POWER PRECTOTCORR before 2001 is not comparable"
     assert max(variant.years) < 2013, "the outlook year is predicted, never labelled here"
-    # The CHIRPS arm is not year-restricted: its rainfall does not jump between segments.
-    chirps_arm = D.build_variant("chirps", POINTS, power, chirps, outlook_year=2013)
-    assert min(chirps_arm.years) < D.POWER_FIRST_YEAR
-    assert 2000 in chirps_arm.scalars["dha"].index and 2000 not in scalars.index
+    # The IMERG arm is not year-restricted: its rainfall does not jump between segments.
+    imerg_arm = D.build_variant("imerg", POINTS, power, sat, outlook_year=2013)
+    assert min(imerg_arm.years) < D.POWER_FIRST_YEAR
+    assert 2000 in imerg_arm.scalars["dha"].index and 2000 not in scalars.index
 
 
 def test_a_farm_borrows_its_district_labels_but_never_trains():
-    power, chirps = frames()
-    variant = D.build_variant("chirps", POINTS, power, chirps, outlook_year=2013)
+    power, sat = frames()
+    variant = D.build_variant("imerg", POINTS, power, sat, outlook_year=2013)
     assert "farm-21" not in variant.trainable
     assert {"dha", "rangpur"} == variant.trainable
     pd.testing.assert_series_equal(variant.labels["farm-21"], variant.labels["rangpur"])
@@ -81,13 +81,13 @@ def test_a_farm_borrows_its_district_labels_but_never_trains():
 
 
 def test_year_pool_requires_half_the_districts():
-    power, chirps = frames()
-    variant = D.build_variant("chirps", POINTS, power, chirps, outlook_year=2013)
+    power, sat = frames()
+    variant = D.build_variant("imerg", POINTS, power, sat, outlook_year=2013)
     pool = D.year_pool(variant)
     assert pool and set(pool) <= set(variant.years)
     # A year only one of two districts reaches is dropped: one row is not a backtest.
     thin = D.Variant(
-        name="chirps",
+        name="imerg",
         points=variant.points,
         scalars=variant.scalars,
         labels={"dha": pd.Series({2000: 150.0, 2001: 151.0}, dtype="float64"), "rangpur": pd.Series({2000: 140.0}, dtype="float64")},
@@ -98,9 +98,9 @@ def test_year_pool_requires_half_the_districts():
 
 
 def test_unknown_variant_is_refused():
-    power, chirps = frames()
+    power, sat = frames()
     with pytest.raises(ValueError, match="unknown variant"):
-        D.build_variant("era5", POINTS, power, chirps, outlook_year=2013)
+        D.build_variant("era5", POINTS, power, sat, outlook_year=2013)
 
 
 def test_district_point_defaults_its_baseline_to_itself():

@@ -1,10 +1,25 @@
 """Leave-one-year-out backtest and outlook-year prediction for the monsoon-onset model.
 
-Labels are the deterministic v2 onset rule from :mod:`src.compute.onset`, applied to CHIRPS
-daily rainfall in the shipped arm and to NASA POWER PRECTOTCORR in the restricted 2001–2025
-arm. The model is a small fixed LightGBM gradient booster — no tuning loop — compared
-against the baseline that matters here: each district's own mean onset over the training
-years, plus two stricter comparators (the two-season mean, and last season itself).
+Labels are the deterministic v2 onset rule from :mod:`src.compute.onset`, applied to NASA/JAXA
+GPM IMERG daily rainfall in the shipped arm and to NASA POWER PRECTOTCORR in the restricted
+2001–2025 arm. The model is a small, fixed, heavily regularised LightGBM booster — no tuning
+loop — compared against the baseline that matters here: each district's own mean onset over
+the training years, plus two stricter comparators (the two-season mean, and last season itself).
+
+Two design choices follow from v2's backtest, which lost to climatology (skill −0.16) and whose
+10–90 % quantile band covered only 55 % of outcomes:
+
+* **The target is the onset anomaly** — observed onset minus the district's fold climatology —
+  and the prediction is that climatology plus the model's correction. A booster asked for an
+  absolute day-of-year has to rediscover every district's mean from lat/lon on ~25–45 effective
+  samples; asked for an anomaly, a model that learns nothing returns climatology exactly.
+* **The correction is shrunk** by a factor in [0, 1] chosen on inner out-of-fold predictions, so
+  a model whose features carry no out-of-sample signal collapses to climatology instead of
+  adding noise to it.
+* **Intervals are conformal**, not quantile regressions: the 10th/90th percentiles of
+  out-of-fold residuals from an inner, year-grouped K-fold on the training years only, added
+  to the point prediction. Quantile boosters on this little data are over-confident; residual
+  quantiles from held-out years carry the honest spread.
 
 Everything fold-dependent is rebuilt inside the fold: the window climatology that anomalies
 are measured against, and the baseline mean onset. Both see training years only, and a
@@ -24,16 +39,20 @@ import pandas as pd
 
 from src.compute.ml.features import FEATURE_NAMES, District, features_from_scalars, fold_climatology
 
-MODEL_VERSION = "onset-ml-v2"
+MODEL_VERSION = "onset-ml-v3"
 ISSUE_TEXT = "25 April"
 RANDOM_SEED = 0
 QUANTILES = (0.1, 0.9)
 
+#: Fixed a priori for ~25–45 effective (year) samples: shallow trees, large leaves, L2
+#: shrinkage. Not tuned against the backtest — a tuning loop would leak the folds.
 BASE_PARAMS: dict[str, object] = {
-    "num_leaves": 15,
-    "learning_rate": 0.05,
-    "min_data_in_leaf": 25,
-    "feature_fraction": 0.9,
+    "num_leaves": 7,
+    "max_depth": 3,
+    "learning_rate": 0.03,
+    "min_data_in_leaf": 80,
+    "lambda_l2": 10.0,
+    "feature_fraction": 0.8,
     "extra_seed": RANDOM_SEED,
     "first_metric_only": True,
     "verbosity": -1,
@@ -41,7 +60,18 @@ BASE_PARAMS: dict[str, object] = {
     "deterministic": True,
     "force_row_wise": True,
 }
-NUM_BOOST_ROUND = 250
+NUM_BOOST_ROUND = 150
+#: Inner year-grouped folds used to collect out-of-fold residuals for the conformal band.
+CONFORMAL_FOLDS = 5
+TARGET_TEXT = "onset anomaly: observed onset minus the district's fold climatology (training years, own year excluded)"
+INTERVAL_TEXT = (
+    "conformal: 10th/90th percentiles of out-of-fold residuals from a 5-fold year-grouped split "
+    "of the training years, added to the point prediction"
+)
+SHRINK_TEXT = (
+    "the model's correction is multiplied by a factor in [0, 1] chosen on the same inner out-of-fold "
+    "predictions (0 = the forecast is the district climatology)"
+)
 
 
 @dataclass
@@ -124,7 +154,11 @@ def backtest_rows(samples: pd.DataFrame, splits: list[tuple[int, list[int]]]) ->
     """
     folds: list[Fold] = []
     labeled = samples.dropna(subset=["onset_doy"])
-    keys = [column for column in ("year", "district", "clim_onset", "clim2_onset") if column in labeled.columns]
+    keys = [
+        column
+        for column in ("year", "district", "clim_onset", "clim2_onset", "base_onset", "lag1_onset")
+        if column in labeled.columns
+    ]
     for test_year, train_years in splits:
         test = labeled[(labeled["fold"] == test_year) & (labeled["year"] == test_year)]
         train = labeled[(labeled["fold"] == test_year) & (labeled["year"] != test_year)]
@@ -151,6 +185,87 @@ def fit(params: dict[str, object], x: pd.DataFrame, y: pd.Series, rounds: int = 
     merged = {**BASE_PARAMS, **params}
     dataset = lgb.Dataset(x, label=y, free_raw_data=False)
     return lgb.train(merged, dataset, num_boost_round=rounds)
+
+
+def anomaly_target(y: pd.Series, base: pd.Series | np.ndarray) -> pd.Series:
+    """Observed onset minus its row's baseline; rows with no baseline are dropped by callers."""
+    return pd.Series(np.asarray(y, dtype=float) - np.asarray(base, dtype=float), index=y.index)
+
+
+@dataclass(frozen=True)
+class InnerCalibration:
+    """What the inner, training-years-only cross-validation decided for one fit.
+
+    ``shrink`` scales the model's anomaly correction (0 = pure climatology, 1 = the raw model)
+    and is the value that minimised out-of-fold MAE; ``low``/``high`` are the residual
+    quantiles of the shrunk out-of-fold predictions — the conformal band.
+    """
+
+    shrink: float
+    low: float
+    high: float
+    oof_mae_model: float
+    oof_mae_clim: float
+
+
+SHRINK_GRID = tuple(round(0.1 * i, 1) for i in range(11))
+
+
+def inner_calibration(
+    x: pd.DataFrame,
+    target: pd.Series,
+    years: pd.Series | np.ndarray,
+    *,
+    quantiles: tuple[float, ...] = QUANTILES,
+    rounds: int = NUM_BOOST_ROUND,
+    folds: int = CONFORMAL_FOLDS,
+) -> InnerCalibration:
+    """Out-of-fold predictions from an inner, year-grouped K-fold on the given (training) rows.
+
+    Whole years go to one inner fold, as in the outer backtest, so every out-of-fold value is
+    measured on a year the inner model never saw. Years are assigned round-robin in sorted
+    order — deterministic and spread across the record. From those predictions:
+
+    * the shrinkage factor on the model's correction is chosen on a fixed grid by the
+      one-standard-error rule over years, i.e. towards climatology unless the gain is clear;
+    * the conformal band is the residual quantiles after that shrinkage.
+
+    Nothing here sees the outer test year, so the outer backtest stays an honest score.
+    """
+    years = np.asarray(years, dtype=int)
+    unique = sorted(set(years.tolist()))
+    k = max(2, min(int(folds), len(unique)))
+    group = {year: i % k for i, year in enumerate(unique)}
+    assignment = np.array([group[int(y)] for y in years])
+    oof = np.full(len(target), np.nan)
+    values = target.to_numpy(dtype=float)
+    for fold in range(k):
+        held = assignment == fold
+        if held.all() or not held.any():
+            continue
+        model = fit({"objective": "regression"}, x.iloc[~held], target.iloc[~held], rounds)
+        oof[held] = np.asarray(model.predict(x.iloc[held]), dtype=float)
+    finite = np.isfinite(oof) & np.isfinite(values)
+    if not finite.any():
+        return InnerCalibration(0.0, float("nan"), float("nan"), float("nan"), float("nan"))
+    errors = {a: float(np.mean(np.abs(values[finite] - a * oof[finite]))) for a in SHRINK_GRID}
+    best_shrink = min(errors, key=lambda a: (errors[a], a))
+    # One-standard-error rule (Breiman et al. 1984), with years as the unit: the smallest factor
+    # whose error is within one SE of the best. A flat, noisy curve therefore stays at 0
+    # (climatology) instead of chasing a chance minimum.
+    best_by_year = (
+        pd.Series(np.abs(values[finite] - best_shrink * oof[finite])).groupby(years[finite]).mean()
+    )
+    se = float(best_by_year.std(ddof=1) / np.sqrt(len(best_by_year))) if len(best_by_year) > 1 else 0.0
+    shrink = min(a for a, e in errors.items() if e <= errors[best_shrink] + se)
+    residuals = values[finite] - shrink * oof[finite]
+    return InnerCalibration(
+        shrink=float(shrink),
+        low=float(np.quantile(residuals, min(quantiles))),
+        high=float(np.quantile(residuals, max(quantiles))),
+        oof_mae_model=errors[1.0],
+        oof_mae_clim=errors[0.0],
+    )
 
 
 @dataclass
@@ -263,35 +378,48 @@ def run_backtest(
     predictions: list[Prediction] = []
     importances: dict[str, list[float]] = {}
     per_year: list[dict[str, object]] = []
+    shrinks: list[float] = []
 
     for fold in folds:
-        mean_model = fit({"objective": "regression"}, fold.x_train, fold.y_train, rounds)
-        quantile_models = {q: fit({"objective": "quantile", "alpha": q}, fold.x_train, fold.y_train, rounds) for q in quantiles}
-        predicted = np.asarray(mean_model.predict(fold.x_test), dtype=float)
-        bounds = {q: np.asarray(model.predict(fold.x_test), dtype=float) for q, model in quantile_models.items()}
-        clim = fold.test_keys["clim_onset"].to_numpy(dtype=float) if "clim_onset" in fold.test_keys else np.full(len(fold.test_keys), np.nan)
-        clim2 = fold.test_keys["clim2_onset"].to_numpy(dtype=float) if "clim2_onset" in fold.test_keys else np.full(len(fold.test_keys), np.nan)
+        n_test = len(fold.test_keys)
+        train_base = fold.train_keys["base_onset"].to_numpy(dtype=float)
+        test_base = fold.test_keys["base_onset"].to_numpy(dtype=float)
+        usable = np.isfinite(train_base)
+        x_train = fold.x_train.reset_index(drop=True).iloc[usable]
+        target = anomaly_target(fold.y_train.reset_index(drop=True), train_base).iloc[usable]
+        train_years = fold.train_keys["year"].to_numpy(dtype=int)[usable]
+
+        mean_model = fit({"objective": "regression"}, x_train, target, rounds)
+        calibration = inner_calibration(x_train, target, train_years, quantiles=quantiles, rounds=rounds)
+        q_low, q_high = calibration.low, calibration.high
+        shrinks.append(calibration.shrink)
+        predicted = test_base + calibration.shrink * np.asarray(mean_model.predict(fold.x_test), dtype=float)
+        clim = fold.test_keys["clim_onset"].to_numpy(dtype=float) if "clim_onset" in fold.test_keys else np.full(n_test, np.nan)
+        clim2 = fold.test_keys["clim2_onset"].to_numpy(dtype=float) if "clim2_onset" in fold.test_keys else np.full(n_test, np.nan)
+        lag1 = fold.test_keys["lag1_onset"].to_numpy(dtype=float) if "lag1_onset" in fold.test_keys else np.full(n_test, np.nan)
 
         rows = []
         for i, (year, district) in enumerate(zip(fold.test_keys["year"], fold.test_keys["district"], strict=True)):
-            observed = float(fold.y_test.iloc[i])
-            low_q, high_q = min(quantiles), max(quantiles)
+            if not np.isfinite(predicted[i]):
+                continue
             rows.append(
                 Prediction(
                     year=int(year),
                     district=str(district),
-                    observed=observed,
+                    observed=float(fold.y_test.iloc[i]),
                     predicted=float(predicted[i]),
                     clim_onset=float(clim[i]),
-                    low=float(bounds[low_q][i]),
-                    high=float(bounds[high_q][i]),
+                    low=float(predicted[i] + q_low),
+                    high=float(predicted[i] + q_high),
                     clim2_onset=float(clim2[i]),
-                    lag1_onset=float(fold.x_test["prior_onset_doy"].iloc[i]),
+                    lag1_onset=float(lag1[i]),
                 )
             )
         predictions.extend(rows)
         per_year.append(_fold_summary(fold.test_year, rows))
-        importances.update(_permutation_importance(fold, mean_model))
+        # Accumulate per fold: a plain dict.update kept only the last fold's importance.
+        for name, values in _permutation_importance(fold, mean_model, test_base, calibration.shrink).items():
+            importances.setdefault(name, []).extend(values)
 
     metrics = metrics_from_predictions(predictions)
     mean_importance = {
@@ -305,6 +433,7 @@ def run_backtest(
         "importance": [{"feature": f, "mae_increase_days": v} for f, v in ranked],
         "top_features": [f for f, _ in ranked[:3]],
         "folds": len(folds),
+        "shrink_per_fold": shrinks,
     }
 
 
@@ -319,16 +448,30 @@ def _fold_summary(year: int, rows: list[Prediction]) -> dict[str, object]:
     }
 
 
-def _permutation_importance(fold: Fold, model) -> dict[str, list[float]]:
-    """Increase in held-out MAE when one feature column is shuffled inside the fold."""
-    base = float(np.mean(np.abs(np.asarray(model.predict(fold.x_test), dtype=float) - fold.y_test.to_numpy(dtype=float))))
+def _permutation_importance(fold: Fold, model, offset: np.ndarray | None = None, scale: float = 1.0) -> dict[str, list[float]]:
+    """Increase in held-out MAE when one feature column is shuffled inside the fold.
+
+    `offset` is the per-row baseline the anomaly model's output is added to, after `scale`
+    (the fold's shrinkage). A fold shrunk to 0 reports zero importance — correctly: its
+    forecast does not use the features at all.
+    """
+    observed = fold.y_test.to_numpy(dtype=float)
+    shift = np.zeros(len(observed)) if offset is None else np.asarray(offset, dtype=float)
+    keep = np.isfinite(shift)
+    if not keep.any():
+        return {}
+
+    def mae(frame: pd.DataFrame) -> float:
+        predicted = shift + scale * np.asarray(model.predict(frame), dtype=float)
+        return float(np.mean(np.abs(predicted[keep] - observed[keep])))
+
+    base = mae(fold.x_test)
     rng = np.random.default_rng(RANDOM_SEED)
     out: dict[str, list[float]] = {}
     for name in fold.feature_names:
         shuffled = fold.x_test.copy()
         shuffled[name] = rng.permutation(shuffled[name].to_numpy())
-        score = float(np.mean(np.abs(np.asarray(model.predict(shuffled), dtype=float) - fold.y_test.to_numpy(dtype=float))))
-        out[name] = [score - base]
+        out[name] = [mae(shuffled) - base]
     return out
 
 
@@ -415,6 +558,8 @@ def variant_record(
         "per_year": report["per_year"],
         "importance": report["importance"],
         "top_features": report["top_features"],
+        "shrink_per_fold": report.get("shrink_per_fold", []),
+        "mean_shrink": _round(float(np.mean(report["shrink_per_fold"])), 2) if report.get("shrink_per_fold") else None,
     }
 
 
@@ -426,7 +571,15 @@ def write_metrics(variants: dict[str, dict[str, object]], path: Path, *, primary
     payload = {
         "model_version": MODEL_VERSION,
         "issue_date": ISSUE_TEXT,
-        "hyperparameters": {**BASE_PARAMS, "num_boost_round": NUM_BOOST_ROUND, "quantiles": list(QUANTILES)},
+        "hyperparameters": {
+            **BASE_PARAMS,
+            "num_boost_round": NUM_BOOST_ROUND,
+            "quantiles": list(QUANTILES),
+            "conformal_folds": CONFORMAL_FOLDS,
+        },
+        "target": TARGET_TEXT,
+        "interval_method": INTERVAL_TEXT,
+        "shrinkage": SHRINK_TEXT,
         "features": FEATURE_NAMES,
         "primary_variant": primary,
         "status": str(variants[primary]["metrics"]["status"]),

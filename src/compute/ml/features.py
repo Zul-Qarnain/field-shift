@@ -3,16 +3,18 @@
 The outlook is issued on 25 April, so a feature may only use information that existed by
 25 April of the year being predicted:
 
-* pre-monsoon rainfall summed over 1 Mar – 20 Apr — from CHIRPS v2.0 in the shipped model,
-  because NASA POWER PRECTOTCORR is not homogeneous over 1981–2025 (its source changes
+* pre-monsoon rainfall summed over 1 Mar – 20 Apr — from NASA/JAXA GPM IMERG in the shipped
+  model, because NASA POWER PRECTOTCORR is not homogeneous over 1981–2025 (its source changes
   inflate the later segments; measured at Tangail the annual total averages 937 mm in
   1981–1996, 1714 mm in 1997–2015 and 2814 mm in 2016–2025);
 * POWER temperature, humidity and root-zone moisture over the same window, used as
   anomalies — these are physical quantities without the rainfall jump, but they carry
   their own reanalysis inhomogeneity risk and are flagged as such;
-* the *previous* year's onset, which is fully observed by then;
-* ONI DJF (centred on January) and ONI FMA (centred on March), and DMI averaged over
-  Feb–Mar — nothing from April onwards;
+* the *previous* year's onset, which is fully observed by then, as an anomaly against the same
+  district baseline the target is measured from;
+* Niño 3.4 DJF (centred on January) and FMA (centred on March), and the Dipole Mode Index
+  averaged over Feb–Mar — computed from NASA MERRA-2 sea-surface skin temperature
+  (`src.acquire.indices`), nothing from April onwards;
 * the district centroid, which is not time dependent.
 
 Every weather feature is an anomaly, and the climatology it is measured against is built
@@ -52,9 +54,9 @@ FEATURE_NAMES = [
     "t2m_max_anom",
     "rh2m_anom",
     "gwetroot_eow_anom",
-    "prior_onset_doy",
-    "oni_djf",
-    "oni_fma",
+    "prior_onset_anom",
+    "nino34_djf",
+    "nino34_fma",
     "dmi_feb_mar",
     "lat",
     "lon",
@@ -67,10 +69,10 @@ FEATURE_LABELS_EN = {
     "t2m_max_anom": "pre-monsoon daily maximum temperature against normal",
     "rh2m_anom": "pre-monsoon humidity against normal",
     "gwetroot_eow_anom": "root-zone soil wetness at the end of the window against normal",
-    "prior_onset_doy": "when last season's rains started",
-    "oni_djf": "El Niño / La Niña state in Dec–Feb",
-    "oni_fma": "El Niño / La Niña state in Feb–Apr",
-    "dmi_feb_mar": "Indian Ocean Dipole in Feb–Mar",
+    "prior_onset_anom": "when last season's rains started, against this district's normal",
+    "nino34_djf": "El Niño / La Niña state in Dec–Feb (NASA MERRA-2 Niño 3.4)",
+    "nino34_fma": "El Niño / La Niña state in Feb–Apr (NASA MERRA-2 Niño 3.4)",
+    "dmi_feb_mar": "Indian Ocean Dipole in Feb–Mar (NASA MERRA-2)",
     "lat": "how far north the district is",
     "lon": "how far east the district is",
 }
@@ -82,10 +84,10 @@ FEATURE_LABELS_BN = {
     "t2m_max_anom": "পূর্ব-মৌসুমি সর্বোচ্চ তাপমাত্রা গড়ের তুলনায়",
     "rh2m_anom": "পূর্ব-মৌসুমি আর্দ্রতা গড়ের তুলনায়",
     "gwetroot_eow_anom": "মৌসুম-শুরুর সময় শেষে মাটির আর্দ্রতা গড়ের তুলনায়",
-    "prior_onset_doy": "গত মৌসুমে বৃষ্টি কবে শুরু হয়েছিল",
-    "oni_djf": "ডিসে–ফেব্রে এল নিনো / লা নিনার অবস্থা",
-    "oni_fma": "ফেব্রে–এপ্রিলে এল নিনো / লা নিনার অবস্থা",
-    "dmi_feb_mar": "ফেব্রু–মার্চে ইন্ডিয়ান ওশান ডাইপোল",
+    "prior_onset_anom": "গত মৌসুমে বৃষ্টি কবে শুরু হয়েছিল, এই জেলার গড়ের তুলনায়",
+    "nino34_djf": "ডিসে–ফেব্রে এল নিনো / লা নিনার অবস্থা (NASA MERRA-2 নিনো ৩.৪)",
+    "nino34_fma": "ফেব্রে–এপ্রিলে এল নিনো / লা নিনার অবস্থা (NASA MERRA-2 নিনো ৩.৪)",
+    "dmi_feb_mar": "ফেব্রু–মার্চে ইন্ডিয়ান ওশান ডাইপোল (NASA MERRA-2)",
     "lat": "জেলাটি কতটা উত্তরে",
     "lon": "জেলাটি কতটা পূর্বে",
 }
@@ -141,7 +143,7 @@ def window_bounds(year: int) -> tuple[pd.Timestamp, pd.Timestamp]:
 def pre_window_scalars(power: pd.DataFrame, years: list[int], rain: pd.Series | None = None) -> pd.DataFrame:
     """Summarise 1 Mar – 20 Apr of each year: one row per year.
 
-    `rain` is a daily mm series (CHIRPS in the shipped model, POWER PRECTOTCORR in the
+    `rain` is a daily mm series (GPM IMERG in the shipped model, POWER PRECTOTCORR in the
     2001–2025 variant); when it is given it replaces the POWER rainfall column.
 
     A year is NaN when its window is incomplete or any day inside it is missing, so a
@@ -205,8 +207,12 @@ def features_from_scalars(
 ) -> pd.DataFrame:
     """Anomaly features for `target_years` inside the fold `clim` describes.
 
-    `onsets` is indexed by year and may hold any year; only ``year - 1`` is read, which
-    is fully observed before the 25 April issue date.
+    `onsets` is indexed by year and may hold any year; ``year - 1`` is read as the prior
+    season (fully observed before the 25 April issue date), and the onset baseline is the
+    mean over the fold's training years — without ``year`` itself for a training row, so the
+    target a row is scored on never includes its own label (see :func:`onset_baseline`).
+    Each row carries that baseline as ``base_onset``: it is not a feature, it is the value
+    the model's anomaly prediction is added back onto.
     """
     rows: list[dict[str, object]] = []
     for year in target_years:
@@ -215,18 +221,21 @@ def features_from_scalars(
             continue
         window = clim.scalars.loc[year]
         prior = onsets.get(year - 1, float("nan")) if onsets is not None else float("nan")
+        base_onset = onset_baseline(onsets, clim, int(year))
         rows.append(
             {
                 "year": int(year),
                 "district": district.slug,
+                "base_onset": base_onset,
+                "lag1_onset": _finite(prior),
                 "rain_anom_mar_apr": _anomaly(window.get(RAIN_KEY), baseline.get(RAIN_KEY)),
                 "t2m_anom": _anomaly(window.get("t2m"), baseline.get("t2m")),
                 "t2m_max_anom": _anomaly(window.get("t2m_max"), baseline.get("t2m_max")),
                 "rh2m_anom": _anomaly(window.get("rh2m"), baseline.get("rh2m")),
                 "gwetroot_eow_anom": _anomaly(window.get("gwetroot_eow"), baseline.get("gwetroot_eow")),
-                "prior_onset_doy": _finite(prior),
-                "oni_djf": oni_centre(oni, year, 1),
-                "oni_fma": oni_centre(oni, year, 3),
+                "prior_onset_anom": _anomaly(prior, base_onset),
+                "nino34_djf": oni_centre(oni, year, 1),
+                "nino34_fma": oni_centre(oni, year, 3),
                 "dmi_feb_mar": dmi_mean(dmi, year),
                 "lat": float(district.lat),
                 "lon": float(district.lon),
@@ -234,8 +243,24 @@ def features_from_scalars(
         )
     frame = pd.DataFrame.from_records(rows)
     if frame.empty:
-        return pd.DataFrame(columns=["year", "district", *FEATURE_NAMES])
-    return frame[["year", "district", *FEATURE_NAMES]]
+        return pd.DataFrame(columns=["year", "district", "base_onset", "lag1_onset", *FEATURE_NAMES])
+    return frame[["year", "district", "base_onset", "lag1_onset", *FEATURE_NAMES]]
+
+
+def onset_baseline(onsets: pd.Series | None, clim: FoldClimatology, year: int) -> float:
+    """The district's mean onset over the fold's training years, never including `year`.
+
+    For the held-out year that is the plain training mean (the climatology forecast); for a
+    training row it drops the row's own year, mirroring :meth:`FoldClimatology.baseline_for`,
+    so no label ever sits inside the baseline its anomaly is computed from.
+    """
+    if onsets is None:
+        return float("nan")
+    if year != clim.test_year and year not in clim.train_years:
+        raise LeakageError(f"year {year} belongs to no part of fold {clim.test_year}")
+    pool = [y for y in clim.train_years if y != year]
+    values = [float(onsets[y]) for y in pool if y in onsets.index and np.isfinite(float(onsets[y]))]
+    return float(np.mean(values)) if values else float("nan")
 
 
 def make_features(
