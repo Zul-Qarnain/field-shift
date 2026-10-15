@@ -41,7 +41,7 @@ homogeneous-enough recent period the indicators also use. Consequence, stated pl
 share the threshold, so the era comparison tests a change in *arrival order* against a fixed
 local yardstick — it is not independent of the reference period.
 
-Input: daily rainfall in mm/day (NASA POWER ``PRECTOTCORR``, or CHIRPS for the cross-check).
+Input: daily rainfall in mm/day (NASA POWER ``PRECTOTCORR``, or NASA/JAXA GPM IMERG for the cross-check).
 Missing days are reindexed onto the full daily calendar and stay NaN. A candidate whose 5-day
 window contains any NaN is rejected (we never sum fewer than five days and call it five), and a
 NaN cannot confirm a break: an unobserved day resets the dry-run counter. Years whose DOY

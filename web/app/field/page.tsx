@@ -6,7 +6,7 @@ import dynamic from "next/dynamic";
 import { useSearchParams } from "next/navigation";
 import { CalendarDays, Flame, MapPin, Ruler, Sprout, Thermometer, Waves, Wind } from "lucide-react";
 import { FARMS, NOT_RETRIEVED, SALINITY_CLASS_BOUNDS, SALINITY_CLASSES, districtName, divisionName, farmContext, farmName, getFarm, provDetail, type FarmPack, type SalinityClass } from "@/lib/data";
-import { coveredWindow, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData } from "@/lib/packs";
+import { SATELLITE, coveredWindow, onsetView, packForFarm, retrievedDay, sourceLabel, trendView, withRealData } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
 import { CONF_KEYS, fmtNum, fmtUnit, growthStageLabel, soilTextureLabel, t, tf } from "@/lib/i18n";
 import { Panel, SourceChip, TierBadge, DeltaChip, InfoDot } from "@/components/ui";
@@ -179,19 +179,19 @@ function FieldView({ farmId }: { farmId: string }) {
 
       <div className="mt-4"><LiveDataBanner pointId={farmId} /></div>
 
-      <div className="mt-6 grid gap-5 xl:grid-cols-[1fr_340px]">
-        <div className="flex flex-col gap-5">
+      <div className="mt-6 grid grid-cols-1 gap-5 xl:grid-cols-[minmax(0,1fr)_340px]">
+        <div className="flex min-w-0 flex-col gap-5">
           <MapPanel pack={f} />
 
           <div className="grid grid-cols-2 gap-4 xl:grid-cols-4">
             {CARDS.map((c) => (
-              <Panel key={c.label} className="fade-up">
-                <div className="flex items-center gap-2 text-xs text-ink-mid">
+              <Panel key={c.label} className="fade-up min-w-0">
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-mid">
                   <c.icon className="h-4 w-4" style={{ color: c.color }} />
                   {c.label}
                   <span className="ml-auto"><SourceChip source={c.source} /></span>
                 </div>
-                <div className="mt-1.5 flex items-baseline gap-2">
+                <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                   <span className="font-display text-2xl font-bold tabular">{c.value}</span>
                   <DeltaChip value={c.delta} unit={c.unit} inverse={c.inverse} />
                 </div>
@@ -229,7 +229,7 @@ function FieldView({ farmId }: { farmId: string }) {
             </Panel>
             <Panel
               title={t("panel_rain_title", lang)}
-              right={realPack && trend ? <SourceChip source="pack" label={trend.product === "CHIRPS v2.0" ? "CHIRPS v2.0 · cross-check" : `NASA POWER · retrieved ${retrievedDay(realPack)}`} /> : <SourceChip source="fixture" />}
+              right={realPack && trend ? <SourceChip source="pack" label={trend.product === SATELLITE ? "GPM IMERG · cross-check" : `NASA POWER · retrieved ${retrievedDay(realPack)}`} /> : <SourceChip source="fixture" />}
             >
               <div className="flex items-baseline gap-2 pb-1">
                 <span className="font-display text-2xl font-bold tabular text-water">{m.rainfallTrendPctPerDecade > 0 ? "+" : ""}{fmtNum(m.rainfallTrendPctPerDecade, lang)}%</span>
@@ -238,7 +238,7 @@ function FieldView({ farmId }: { farmId: string }) {
               {realPack && trend ? (
                 <>
                   <PackSparkline
-                    series={trend.product === "CHIRPS v2.0" ? (realPack.crossCheck.annualRainfall ?? realPack.series.annualRainfallLast10) : realPack.series.annualRainfallLast10}
+                    series={trend.product === SATELLITE ? (realPack.crossCheck.annualRainfall ?? realPack.series.annualRainfallLast10) : realPack.series.annualRainfallLast10}
                     color="#4ea8de"
                     unit=" mm"
                   />
@@ -252,8 +252,8 @@ function FieldView({ farmId }: { farmId: string }) {
                   </p>
                   {trend.caution && (
                     <p className="mt-1 text-[11px] leading-relaxed text-amber">
-                      {trend.product === "CHIRPS v2.0"
-                        ? tf("trend_caution_chirps", lang, { year: realPack.quality.precipHomogeneity.changePointInsideAnalysisWindow ?? "—" })
+                      {trend.product === SATELLITE
+                        ? tf("trend_caution_satellite", lang, { year: realPack.quality.precipHomogeneity.changePointInsideAnalysisWindow ?? "—" })
                         : tf("trend_caution_power_flagged", lang, { year: realPack.quality.precipHomogeneity.changePointInsideAnalysisWindow ?? "—" })}
                     </p>
                   )}
@@ -279,7 +279,7 @@ function FieldView({ farmId }: { farmId: string }) {
         </div>
 
         {/* Right rail */}
-        <aside className="flex flex-col gap-5">
+        <aside className="flex min-w-0 flex-col gap-5">
           <section className="rounded-xl border border-lime/40 bg-lime/5 p-4 fade-up">
             <div className="flex items-center gap-3">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-lime/15">

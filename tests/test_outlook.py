@@ -25,17 +25,18 @@ def fitted() -> O.FittedOutlook:
     rng = np.random.default_rng(3)
     train = rng.normal(0, 1.0, size=(400, len(F.FEATURE_NAMES)))
     # Only the first feature and the last two (lat/lon) carry signal.
-    truth = 172.0 - 6.0 * train[:, 0] + 3.0 * train[:, 5] + 0.8 * train[:, 9]
+    # The model learns an anomaly against the district climatology, not an absolute DOY.
+    truth = -6.0 * train[:, 0] + 3.0 * train[:, 5] + 0.8 * train[:, 9]
     frame = _rows(train)
-    labels = pd.Series(truth, name="onset_doy")
+    labels = pd.Series(truth, name="onset_anomaly")
     return O.FittedOutlook(
         mean_model=M.fit({"objective": "regression"}, frame, labels, 60),
-        low_model=M.fit({"objective": "quantile", "alpha": 0.1}, frame, labels, 60),
-        high_model=M.fit({"objective": "quantile", "alpha": 0.9}, frame, labels, 60),
+        interval_offsets=(-12.0, 15.0),
+        shrink=1.0,
         clim_by_district={"dhaka": 176.0, "tangail": 178.0},
         training_years=list(range(1981, 2026)),
         trained_at="2026-05-10T00:00:00+00:00",
-        data_retrieved_utc={"power": "2026-05-09T10:00:00+00:00", "oni": "2026-05-09T10:00:00+00:00", "dmi": "2026-05-09T10:00:00+00:00"},
+        data_retrieved_utc={"power": "2026-05-09T10:00:00+00:00", "nino34": "2026-05-09T10:00:00+00:00", "dmi": "2026-05-09T10:00:00+00:00"},
     )
 
 
@@ -43,6 +44,22 @@ def fitted() -> O.FittedOutlook:
 def records(fitted) -> list[dict]:
     rows = _rows(np.round(np.random.default_rng(9).normal(0, 1, size=(2, len(F.FEATURE_NAMES))), 3))
     return O.predict_targets(fitted, rows, TARGETS)
+
+
+def test_interval_is_the_conformal_band_around_the_point(records):
+    for record in records:
+        assert record["interval_low_doy"] == pytest.approx(record["predicted_doy"] - 12.0, abs=0.11)
+        assert record["interval_high_doy"] == pytest.approx(record["predicted_doy"] + 15.0, abs=0.11)
+
+
+def test_a_zero_shrink_forecast_is_exactly_climatology(fitted):
+    import dataclasses
+
+    flat = dataclasses.replace(fitted, shrink=0.0)
+    rows = _rows(np.random.default_rng(1).normal(0, 1, size=(2, len(F.FEATURE_NAMES))))
+    out = O.predict_targets(flat, rows, TARGETS)
+    assert [r["predicted_doy"] for r in out] == [176.0, 178.0]
+    assert all(c["effect_days"] == 0 for r in out for c in r["top_contributions"])
 
 
 def test_doy_to_date_matches_the_calendar():
@@ -90,9 +107,11 @@ def test_contributions_are_the_three_biggest_movers(fitted, records):
         for contribution in contributions:
             assert contribution["feature"] in F.FEATURE_NAMES
             assert contribution["label_en"] == F.FEATURE_LABELS_EN[contribution["feature"]]
-        # Tree SHAP is exact: contributions plus the base value rebuild the prediction.
+        # Tree SHAP is exact: contributions plus the base value rebuild the anomaly, and the
+        # anomaly plus the district climatology is the prediction.
         matrix = np.asarray(fitted.mean_model.predict(rows.iloc[[position]], pred_contrib=True), dtype=float)
-        assert matrix[0][:-1].sum() + matrix[0][-1] == pytest.approx(record["predicted_doy"], abs=0.06)
+        anomaly = matrix[0][:-1].sum() + matrix[0][-1]
+        assert anomaly + record["climatology_doy"] == pytest.approx(record["predicted_doy"], abs=0.06)
         # The synthetic signal lives in the first feature, so it should be a top mover.
         assert {c["feature"] for c in contributions} & {F.FEATURE_NAMES[0], F.FEATURE_NAMES[5]}
 
@@ -115,7 +134,7 @@ def test_payload_splits_districts_and_farms(fitted, records):
     assert [d["key"] for d in payload["districts"]] == ["dhaka"]
     assert [f["key"] for f in payload["farms"]] == ["farm-12"]
     assert payload["metrics"]["mae_model_days"] == metrics["mae_model_days"]
-    assert payload["data_sources"]["oni"]["retrieved_utc"] == "2026-05-09T10:00:00+00:00"
+    assert payload["data_sources"]["nino34"]["retrieved_utc"] == "2026-05-09T10:00:00+00:00"
 
 
 def test_observed_onset_is_reported_alongside_the_prediction(fitted, records):

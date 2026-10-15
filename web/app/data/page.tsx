@@ -17,7 +17,7 @@ const SALINITY = salinityJson as unknown as {
 
 /**
  * The retrieved rows are read from the committed artifacts — the pack index and the farm pack for
- * NASA POWER and CHIRPS, the ML payload for the ONI/DMI retrieval times, salinity.json for the
+ * NASA POWER and GPM IMERG, the ML payload for the Niño 3.4 / DMI retrieval times, salinity.json for the
  * SRDI and geoBoundaries dates — so a rebuild that changes a timestamp changes this table too.
  * Everything marked NEXT PHASE arrives in the following data build: the app renders those values from demo fixtures
  * until then, and labels them.
@@ -25,7 +25,7 @@ const SALINITY = salinityJson as unknown as {
 const ENTRIES = [...PACK_INDEX.farms, ...PACK_INDEX.districts];
 const SAMPLE = packForFarm("farm-12");
 const POWER_DAYS = ENTRIES.reduce((a, e) => a + e.covered.daysWithData, 0);
-const CHIRPS_POINTS = ENTRIES.filter((e) => e.chirps?.available).length;
+const IMERG_POINTS = ENTRIES.filter((e) => e.satellite?.available).length;
 const DAY = (iso: string) => iso.slice(0, 10);
 const UTC = (iso: string) => iso.slice(11, 19);
 
@@ -35,9 +35,9 @@ const POWER_WINDOW = PACK_INDEX.retrievedRange
 const POWER_COVERED = ENTRIES.length
   ? `${ENTRIES.map((e) => e.covered.start).sort()[0]} → ${ENTRIES.map((e) => e.covered.end).sort().slice(-1)[0]}`
   : "";
-const CHIRPS_DAYS = SAMPLE?.crossCheck.retrievedUtc ? DAY(SAMPLE.crossCheck.retrievedUtc) : "";
-const CHIRPS_YEARS = SAMPLE?.crossCheck.yearsOnDisk ?? null;
-const ONI = OUTLOOK.data_sources.oni;
+const IMERG_DAY = SAMPLE?.crossCheck.retrievedUtc ? DAY(SAMPLE.crossCheck.retrievedUtc) : "";
+const IMERG_YEARS = SAMPLE?.crossCheck.yearsComplete ?? null;
+const NINO = OUTLOOK.data_sources.nino34;
 const DMI = OUTLOOK.data_sources.dmi;
 
 type Status =
@@ -77,66 +77,63 @@ const DATASETS: Dataset[] = [
       kind: "retrieved",
       date: PACK_INDEX.retrievedRange ? DAY(PACK_INDEX.retrievedRange.earliest) : "",
       detail: bi(
-        `${ENTRIES.length} points (6 farms + 64 districts) · ${POWER_DAYS.toLocaleString("en")} daily values · ${SAMPLE ? Object.keys(SAMPLE.parameters).length : 0} parameters · Daily API ${SAMPLE?.powerApiVersion ?? "unknown"} · retrieved ${POWER_WINDOW} UTC · community ${SAMPLE?.community ?? "AG"}`,
-        `${ENTRIES.length} বিন্দু (৬ খামার + ৬৪ জেলা) · ${POWER_DAYS.toLocaleString("en")} দৈনিক মান · ${SAMPLE ? Object.keys(SAMPLE.parameters).length : 0} প্যারামিটার · Daily API ${SAMPLE?.powerApiVersion ?? "unknown"} · সংগ্রহ ${POWER_WINDOW} UTC · কমিউনিটি ${SAMPLE?.community ?? "AG"}`,
+        `${ENTRIES.length} points (6 farms + 64 districts) · ${POWER_DAYS.toLocaleString("en")} daily values · ${SAMPLE ? Object.keys(SAMPLE.parameters).length : 0} parameters · ${SAMPLE?.powerApiVersion ?? "POWER v10"} (read from POWER's Zarr archive on AWS Open Data — identical values to the daily API) · retrieved ${POWER_WINDOW} UTC · community ${SAMPLE?.community ?? "AG"}`,
+        `${ENTRIES.length} বিন্দু (৬ খামার + ৬৪ জেলা) · ${POWER_DAYS.toLocaleString("en")} দৈনিক মান · ${SAMPLE ? Object.keys(SAMPLE.parameters).length : 0} প্যারামিটার · ${SAMPLE?.powerApiVersion ?? "POWER v10"} (AWS Open Data-তে POWER-এর Zarr আর্কাইভ থেকে — দৈনিক API-র সমান মান) · সংগ্রহ ${POWER_WINDOW} UTC · কমিউনিটি ${SAMPLE?.community ?? "AG"}`,
       ),
     },
   },
   {
-    name: "CHIRPS v2.0",
-    tier: "Open",
+    name: "NASA/JAXA GPM IMERG V07 (via NASA POWER)",
+    tier: "NASA",
     role: bi(
-      "Independent rainfall cross-check — the onset and trend figure is taken from here when POWER's own series shows a change point inside the analysis window; also the onset labels and pre-monsoon rainfall feature of the ML outlook. Not a NASA or Space-Agency-Partner product: open data from the Climate Hazards Center (UCSB) and USGS",
-      "স্বাধীন বৃষ্টিপাত যাচাই — POWER-এর নিজের সিরিজ বিশ্লেষণ-উইন্ডোর ভেতর পরিবর্তন-বিন্দু দেখালে শুরুর সময় ও ধারার মান এখান থেকে নেওয়া হয়; ML পূর্বাভাসের শুরুর সময়ের লেবেল ও পূর্ব-বর্ষার বৃষ্টির ফিচারও। NASA বা স্পেস-এজেন্সি-পার্টনার পণ্য নয়: Climate Hazards Center (UCSB) ও USGS-এর ওপেন ডেটা",
+      "Independent satellite rainfall — the onset and trend figure is taken from here when POWER's own series shows a change point inside the analysis window; also the onset labels and pre-monsoon rainfall feature of the ML outlook. The precipitation record of the NASA–JAXA Global Precipitation Measurement mission (JAXA is a NASA Space Agency Partner)",
+      "স্বাধীন স্যাটেলাইট বৃষ্টিপাত — POWER-এর নিজের সিরিজ বিশ্লেষণ-উইন্ডোর ভেতর পরিবর্তন-বিন্দু দেখালে শুরুর সময় ও ধারার মান এখান থেকে নেওয়া হয়; ML পূর্বাভাসের শুরুর সময়ের লেবেল ও পূর্ব-বর্ষার বৃষ্টির ফিচারও। NASA–JAXA Global Precipitation Measurement মিশনের বৃষ্টিপাত রেকর্ড (JAXA NASA-র স্পেস এজেন্সি পার্টনার)",
     ),
-    res: bi("0.25° (~25 km) grid, nearest cell", "০.২৫° (~২৫ কিমি) গ্রিড, নিকটতম ঘর"),
+    res: bi("0.1° (~11 km) grid, the cell containing the point", "০.১° (~১১ কিমি) গ্রিড, বিন্দুটি যে ঘরে"),
     temporal: bi(
-      `daily, ${CHIRPS_YEARS ? `${CHIRPS_YEARS.first}–${CHIRPS_YEARS.last}` : "1981–2025"}`,
-      `দৈনিক, ${CHIRPS_YEARS ? `${CHIRPS_YEARS.first}–${CHIRPS_YEARS.last}` : "১৯৮১–২০২৫"}`,
+      `daily (UTC day), ${IMERG_YEARS ? `${IMERG_YEARS.first}–${IMERG_YEARS.last}` : "1998–2025"} complete years`,
+      `দৈনিক (UTC দিন), ${IMERG_YEARS ? `${IMERG_YEARS.first}–${IMERG_YEARS.last}` : "১৯৯৮–২০২৫"} পূর্ণ বছর`,
     ),
-    url: "https://www.chc.ucsb.edu/data/chirps",
-    license: bi(
-      `Open (UCSB CHC / USGS) · ${PACK_INDEX.crossCheck.citation}`,
-      `ওপেন (UCSB CHC / USGS) · ${PACK_INDEX.crossCheck.citation}`,
-    ),
+    url: "https://gpm.nasa.gov/data/imerg",
+    license: bi(`NASA open data · ${PACK_INDEX.crossCheck.citation}`, `NASA ওপেন ডেটা · ${PACK_INDEX.crossCheck.citation}`),
     status: {
       kind: "retrieved",
-      date: CHIRPS_DAYS,
+      date: IMERG_DAY,
       detail: bi(
-        `${CHIRPS_POINTS} points cross-checked · Bangladesh boxes, local netCDF (never committed) · outlook year 2026 file ${OUTLOOK.sources.chirps_retrieved?.["outlook year"] ? DAY(OUTLOOK.sources.chirps_retrieved["outlook year"]) : ""} — recorded per file as retrieved_utc`,
-        `${CHIRPS_POINTS} বিন্দু যাচাই করা · বাংলাদেশের বক্স, স্থানীয় netCDF (কমিট করা হয়নি) · পূর্বাভাসের ২০২৬ সালের ফাইল ${OUTLOOK.sources.chirps_retrieved?.["outlook year"] ? DAY(OUTLOOK.sources.chirps_retrieved["outlook year"]) : ""} — প্রতি ফাইলে retrieved_utc হিসেবে সংরক্ষিত`,
+        `${IMERG_POINTS} points cross-checked · read from NASA POWER's public IMERG Zarr store on AWS Open Data (registry.opendata.aws/nasa-power) · record ends ${OUTLOOK.sources.imerg_retrieved?.["record ends"] ?? "n/a"}`,
+        `${IMERG_POINTS} বিন্দু যাচাই করা · AWS Open Data-তে NASA POWER-এর পাবলিক IMERG Zarr স্টোর থেকে পড়া (registry.opendata.aws/nasa-power) · রেকর্ড শেষ ${OUTLOOK.sources.imerg_retrieved?.["record ends"] ?? "n/a"}`,
       ),
     },
   },
   {
-    name: "NOAA PSL ONI (Niño 3.4)",
-    tier: "Open",
+    name: "Niño 3.4 from NASA MERRA-2",
+    tier: "NASA",
     role: bi(
-      "ENSO state as ML features only (ONI at the Dec–Feb and Feb–Apr centres) — never in the rotation engine",
-      "শুধু ML ফিচার হিসেবে ENSO-এর অবস্থা (ডিসে–ফেব্রু ও ফেব্রু–এপ্রিল কেন্দ্রের ONI) — ফসল-পর্যায়ের ইঞ্জিনে কখনো নয়",
+      "ENSO state as ML features only (Dec–Feb and Feb–Apr centres) — never in the rotation engine. Computed in src/acquire/indices.py from MERRA-2 sea-surface skin temperature; agrees with NOAA's published ONI to about ±0.2 °C",
+      "শুধু ML ফিচার হিসেবে ENSO-এর অবস্থা (ডিসে–ফেব্রু ও ফেব্রু–এপ্রিল কেন্দ্র) — ফসল-পর্যায়ের ইঞ্জিনে কখনো নয়। src/acquire/indices.py-তে MERRA-2 সমুদ্রপৃষ্ঠের তাপমাত্রা থেকে হিসাব; NOAA-র প্রকাশিত ONI-এর সঙ্গে প্রায় ±০.২ °C মেলে",
     ),
-    res: bi("3-month running mean of ERSSTv6 Niño 3.4", "ERSSTv6 নিনো ৩.৪-এর ৩-মাসের চলমান গড়"),
-    temporal: bi("monthly, as published by NOAA PSL", "মাসিক, NOAA PSL যেভাবে প্রকাশ করে"),
-    url: "https://psl.noaa.gov/data/correlation/oni.data",
-    license: bi("NOAA public data", "NOAA পাবলিক ডেটা"),
-    status: ONI
-      ? { kind: "retrieved", date: DAY(ONI.retrieved_utc), detail: bi(`${ONI.name} · ${UTC(ONI.retrieved_utc)} UTC`, `${ONI.name} · ${UTC(ONI.retrieved_utc)} UTC`) }
-      : { kind: "planned", detail: bi("read by scripts/build_onset_ml.py", "scripts/build_onset_ml.py পড়ে") },
+    res: bi("5°S–5°N, 170°W–120°W ocean cells, 3-month running mean vs 1991–2020", "৫°দ–৫°উ, ১৭০°প–১২০°প সমুদ্র-ঘর, ১৯৯১–২০২০-এর তুলনায় ৩-মাসের চলমান গড়"),
+    temporal: bi("monthly, 1981 → present", "মাসিক, ১৯৮১ → এখন"),
+    url: "https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/",
+    license: bi("NASA open data", "NASA ওপেন ডেটা"),
+    status: NINO
+      ? { kind: "retrieved", date: DAY(NINO.retrieved_utc), detail: bi(`${NINO.name} · ${UTC(NINO.retrieved_utc)} UTC`, `${NINO.name} · ${UTC(NINO.retrieved_utc)} UTC`) }
+      : { kind: "planned", detail: bi("computed by scripts/build_onset_ml.py", "scripts/build_onset_ml.py হিসাব করে") },
   },
   {
-    name: "NOAA PSL DMI (Indian Ocean Dipole)",
-    tier: "Open",
+    name: "Indian Ocean Dipole (DMI) from NASA MERRA-2",
+    tier: "NASA",
     role: bi(
-      "IOD state as an ML feature (February–March mean) — never in the rotation engine",
-      "শুধু ML ফিচার হিসেবে IOD-এর অবস্থা (ফেব্রুয়ারি–মার্চ গড়) — ফসল-পর্যায়ের ইঞ্জিনে কখনো নয়",
+      "IOD state as an ML feature (February–March mean) — never in the rotation engine. Saji et al. (1999) boxes on MERRA-2 ocean cells (land masked with MERRA-2's own land model)",
+      "শুধু ML ফিচার হিসেবে IOD-এর অবস্থা (ফেব্রুয়ারি–মার্চ গড়) — ফসল-পর্যায়ের ইঞ্জিনে কখনো নয়। MERRA-2 সমুদ্র-ঘরে Saji et al. (১৯৯৯)-এর বক্স (স্থলভাগ MERRA-2-এর নিজস্ব ভূমি মডেল দিয়ে বাদ)",
     ),
-    res: bi("dipole z-score (HadISST1.1)", "ডাইপোল z-স্কোর (HadISST1.1)"),
-    temporal: bi("monthly, as published by NOAA PSL", "মাসিক, NOAA PSL যেভাবে প্রকাশ করে"),
-    url: "https://psl.noaa.gov/gcos_wgsp/Timeseries/Data/dmi.had.long.data",
-    license: bi("NOAA public data", "NOAA পাবলিক ডেটা"),
+    res: bi("west 50–70°E minus east 90–110°E, anomalies vs 1991–2020 (°C)", "পশ্চিম ৫০–৭০°পূ বিয়োগ পূর্ব ৯০–১১০°পূ, ১৯৯১–২০২০-এর তুলনায় বিচ্যুতি (°C)"),
+    temporal: bi("monthly, 1981 → present", "মাসিক, ১৯৮১ → এখন"),
+    url: "https://gmao.gsfc.nasa.gov/reanalysis/MERRA-2/",
+    license: bi("NASA open data", "NASA ওপেন ডেটা"),
     status: DMI
       ? { kind: "retrieved", date: DAY(DMI.retrieved_utc), detail: bi(`${DMI.name} · ${UTC(DMI.retrieved_utc)} UTC`, `${DMI.name} · ${UTC(DMI.retrieved_utc)} UTC`) }
-      : { kind: "planned", detail: bi("read by scripts/build_onset_ml.py", "scripts/build_onset_ml.py পড়ে") },
+      : { kind: "planned", detail: bi("computed by scripts/build_onset_ml.py", "scripts/build_onset_ml.py হিসাব করে") },
   },
   {
     name: "SRDI — Saline Soils of Bangladesh (2010)",
@@ -185,8 +182,8 @@ const DATASETS: Dataset[] = [
     name: "geoBoundaries gbOpen BGD ADM2",
     tier: "Open",
     role: bi(
-      "The 64 district polygons whose representative point is each district pack's POWER/CHIRPS coordinate",
-      "৬৪ জেলার পলিগন — যার representative বিন্দুই প্রতিটি জেলা প্যাকের POWER/CHIRPS স্থানাঙ্ক",
+      "The 64 district polygons whose representative point is each district pack's POWER/IMERG coordinate",
+      "৬৪ জেলার পলিগন — যার representative বিন্দুই প্রতিটি জেলা প্যাকের POWER/IMERG স্থানাঙ্ক",
     ),
     res: bi("district polygons", "জেলা সীমানা"),
     temporal: bi(
@@ -260,19 +257,6 @@ const DATASETS: Dataset[] = [
     },
   },
   {
-    name: "GPM IMERG v07",
-    tier: "NASA",
-    role: bi(
-      "Planned: gridded rainfall as a second NASA cross-check. CHIRPS does this job today, and it is not a NASA product — which is why the pack names the product every number came from",
-      "পরিকল্পিত: NASA-র নিজের দ্বিতীয় বৃষ্টিপাত যাচাই। এই কাজ এখন CHIRPS করছে, এবং সেটি NASA পণ্য নয় — তাই প্যাক প্রতিটি সংখ্যার উৎস-পণ্য নাম লেখে",
-    ),
-    res: bi("0.1° (~10 km)", "০.১° (~১০ কিমি)"),
-    temporal: bi("half-hourly/daily, 2000–present", "অর্ধ-ঘণ্টা/দৈনিক, ২০০০–এখন"),
-    url: "https://gpm.nasa.gov/data/imerg",
-    license: bi("NASA open data", "NASA ওপেন ডেটা"),
-    status: { kind: "planned", detail: bi("needs an Earthdata Login download", "Earthdata Login দিয়ে নামাতে হবে") },
-  },
-  {
     name: "SMAP L4 (SPL4SMGP.008)",
     tier: "NASA",
     role: bi(
@@ -341,8 +325,8 @@ const DATASETS: Dataset[] = [
     name: "JAXA GSMaP / AMSR2",
     tier: "Partner",
     role: bi(
-      "Planned SHOULD-tier: a partner rainfall cross-check beside CHIRPS, and pre-2015 soil-moisture context",
-      "পরিকল্পিত SHOULD-স্তর: CHIRPS-এর পাশে পার্টনার বৃষ্টিপাত যাচাই, ও ২০১৫-এর আগের মাটির আর্দ্রতার প্রেক্ষাপট",
+      "Planned SHOULD-tier: a partner rainfall cross-check beside GPM IMERG, and pre-2015 soil-moisture context",
+      "পরিকল্পিত SHOULD-স্তর: GPM IMERG-এর পাশে পার্টনার বৃষ্টিপাত যাচাই, ও ২০১৫-এর আগের মাটির আর্দ্রতার প্রেক্ষাপট",
     ),
     res: bi("0.1° / 25 km", "০.১° / ২৫ কিমি"),
     temporal: bi("daily, 2000– / 2012–", "দৈনিক, ২০০০– / ২০১২–"),

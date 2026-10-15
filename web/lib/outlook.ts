@@ -63,6 +63,8 @@ export interface VariantRecord {
   folds: number;
   metrics: OutlookMetrics;
   top_features: string[];
+  /** Mean factor on the model's correction across backtest folds (0 = climatology). */
+  mean_shrink?: number | null;
 }
 
 export interface OnsetOutlook {
@@ -74,6 +76,12 @@ export interface OnsetOutlook {
   built_at_utc: string;
   model_trained_at_utc: string;
   quantile_interval: { low: number; high: number };
+  interval_method?: string;
+  interval_offsets_days?: { low: number | null; high: number | null };
+  target?: string;
+  /** Factor on the final model's anomaly correction chosen by inner cross-validation. */
+  shrink?: number;
+  shrinkage?: string;
   contribution_method: string;
   data_sources: Record<string, { name: string; retrieved_utc: string }>;
   metrics: OutlookMetrics;
@@ -85,6 +93,7 @@ export interface OnsetOutlook {
   farm_district_note?: string;
   district_count?: number;
   observed_notes?: Record<string, string>;
+  label_spread?: { between_district_sd_days: number | null; within_district_sd_days: number | null };
   /** How the outlook year's prediction actually compared to the onsets already observed
    * there — one season, so it is a check rather than a skill claim. */
   out_of_sample?: {
@@ -95,8 +104,8 @@ export interface OnsetOutlook {
     interval_hits: number;
     note: string;
   };
-  /** The 0.25° CHIRPS cell actually read for each point — not a station, so it is stated. */
-  chirps_cells?: Record<string, { lat: number; lon: number }>;
+  /** The 0.1° GPM IMERG cell actually read for each point — not a station, so it is stated. */
+  imerg_cells?: Record<string, { lat: number; lon: number }>;
   sources: {
     labels: string;
     rainfall_feature: string;
@@ -104,8 +113,9 @@ export interface OnsetOutlook {
     indices: string;
     power_rainfall_excluded?: string;
     power_weather_note?: string;
-    chirps_grid?: string;
-    chirps_retrieved?: Record<string, string>;
+    imerg_grid?: string;
+    imerg_retrieved?: Record<string, string>;
+    nasa_only?: string;
   };
   variants: Record<string, VariantRecord>;
   districts: OutlookRow[];
@@ -120,6 +130,9 @@ export const statusForSkill = (skill: number | null): OutlookStatus =>
   skill !== null && Number.isFinite(skill) && skill > 0 ? "shipped" : "validating";
 
 export const beatsClimatology = (outlook: OnsetOutlook): boolean => outlook.status === "shipped";
+
+/** True when inner cross-validation switched the model's correction off: the forecast is climatology. */
+export const isClimatologyFallback = (outlook: OnsetOutlook): boolean => outlook.shrink === 0;
 
 /** A number the build could not compute arrives as null, never as NaN. */
 export const num = (value: number | null, digits = 1): string | null =>

@@ -2,7 +2,7 @@
 
 import { useMemo } from "react";
 import { Area, AreaChart, CartesianGrid, Line, LineChart, ReferenceLine, ResponsiveContainer, Tooltip, XAxis, YAxis } from "recharts";
-import type { OnsetView, PowerPack } from "@/lib/packs";
+import { SATELLITE, type OnsetView, type PowerPack } from "@/lib/packs";
 import { useLang } from "@/lib/lang";
 import { dayMonthLabel, fmtNum, t, tf } from "@/lib/i18n";
 
@@ -21,7 +21,7 @@ function density(samples: number[], from: number, to: number, bandwidth = 6) {
 /**
  * Two-era onset distribution from the per-year DOYs of whichever product the pack prefers.
  * The eras can have different sample sizes, medians can be half-days, and the source is named
- * in the caption — if POWER precipitation is inhomogeneous these years are CHIRPS years.
+ * in the caption — if POWER precipitation is inhomogeneous these years are GPM IMERG years.
  */
 export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPack }) {
   const { lang } = useLang();
@@ -98,7 +98,7 @@ export function PowerOnsetChart({ view, pack }: { view: OnsetView; pack: PowerPa
       )}
       {view.caution && (
         <p className="mt-1 text-[11px] leading-relaxed text-amber">
-          {view.product === "CHIRPS v2.0" && view.alternative
+          {view.product === SATELLITE && view.alternative
             ? tf("pack_caution_power_flagged", lang, {
                 year: pack.quality.precipHomogeneity.changePointInsideAnalysisWindow ?? "—",
                 days: view.alternative.shiftDays ?? "n/a",

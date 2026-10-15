@@ -71,7 +71,7 @@ export function HomogeneityNote({ pack }: { pack: PowerPack }) {
         <p>
           <span className="font-semibold text-ink-mid">{t("xcheck_label", lang)}</span>{" "}
           {tf("xcheck_line", lang, {
-            deg: cross.grid?.degrees ?? "0.25",
+            deg: cross.grid?.degrees ?? "0.1",
             lat: cross.grid?.cell[0] ?? "n/a",
             lon: cross.grid?.cell[1] ?? "n/a",
             date: cross.retrievedUtc?.slice(0, 10) ?? "n/a",

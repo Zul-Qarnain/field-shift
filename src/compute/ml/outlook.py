@@ -16,20 +16,25 @@ import numpy as np
 import pandas as pd
 
 from src.compute.ml.features import FEATURE_LABELS_BN, FEATURE_LABELS_EN, FEATURE_NAMES
-from src.compute.ml.onset_ml import MODEL_VERSION, QUANTILES, to_json_safe
+from src.compute.ml.onset_ml import INTERVAL_TEXT, MODEL_VERSION, QUANTILES, SHRINK_TEXT, TARGET_TEXT, to_json_safe
 
 #: Predicted day-of-year values are shown as dates in this year's monsoon season.
 OUTLOOK_YEAR = 2026
-CONTRIBUTION_METHOD = "LightGBM tree SHAP via pred_contrib=True — days relative to the model's base value"
+CONTRIBUTION_METHOD = (
+    "LightGBM tree SHAP via pred_contrib=True on the anomaly model — days of onset shift away from "
+    "the district climatology"
+)
 
 
 @dataclass
 class FittedOutlook:
-    """The final models plus the training-year climatology they are compared against."""
+    """The final anomaly model, its conformal band and the climatology it corrects."""
 
     mean_model: object
-    low_model: object
-    high_model: object
+    #: Residual quantiles (low, high) added to the point prediction — see onset_ml.inner_calibration.
+    interval_offsets: tuple[float, float]
+    #: Factor on the model's anomaly correction chosen by the inner cross-validation.
+    shrink: float
     clim_by_district: dict[str, float]
     training_years: list[int]
     trained_at: str
@@ -69,7 +74,7 @@ def doy_to_date(doy: float, year: int = OUTLOOK_YEAR) -> str | None:
         return None
 
 
-def contributions(model, row: pd.DataFrame) -> list[dict[str, object]]:
+def contributions(model, row: pd.DataFrame, scale: float = 1.0) -> list[dict[str, object]]:
     """Per-prediction feature contributions, biggest movers first.
 
     LightGBM's ``pred_contrib=True`` returns exact tree SHAP values. Together with the
@@ -77,7 +82,8 @@ def contributions(model, row: pd.DataFrame) -> list[dict[str, object]]:
     features are directly comparable with each other.
     """
     matrix = np.asarray(model.predict(row, pred_contrib=True), dtype=float)
-    values = matrix[0][:-1]
+    # Scaled by the shrinkage, so the effects are the days actually applied to the forecast.
+    values = matrix[0][:-1] * float(scale)
     out: list[dict[str, object]] = []
     for index in np.argsort(-np.abs(values))[:3]:
         name = FEATURE_NAMES[int(index)]
@@ -95,19 +101,20 @@ def contributions(model, row: pd.DataFrame) -> list[dict[str, object]]:
 def predict_targets(fitted: FittedOutlook, rows: pd.DataFrame, targets: list[OutlookTarget]) -> list[dict[str, object]]:
     """One outlook record per target: prediction, interval, baseline and top movers.
 
-    `rows` must be aligned with `targets` — same order, one row each.
+    `rows` must be aligned with `targets` — same order, one row each. The model predicts an
+    anomaly; the record's onset is the target's district climatology plus that anomaly.
     """
     features = rows[FEATURE_NAMES]
-    predicted = np.asarray(fitted.mean_model.predict(features), dtype=float)
-    low = np.asarray(fitted.low_model.predict(features), dtype=float)
-    high = np.asarray(fitted.high_model.predict(features), dtype=float)
+    anomaly = np.asarray(fitted.mean_model.predict(features), dtype=float)
+    q_low, q_high = fitted.interval_offsets
 
     records: list[dict[str, object]] = []
     for position, target in enumerate(targets):
         clim = fitted.clim_by_district.get(target.clim_key, float("nan"))
-        lo, hi = _ordered_interval(low[position], high[position])
+        point = clim + fitted.shrink * anomaly[position]
+        lo, hi = _ordered_interval(point + q_low, point + q_high)
         # Round first, then derive the date, so a tenth of a day can never disagree.
-        predicted_doy = _maybe_round(predicted[position])
+        predicted_doy = _maybe_round(point)
         low_doy, high_doy = _maybe_round(lo), _maybe_round(hi)
         clim_doy = _maybe_round(clim)
         records.append(
@@ -128,7 +135,7 @@ def predict_targets(fitted: FittedOutlook, rows: pd.DataFrame, targets: list[Out
                 "vs_climatology_days": round(predicted_doy - clim_doy, 1)
                 if clim_doy is not None and predicted_doy is not None
                 else None,
-                "top_contributions": contributions(fitted.mean_model, features.iloc[[position]]),
+                "top_contributions": contributions(fitted.mean_model, features.iloc[[position]], fitted.shrink),
             }
         )
     return records
@@ -226,12 +233,17 @@ def build_payload(
         "built_at_utc": dt.datetime.now(dt.timezone.utc).isoformat(timespec="seconds"),
         "model_trained_at_utc": fitted.trained_at,
         "quantile_interval": {"low": QUANTILES[0], "high": QUANTILES[1]},
+        "interval_method": INTERVAL_TEXT,
+        "interval_offsets_days": {"low": _maybe_round(fitted.interval_offsets[0]), "high": _maybe_round(fitted.interval_offsets[1])},
+        "target": TARGET_TEXT,
+        "shrink": round(float(fitted.shrink), 2),
+        "shrinkage": SHRINK_TEXT,
         "contribution_method": CONTRIBUTION_METHOD,
         "data_sources": {
-            "chirps": {"name": "CHIRPS v2.0 daily (UCSB Climate Hazards Center)", "retrieved_utc": fitted.data_retrieved_utc.get("chirps", "unknown")},
-            "power": {"name": "NASA POWER daily (AG community)", "retrieved_utc": fitted.data_retrieved_utc.get("power", "unknown")},
-            "oni": {"name": "NOAA PSL ONI", "retrieved_utc": fitted.data_retrieved_utc.get("oni", "unknown")},
-            "dmi": {"name": "NOAA PSL DMI (HadISST1.1)", "retrieved_utc": fitted.data_retrieved_utc.get("dmi", "unknown")},
+            "imerg": {"name": "NASA/JAXA GPM IMERG V07 daily, via NASA POWER Zarr (AWS Open Data)", "retrieved_utc": fitted.data_retrieved_utc.get("imerg", "unknown")},
+            "power": {"name": "NASA POWER v10 daily (MERRA-2), via NASA POWER Zarr (AWS Open Data)", "retrieved_utc": fitted.data_retrieved_utc.get("power", "unknown")},
+            "nino34": {"name": "Niño 3.4 from NASA MERRA-2 monthly skin temperature", "retrieved_utc": fitted.data_retrieved_utc.get("nino34", "unknown")},
+            "dmi": {"name": "Dipole Mode Index from NASA MERRA-2 monthly skin temperature", "retrieved_utc": fitted.data_retrieved_utc.get("dmi", "unknown")},
         },
         "metrics": metrics,
         "backtest": "leave-one-year-out, all districts of a year held out together",

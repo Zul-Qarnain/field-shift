@@ -137,3 +137,37 @@ def test_bad_coordinates_rejected_without_network(network, tmp_path: Path) -> No
     with pytest.raises(ValueError):
         power.fetch_daily(95.0, 89.9, cache_dir=tmp_path)
     assert network == []
+
+
+def test_s3_backend_returns_the_api_contract(monkeypatch) -> None:
+    """The AWS Zarr path yields the same columns, daily index and provenance attrs as the API path."""
+    from src.acquire import power_zarr
+
+    class FakeStore:
+        url = "https://nasa-power.s3.amazonaws.com/fake.zarr"
+        retrieved_utc = "2026-10-15T00:00:00+00:00"
+        attrs = {"version": "POWER Version 10.0.0"}
+
+        def __init__(self, name):
+            self.name = name
+
+        def point(self, var, lat, lon, start, end):
+            index = pd.date_range("2020-01-01", "2020-01-03", freq="D", name="date")
+            return pd.Series([1.0, 2.0, float("nan")], index=index, name=var)
+
+        def cell_of(self, lat, lon):
+            return (24.0, 90.0)
+
+    monkeypatch.setattr(power_zarr, "ZarrStore", FakeStore)
+    frame = power.fetch_daily(24.1, 90.1, start="20200101", end="20200105", params=["PRECTOTCORR", "T2M"], backend="s3")
+    assert list(frame.columns) == ["PRECTOTCORR", "T2M"]
+    assert frame.index[0] == pd.Timestamp("2020-01-01")
+    assert frame.index[-1] == pd.Timestamp("2020-01-02"), "trailing all-NaN days past the archive are trimmed"
+    assert frame.attrs["retrieval_source"] == "s3"
+    assert frame.attrs["retrieved_utc"] == "2026-10-15T00:00:00+00:00"
+    assert frame.attrs["grid_cell"] == (24.0, 90.0)
+
+
+def test_unknown_backend_is_refused() -> None:
+    with pytest.raises(ValueError, match="backend"):
+        power.fetch_daily(24.0, 90.0, backend="ftp")

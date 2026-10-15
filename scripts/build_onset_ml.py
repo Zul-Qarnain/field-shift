@@ -1,14 +1,16 @@
 """Build-time driver for the onset ML outlook. Run it offline; the browser never does.
 
-    /workspace/fs-venv/bin/python scripts/build_onset_ml.py
+    python scripts/build_onset_ml.py
 
-Real inputs, all read from the caches named below — nothing here is invented:
+Real inputs, NASA and NASA-partner data only — nothing here is invented:
 
-* CHIRPS v2.0 daily 0.25° (UCSB Climate Hazards Center), Bangladesh box, cache/chirps/
-  — onset labels and the pre-monsoon rainfall feature for the shipped arm;
-* NASA POWER daily point series, cache/power/ — temperature, humidity and root-zone
-  moisture for both arms, rainfall for the restricted 2001–2025 arm;
-* NOAA PSL ONI and DMI monthly series, cache/indices/.
+* NASA/JAXA GPM IMERG V07 daily 0.1°, as aggregated by NASA POWER (Zarr store on AWS Open
+  Data, cached under cache/power_zarr/) — onset labels and the pre-monsoon rainfall feature
+  for the shipped arm;
+* NASA POWER v10 daily (MERRA-2) point series — temperature, humidity and root-zone moisture
+  for both arms, rainfall for the restricted 2001–2025 arm (API, or the same archive on AWS);
+* Niño 3.4 and the Dipole Mode Index computed from NASA MERRA-2 monthly skin temperature
+  (`src.acquire.indices`) — no NOAA or Met Office file is read.
 
 It labels every district-year with the v2 onset rule, runs a leave-one-year-out backtest
 for both arms, refits the shipped arm on all its years, predicts the outlook year for the
@@ -29,7 +31,7 @@ import pandas as pd
 REPO = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(REPO))
 
-from src.acquire import chirps, districts as district_mod, indices, power  # noqa: E402
+from src.acquire import districts as district_mod, imerg, indices, power  # noqa: E402
 from src.compute import onset as onset_mod  # noqa: E402
 from src.compute.ml import dataset as D  # noqa: E402
 from src.compute.ml import features as F  # noqa: E402
@@ -40,10 +42,9 @@ FIRST_YEAR = 1981
 OUTLOOK_YEAR = 2026
 ISSUE_DATE = f"{OUTLOOK_YEAR}-04-25"
 POWER_DIR = REPO / "cache" / "power"
-CHIRPS_DIR = REPO / "cache" / "chirps"
 METRICS_PATH = REPO / "src" / "compute" / "ml" / "metrics.json"
 OUTLOOK_PATH = REPO / "web" / "public" / "data" / "onset_outlook.json"
-PRIMARY = "chirps"
+PRIMARY = "imerg"
 
 #: Demo farm coordinates, copied from web/lib/data.ts; web/tests/outlook.test.ts checks
 #: they still match, so this table cannot silently drift from the app. A farm has no onset
@@ -70,8 +71,8 @@ def read_power(point: D.Point) -> pd.DataFrame:
     return power.fetch_daily(point.lat, point.lon, start=f"{FIRST_YEAR}0101", cache_dir=POWER_DIR)
 
 
-def read_chirps(point: D.Point) -> pd.Series:
-    return chirps.series(point.lat, point.lon, FIRST_YEAR, OUTLOOK_YEAR, chirps_dir=CHIRPS_DIR)
+def read_imerg(point: D.Point) -> pd.Series:
+    return imerg.series(point.lat, point.lon, imerg.FIRST_YEAR, OUTLOOK_YEAR)
 
 
 def outlook_fold(
@@ -136,21 +137,29 @@ def observed_onset(rainfall: pd.Series | None, source_name: str) -> tuple[float,
     return float(value), f"observed under the v2 rule in {source_name} (record ends DOY {last_doy})"
 
 
-def chirps_retrieved() -> dict[str, str]:
-    """What the CHIRPS files say about when they were fetched — training years and outlook year apart."""
-    years = chirps.available_years(CHIRPS_DIR)
-    out: dict[str, str] = {}
-    for label, year in (("first year on disk", years[0]), ("last training year", chirps.LAST_YEAR), ("outlook year", OUTLOOK_YEAR)):
-        path = CHIRPS_DIR / f"chirps_bd_{year}.nc"
-        if not path.exists():
-            out[label] = "not on disk"
-            continue
-        import xarray as xr
+def imerg_retrieved(series_by_point: dict[str, pd.Series]) -> dict[str, str]:
+    """When the IMERG store was read, and how far its record reaches."""
+    meta = imerg.provenance()
+    last = max((values.index.max() for values in series_by_point.values() if len(values)), default=None)
+    return {
+        "retrieved": str(meta["retrievedUtc"]),
+        "store": str(meta["sourceUrlSample"]),
+        "record ends": last.strftime("%Y-%m-%d") if last is not None else "unknown",
+        "training years": f"{imerg.FIRST_YEAR}–{imerg.LAST_YEAR}",
+    }
 
-        with xr.open_dataset(path) as dataset:
-            out[label] = str(dataset.attrs.get("retrieved_utc", "no timestamp in the file"))
-    out["years on disk"] = f"{years[0]}–{years[-1]} ({len(years)} files)"
-    return out
+
+def label_spread(variant: D.Variant, years: list[int]) -> dict[str, float]:
+    """How much onsets differ between districts versus from year to year inside one district."""
+    import numpy as np
+
+    series = [variant.labels[key].reindex(years).dropna() for key in sorted(variant.trainable) if key in variant.labels]
+    means = [float(s.mean()) for s in series if len(s) > 1]
+    within = [float(s.std(ddof=1)) for s in series if len(s) > 1]
+    return {
+        "between_district_sd_days": round(float(np.std(means, ddof=1)), 1) if len(means) > 1 else float("nan"),
+        "within_district_sd_days": round(float(np.mean(within)), 1) if within else float("nan"),
+    }
 
 
 def main() -> None:
@@ -163,22 +172,22 @@ def main() -> None:
     args = parser.parse_args()
 
     started = time.time()
-    oni, dmi = indices.oni(), indices.dmi()
+    oni, dmi = indices.nino34(), indices.dmi()
     points = load_points()
     if args.limit:
         points = [p for p in points if p.kind == "farm"] + points[: args.limit]
     print(f"{len([p for p in points if p.kind == 'district'])} districts + {len([p for p in points if p.kind == 'farm'])} farms")
 
     power_frames: dict[str, pd.DataFrame] = {}
-    chirps_series: dict[str, pd.Series] = {}
+    imerg_series: dict[str, pd.Series] = {}
     cells: dict[str, tuple[float, float]] = {}
     stamps: list[str] = []
     for point in points:
         frame = read_power(point)
         power_frames[point.key] = frame
         stamps.append(str(frame.attrs.get("retrieved_utc", "unknown")))
-        chirps_series[point.key] = read_chirps(point)
-        cells[point.key] = chirps.cell_of(point.lat, point.lon, chirps_dir=CHIRPS_DIR)
+        imerg_series[point.key] = read_imerg(point)
+        cells[point.key] = imerg.cell_of(point.lat, point.lon)
     print(f"series read for {len(points)} points ({time.time() - started:.0f}s)")
 
     variants: dict[str, D.Variant] = {}
@@ -186,7 +195,7 @@ def main() -> None:
     reports: dict[str, dict[str, object]] = {}
     rows_by_variant: dict[str, pd.DataFrame] = {}
     for name in D.VARIANTS:
-        variant = D.build_variant(name, points, power_frames, chirps_series, OUTLOOK_YEAR)
+        variant = D.build_variant(name, points, power_frames, imerg_series, OUTLOOK_YEAR)
         variant.cells = cells
         years = D.year_pool(variant)
         if args.years:
@@ -212,12 +221,17 @@ def main() -> None:
     primary = variants[PRIMARY]
     years = years_by_variant[PRIMARY]
     combined = rows_by_variant[PRIMARY]
-    train = combined[(combined["year"].isin(years)) & combined["district"].isin(primary.trainable)].dropna(subset=["onset_doy"])
-    models = {
-        "mean": M.fit({"objective": "regression"}, train[F.FEATURE_NAMES], train["onset_doy"], args.rounds),
-        "low": M.fit({"objective": "quantile", "alpha": M.QUANTILES[0]}, train[F.FEATURE_NAMES], train["onset_doy"], args.rounds),
-        "high": M.fit({"objective": "quantile", "alpha": M.QUANTILES[1]}, train[F.FEATURE_NAMES], train["onset_doy"], args.rounds),
-    }
+    train = combined[(combined["year"].isin(years)) & combined["district"].isin(primary.trainable)].dropna(
+        subset=["onset_doy", "base_onset"]
+    )
+    target = M.anomaly_target(train["onset_doy"], train["base_onset"])
+    mean_model = M.fit({"objective": "regression"}, train[F.FEATURE_NAMES], target, args.rounds)
+    calibration = M.inner_calibration(train[F.FEATURE_NAMES], target, train["year"], rounds=args.rounds)
+    print(
+        f"  final model on {len(train)} district-years; shrink {calibration.shrink:.1f}, conformal band "
+        f"{calibration.low:+.1f} / {calibration.high:+.1f} days (inner OOF mae model {calibration.oof_mae_model:.2f} "
+        f"vs clim {calibration.oof_mae_clim:.2f})"
+    )
 
     outlook = combined[combined["year"] == OUTLOOK_YEAR].set_index("district")
     targets = [O.OutlookTarget(p.key, p.kind, p.label, p.lat, p.lon, p.clim_key) for p in primary.points if p.key in outlook.index]
@@ -227,17 +241,17 @@ def main() -> None:
     ordered = outlook.loc[[t.key for t in targets]].reset_index().rename(columns={"index": "district"})
 
     fitted = O.FittedOutlook(
-        mean_model=models["mean"],
-        low_model=models["low"],
-        high_model=models["high"],
+        mean_model=mean_model,
+        interval_offsets=(calibration.low, calibration.high),
+        shrink=calibration.shrink,
         clim_by_district={key: float(series.reindex(years).mean()) for key, series in primary.labels.items()},
         training_years=years,
         trained_at=time.strftime("%Y-%m-%dT%H:%M:%S+00:00", time.gmtime()),
         data_retrieved_utc={
             "power": max(stamps) if stamps else "unknown",
-            "oni": str(oni.attrs["retrieved_utc"]),
+            "nino34": str(oni.attrs["retrieved_utc"]),
             "dmi": str(dmi.attrs["retrieved_utc"]),
-            "chirps": str(chirps.provenance(CHIRPS_DIR)["retrievedUtc"]),
+            "imerg": str(imerg.provenance()["retrievedUtc"]),
         },
     )
     records = O.predict_targets(fitted, ordered, targets)
@@ -245,7 +259,7 @@ def main() -> None:
     observed: dict[str, float] = {}
     notes: dict[str, str] = {}
     for point in targets:
-        value, note = observed_onset(chirps_series.get(point.key), primary.source)
+        value, note = observed_onset(imerg_series.get(point.key), primary.source)
         notes[point.key] = note
         if value == value:
             observed[point.key] = value
@@ -269,10 +283,10 @@ def main() -> None:
             "labels": primary.source,
             "rainfall_feature": primary.source,
             "weather_features": "NASA POWER daily point series (T2M, T2M_MAX, RH2M, GWETROOT)",
-            "indices": "NOAA PSL ONI (ERSSTv6 3-month running mean) and DMI (HadISST1.1)",
-            "chirps_ui": "CHIRPS v2.0 (UCSB Climate Hazards Center)",
+            "indices": f"{indices.NINO34_TEXT}; {indices.DMI_TEXT} — both from {indices.SOURCE}",
+            "satellite_ui": imerg.PRODUCT,
             "power_rainfall_excluded": (
-                "POWER PRECTOTCORR is not used for labels or the rainfall feature in the CHIRPS arm: at Tangail "
+                "POWER PRECTOTCORR is not used for labels or the rainfall feature in the IMERG arm: at Tangail "
                 "its annual total averages 937 mm in 1981–1996, 1714 mm in 1997–2015 and 2814 mm in 2016–2025, so "
                 "a 45-year anomaly climatology would be measuring the product, not the monsoon. The POWER arm is "
                 "therefore reported for 2001–2025 only."
@@ -282,19 +296,24 @@ def main() -> None:
                 "they are used as anomalies against each fold's own climatology, which limits but does not "
                 "remove the same inhomogeneity risk."
             ),
-            "chirps_grid": "CHIRPS v2.0 is a 0.25° daily grid: a point's value is its nearest cell, not a station reading.",
-            "chirps_retrieved": chirps_retrieved(),
+            "imerg_grid": (
+                "GPM IMERG is a 0.1° daily grid aggregated by NASA POWER to the UTC day: a point's value is "
+                "the cell containing it, not a station reading."
+            ),
+            "imerg_retrieved": imerg_retrieved(imerg_series),
+            "nasa_only": "Every input is NASA or NASA-partner (JAXA, via GPM) data; no NOAA, Met Office or UCSB product is read.",
         },
     )
     payload["observed_notes"] = notes
+    payload["label_spread"] = label_spread(primary, years)
     payload["out_of_sample"] = O.out_of_sample_check(records)
     payload["district_count"] = len([t for t in targets if t.kind == "district"])
     payload["farm_district_note"] = (
         "A demo farm's baseline and prior-season onset come from the district it sits in; "
-        "its own 1 Mar – 20 Apr rainfall comes from its own CHIRPS cell."
+        "its own 1 Mar – 20 Apr rainfall comes from its own IMERG cell."
     )
     payload["onset_rule"] = onset_mod.RULE_LABEL
-    payload["chirps_cells"] = {
+    payload["imerg_cells"] = {
         key: {"lat": cell[0], "lon": cell[1]}
         for key, cell in sorted(cells.items())
         if key in {t.key for t in targets}

@@ -1,12 +1,12 @@
-"""Inputs for each onset-model variant, built from the two rainfall sources.
+"""Inputs for each onset-model variant, built from the two NASA rainfall sources.
 
 Two variants are trained and reported side by side:
 
-``chirps`` (the shipped arm)
-    Labels and the rainfall feature come from CHIRPS v2.0 daily rainfall, on every year
-    CHIRPS covers (1981–2025). CHIRPS is a station-plus-satellite product whose rainfall
-    does not jump when a reanalysis changes sources, so a 45-year anomaly climatology is
-    meaningful.
+``imerg`` (the shipped arm)
+    Labels and the rainfall feature come from NASA/JAXA GPM IMERG V07 daily rainfall (via
+    NASA POWER), on every complete year IMERG covers (1998–2025). IMERG is a satellite
+    product intercalibrated across the TRMM and GPM eras; its annual totals at the demo points
+    show no reanalysis-style step, so a 28-year anomaly climatology is meaningful.
 
 ``power`` (the restricted arm)
     Labels and the rainfall feature come from NASA POWER PRECTOTCORR, on 2001–2025 only.
@@ -30,9 +30,11 @@ from src.compute.ml import features as F
 
 #: Years whose POWER PRECTOTCORR is treated as comparable (see the module docstring).
 POWER_FIRST_YEAR = 2001
+#: First complete IMERG year in the POWER store.
+IMERG_FIRST_YEAR = 1998
 SOURCE_NAMES = {
-    "chirps": "CHIRPS v2.0 (UCSB Climate Hazards Center)",
-    "power": "NASA POWER PRECTOTCORR, 2001–2025 only",
+    "imerg": "NASA/JAXA GPM IMERG V07 (via NASA POWER)",
+    "power": "NASA POWER PRECTOTCORR (MERRA-2), 2001–2025 only",
 }
 VARIANTS = tuple(SOURCE_NAMES)
 
@@ -67,7 +69,7 @@ class Variant:
     labels: dict[str, pd.Series]
     years: list[int]
     trainable: set[str]
-    #: The CHIRPS grid cell actually used per point, so 0.25° can be stated honestly.
+    #: The IMERG grid cell actually used per point, so 0.1° can be stated honestly.
     cells: dict[str, tuple[float, float]] = field(default_factory=dict)
 
     @property
@@ -85,7 +87,7 @@ def build_variant(
     name: str,
     points: list[Point],
     power: dict[str, pd.DataFrame],
-    chirps: dict[str, pd.Series],
+    satellite: dict[str, pd.Series],
     outlook_year: int,
 ) -> Variant:
     """Window scalars and onset labels for one arm of the comparison.
@@ -95,14 +97,14 @@ def build_variant(
     """
     if name not in VARIANTS:
         raise ValueError(f"unknown variant {name!r} (one of {VARIANTS})")
-    from_chirps = name == "chirps"
-    floor = 1 if from_chirps else POWER_FIRST_YEAR
+    from_satellite = name == "imerg"
+    floor = IMERG_FIRST_YEAR if from_satellite else POWER_FIRST_YEAR
 
     labels: dict[str, pd.Series] = {}
     for point in points:
         # A farm has no onset record of its own: it borrows the district it sits in.
         source_key = point.key if point.kind == "district" else point.clim_key
-        series = chirps.get(source_key) if from_chirps else power.get(source_key, pd.DataFrame()).get(F.RAIN)
+        series = satellite.get(source_key) if from_satellite else power.get(source_key, pd.DataFrame()).get(F.RAIN)
         if series is None or len(series) == 0:
             continue
         labels[point.key] = onset_labels(series, floor)
@@ -116,7 +118,7 @@ def build_variant(
         frame = power.get(point.key)
         if frame is None or point.key not in labels:
             continue
-        rain = chirps.get(point.key) if from_chirps else None
+        rain = satellite.get(point.key) if from_satellite else None
         scalars[point.key] = F.pre_window_scalars(frame, window_years, rain=rain)
         used.append(point)
 

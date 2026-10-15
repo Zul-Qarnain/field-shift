@@ -1,11 +1,12 @@
 // Renders the README graphics in assets/src/*.html to PNG at exact pixel sizes.
 // Run from the web/ directory:  node ../assets/src/render.js
+// (set CHROMIUM_PATH to use a preinstalled Chromium instead of Playwright's download)
 const path = require('path');
 const { execFileSync } = require('child_process');
-const { chromium } = require('/workspace/fs-next/web/node_modules/playwright');
+const { chromium } = require(path.join(__dirname, '..', '..', 'web', 'node_modules', 'playwright'));
 
-const SRC = '/workspace/fs-next/assets/src';
-const OUT = '/workspace/fs-next/assets';
+const SRC = __dirname;
+const OUT = path.join(__dirname, '..');
 
 const TARGETS = [
   { file: 'banner.html', out: 'banner.png', width: 1600, height: 500 },
@@ -13,7 +14,10 @@ const TARGETS = [
 ];
 
 (async () => {
-  const browser = await chromium.launch({ args: ['--no-sandbox', '--force-device-scale-factor=1'] });
+  const browser = await chromium.launch({
+    args: ['--no-sandbox', '--force-device-scale-factor=1'],
+    ...(process.env.CHROMIUM_PATH ? { executablePath: process.env.CHROMIUM_PATH } : {}),
+  });
   const shots = [];
   for (const t of TARGETS) {
     const page = await browser.newPage({ viewport: { width: t.width, height: t.height }, deviceScaleFactor: 2 });

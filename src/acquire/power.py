@@ -5,6 +5,15 @@ Public API (stable — other workstreams import exactly this):
     fetch_daily(lat, lon, start="19810101", end=None, params=DEFAULT_PARAMS,
                 cache_dir=Path("cache/power")) -> pandas.DataFrame
 
+Backends (``backend=`` or the ``POWER_BACKEND`` environment variable):
+
+* ``"api"``  — the daily point API below (the original path);
+* ``"s3"``   — the same POWER v10 archive read from NASA POWER's public Zarr stores on AWS
+  Open Data (`src.acquire.power_zarr`); values are identical to the API's for the grid cell
+  containing the point (verified at Tangail: annual PRECTOTCORR 2016–2025 matches to 0.1 mm);
+* ``"auto"`` (default) — the API, falling back to S3 for the rest of the run the first time
+  the API cannot be reached.
+
 Returns one column per parameter, indexed by date (daily, POWER's local-time
 standard), with ``df.attrs["retrieved_utc"]`` set to the UTC ISO timestamp of
 the HTTP retrieval that produced the data (cache hit -> the timestamp stored
@@ -23,6 +32,7 @@ from __future__ import annotations
 
 import hashlib
 import json
+import os
 import random
 import time
 from datetime import date, datetime, timedelta, timezone
@@ -58,6 +68,11 @@ BACKOFF_BASE_S = 3.0
 REQUEST_TIMEOUT_S = 180
 
 _last_request_mono = 0.0
+_api_unreachable = False
+
+BACKENDS = ("auto", "api", "s3")
+#: Which POWER Zarr store each parameter lives in on AWS (everything else: MERRA-2 daily).
+S3_PARAM_STORE = {"ALLSKY_SFC_SW_DWN": "syn1deg_daily"}
 
 
 def _utc_now_iso() -> str:
@@ -226,12 +241,103 @@ def fetch_daily(
     *,
     force_refresh: bool = False,
     session: requests.Session | None = None,
+    backend: str | None = None,
 ) -> pd.DataFrame:
     """Daily NASA POWER point series, served from ``cache_dir`` when already fetched.
 
     ``lat``/``lon`` are rounded to 4 decimals for the cache key and the request.
     ``end`` defaults to yesterday (UTC). ``force_refresh`` re-downloads.
     """
+    global _api_unreachable
+    mode = (backend or os.environ.get("POWER_BACKEND", "auto")).lower()
+    if mode not in BACKENDS:
+        raise ValueError(f"backend must be one of {BACKENDS}, got {mode!r}")
+    if mode == "s3" or (mode == "auto" and _api_unreachable):
+        return fetch_daily_s3(lat, lon, start=start, end=end, params=params)
+    if mode == "auto":
+        try:
+            return _fetch_daily_api(lat, lon, start, end, params, cache_dir, force_refresh=force_refresh, session=session)
+        except (RuntimeError, requests.RequestException) as exc:
+            if "rejected the request" in str(exc):
+                raise
+            _api_unreachable = True
+            print(f"  NASA POWER API unreachable ({str(exc)[:80]}); reading the POWER Zarr archive on AWS instead")
+            return fetch_daily_s3(lat, lon, start=start, end=end, params=params)
+    return _fetch_daily_api(lat, lon, start, end, params, cache_dir, force_refresh=force_refresh, session=session)
+
+
+def fetch_daily_s3(
+    lat: float,
+    lon: float,
+    start: str = DEFAULT_START,
+    end: str | None = None,
+    params: Iterable[str] = DEFAULT_PARAMS,
+) -> pd.DataFrame:
+    """The same daily series read from NASA POWER's Zarr stores on AWS Open Data.
+
+    Same columns, index and attrs contract as the API path. The archive's fill (NaN) is kept
+    as NaN; dates past the archive's last day come back as NaN rows and are trimmed.
+    """
+    from src.acquire import power_zarr
+
+    latitude, longitude = float(lat), float(lon)
+    if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:
+        raise ValueError(f"coordinates out of range: lat={latitude}, lon={longitude}")
+    params_list = list(dict.fromkeys(params))
+    if not params_list:
+        raise ValueError("params must contain at least one POWER parameter name")
+    start_stamp = _norm_date(start or DEFAULT_START, which="start")
+    end_stamp = _norm_date(end or _yesterday(), which="end")
+    if end_stamp < start_stamp:
+        raise ValueError(f"end {end_stamp} precedes start {start_stamp}")
+
+    columns: dict[str, pd.Series] = {}
+    stores: dict[str, power_zarr.ZarrStore] = {}
+    for param in params_list:
+        name = S3_PARAM_STORE.get(param, "merra2_daily")
+        store = stores.setdefault(name, power_zarr.ZarrStore(name))
+        columns[param] = store.point(param, latitude, longitude, start_stamp, end_stamp)
+    frame = pd.DataFrame(columns)
+    frame.index = pd.DatetimeIndex(frame.index, name="date")
+    full = pd.date_range(pd.Timestamp(start_stamp), pd.Timestamp(end_stamp), freq="D", name="date")
+    frame = frame.reindex(full)
+    present = frame.dropna(how="all")
+    if not present.empty:
+        frame = frame.loc[: present.index.max()]
+    main = stores.get("merra2_daily") or next(iter(stores.values()))
+    frame.attrs.update(
+        {
+            "retrieved_utc": main.retrieved_utc,
+            "retrieval_source": "s3",
+            "dataset": "NASA POWER v10 daily (Zarr, AWS Open Data registry), MERRA-2 grid cell",
+            "power_sources": sorted({"MERRA2" if n == "merra2_daily" else n.split("_")[0].upper() for n in stores}),
+            "power_api": str(main.attrs.get("version", "POWER Version 10")),
+            "time_standard": "LST",
+            "requested_parameters": params_list,
+            "fill_values_treated_as_nan": ["NaN"],
+            "lat": round(latitude, 4),
+            "lon": round(longitude, 4),
+            "grid_cell": main.cell_of(latitude, longitude),
+            "start": start_stamp,
+            "end": end_stamp,
+            "source_url": main.url,
+        }
+    )
+    return frame
+
+
+def _fetch_daily_api(
+    lat: float,
+    lon: float,
+    start: str,
+    end: str | None,
+    params: Iterable[str],
+    cache_dir: Path,
+    *,
+    force_refresh: bool = False,
+    session: requests.Session | None = None,
+) -> pd.DataFrame:
+    """The daily point API path, with its JSON cache."""
     latitude = float(lat)
     longitude = float(lon)
     if not -90 <= latitude <= 90 or not -180 <= longitude <= 180:

@@ -4,13 +4,13 @@ NASA Space Apps asks every team to name each AI tool it used, with the prompts, 
 
 **Why we used AI.** We are a small student team of six. AI tools let us tell Karim's story on film and in a spoken narration, and let us build and document a large data pipeline and app in the time of one hackathon. The scientific decisions, the data choices and the final checking stayed with the team.
 
-**No AI-generated data is used as a scientific input.** Every number in the app comes from a named dataset (NASA POWER, CHIRPS, SRDI, NOAA, geoBoundaries) through deterministic code. No language model runs in the app, at build time or in the browser, and no model output feeds a score or a recommendation.
+**No AI-generated data is used as a scientific input.** Every number in the app comes from a named dataset (NASA POWER, NASA/JAXA GPM IMERG, NASA MERRA-2, SRDI, FAO-29, geoBoundaries) through deterministic code. No language model runs in the app, at build time or in the browser, and no model output feeds a score or a recommendation.
 
 ## At a glance
 
 | # | Area | AI tool | What it did | Data it worked on |
 |---|---|---|---|---|
-| 1 | Machine learning | **LightGBM** (gradient-boosted trees; not generative AI) | Trained offline to forecast the monsoon-onset date shown on each farm page | CHIRPS v2.0 rainfall, NASA POWER weather, NOAA ONI and DMI |
+| 1 | Machine learning | **LightGBM** (gradient-boosted trees; not generative AI) | Trained offline to forecast the monsoon-onset date shown on each farm page | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 and DMI computed from NASA MERRA-2 |
 | 2a | Coding, audits, documentation | **Qoder CLI** with model **Qwen3.8-Flash** | Implemented code, tests and documents from written specifications | This repository, the public datasets it reads |
 | 2b | Planning and review | **Cursor / Grok agents** | Planned the work, reviewed every change, ran the test gate, merged on the team lead's instruction | This repository, project documents, public sources |
 | 3a | Story clips in the project video | **Google Veo** | Generated the short cinematic clips of the fictional farmer Karim and his fields | Text descriptions of scenes |

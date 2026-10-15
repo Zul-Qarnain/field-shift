@@ -11,15 +11,15 @@ import {
 const FARM_IDS = ["farm-12", "rajshahi-07", "barishal-03", "khulna-09", "rangpur-21", "sylhet-15"];
 const RULE_TEXT = "5-day rainfall ≥ local Jun–Sep mean (2001–2025), no break ≥ 10 days under 5 mm";
 
-describe("NASA POWER data packs (schema v2)", () => {
+describe("NASA POWER data packs (schema v3)", () => {
   for (const id of FARM_IDS) {
     it(`${id}: the pack exists and carries real provenance`, () => {
       const pack = packForFarm(id);
       expect(pack).not.toBeNull();
       if (!pack) return;
-      expect(pack.schema_version).toBe(2);
+      expect(pack.schema_version).toBe(3);
       expect(pack.kind).toBe("farm");
-      expect(pack.source).toBe("NASA POWER daily point API, community AG");
+      expect(pack.source).toBe("NASA POWER daily (v10, community AG)");
       expect(pack.covered.start).toBe("1981-01-01");
       expect(pack.completeYears.first).toBe(1981);
       expect(pack.retrievedUtc).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}\+00:00$/);
@@ -77,17 +77,18 @@ describe("NASA POWER data packs (schema v2)", () => {
       }
     });
 
-    it(`${id}: a CHIRPS cross-check exists and is labelled as non-NASA`, () => {
+    it(`${id}: a GPM IMERG cross-check exists and is labelled NASA + JAXA`, () => {
       const pack = packForFarm(id)!;
       const cross = pack.crossCheck;
       expect(cross.available).toBe(true);
-      expect(cross.source).toBe("CHIRPS v2.0 daily (0.25°)");
-      expect(cross.tierLabel).toBe("Open (UCSB CHC / USGS)");
-      expect(cross.citation).toContain("Funk");
-      expect(cross.yearsOnDisk).toEqual({ first: 1981, last: 2025, count: 45 });
+      expect(cross.source).toBe("NASA GPM IMERG V07 daily (0.1°, via NASA POWER)");
+      expect(cross.tierLabel).toBe("NASA + JAXA (GPM)");
+      expect(cross.citation).toContain("Huffman");
+      expect(cross.yearsComplete).toEqual({ first: 1998, last: 2025, count: 28 });
+      expect(cross.grid!.degrees).toBe(0.1);
       expect(cross.retrievedUtc).toMatch(/^\d{4}-\d{2}-\d{2}T/);
       expect(cross.onset!.shiftDays).toBeCloseTo(cross.onset!.medianB! - cross.onset!.medianA!, 6);
-      expect(cross.agreement!.onsetYears.yearsCompared).toBeGreaterThanOrEqual(40);
+      expect(cross.agreement!.onsetYears.yearsCompared).toBeGreaterThanOrEqual(25);
       expect(cross.rainfallTrend2001toLatest!.window!.startsWith("2001")).toBe(true);
     });
   }
@@ -98,7 +99,7 @@ describe("NASA POWER data packs (schema v2)", () => {
     expect(PACK_INDEX.farms.map((f) => f.id).sort()).toEqual([...FARM_IDS].sort());
     expect(PACK_INDEX.onsetWindow).toEqual({ startDoy: 121, endDoy: 270 });
     expect(PACK_INDEX.onsetDefinition).toContain("Moron & Robertson");
-    expect(PACK_INDEX.crossCheck.source).toContain("CHIRPS");
+    expect(PACK_INDEX.crossCheck.source).toContain("GPM IMERG");
     expect(PACK_INDEX.trendWindow).toContain("2001");
   });
 
@@ -106,8 +107,8 @@ describe("NASA POWER data packs (schema v2)", () => {
     for (const id of FARM_IDS) {
       const pack = packForFarm(id)!;
       const label = sourceLabel(pack);
-      if (pack.preferred.onsetShift.source === "CHIRPS v2.0") {
-        expect(label).toContain("CHIRPS v2.0 cross-check");
+      if (pack.preferred.onsetShift.source === "GPM IMERG") {
+        expect(label).toContain("GPM IMERG cross-check");
       } else {
         expect(label).toContain("NASA POWER");
       }
@@ -126,12 +127,12 @@ describe("onsetView / trendView source preference", () => {
       const pack = packForFarm(id)!;
       const view = onsetView(pack)!;
       const flagged = pack.quality.precipHomogeneity.changePointInsideAnalysisWindow !== null;
-      const chirpsFlagged = pack.crossCheck.homogeneity?.changePointInsideAnalysisWindow != null;
-      if (flagged && !chirpsFlagged) expect(view.product).toBe("CHIRPS v2.0");
+      const satFlagged = pack.crossCheck.homogeneity?.changePointInsideAnalysisWindow != null;
+      if (flagged && !satFlagged) expect(view.product).toBe("GPM IMERG");
       if (!flagged) expect(view.product).toBe("NASA POWER");
       expect(view.shiftDays).toBeCloseTo(view.medianB - view.medianA, 6);
       expect(view.alternative).not.toBeNull();
-      if (view.product === "CHIRPS v2.0") {
+      if (view.product === "GPM IMERG") {
         expect(view.caution).toContain("not used");
         expect(view.alternative!.product).toBe("NASA POWER");
       }
@@ -142,11 +143,11 @@ describe("onsetView / trendView source preference", () => {
     const pack = packForFarm("farm-12")!;
     const view = onsetView(pack)!;
     const powerSays = pack.onset.shiftDays!;
-    const chirpsSays = pack.crossCheck.onset!.shiftDays!;
-    expect(view.product).toBe(pack.preferred.onsetShift.source === "CHIRPS v2.0" ? "CHIRPS v2.0" : "NASA POWER");
+    const satSays = pack.crossCheck.onset!.shiftDays!;
+    expect(view.product).toBe(pack.preferred.onsetShift.source === "GPM IMERG" ? "GPM IMERG" : "NASA POWER");
     // the two products genuinely differ here, so the alternative must be the other number
-    expect(Math.abs(powerSays - chirpsSays)).toBeGreaterThan(0);
-    expect(view.alternative!.shiftDays).toBe(view.product === "CHIRPS v2.0" ? powerSays : chirpsSays);
+    expect(Math.abs(powerSays - satSays)).toBeGreaterThan(0);
+    expect(view.alternative!.shiftDays).toBe(view.product === "GPM IMERG" ? powerSays : satSays);
   });
 
   it("trendView scales the same way and keeps the window honest", () => {
@@ -154,7 +155,7 @@ describe("onsetView / trendView source preference", () => {
     const trend = trendView(pack)!;
     expect(trend.window!.startsWith("2001")).toBe(true);
     expect(Math.abs(trend.pctPerDecade)).toBeLessThan(60);
-    expect(trend.product).toBe(pack.preferred.rainfallTrend.source === "CHIRPS v2.0" ? "CHIRPS v2.0" : "NASA POWER");
+    expect(trend.product).toBe(pack.preferred.rainfallTrend.source === "GPM IMERG" ? "GPM IMERG" : "NASA POWER");
   });
 });
 
@@ -193,17 +194,17 @@ describe("withRealData merge", () => {
     expect(merged.irrigation).toBe(fixture.irrigation);
   });
 
-  it("stamps POWER with a real date and adds CHIRPS as its own provenance entry", () => {
+  it("stamps POWER and GPM IMERG with real dates; every other row stays a non-retrieval", () => {
     const merged = withRealData(FARMS.find((f) => f.id === "sylhet-15")!);
     const power = merged.provenance.find((p) => p.id === "power")!;
     expect(power.retrieved).toMatch(/^\d{4}-\d{2}-\d{2} \(UTC\)$/);
-    const chirps = merged.provenance.find((p) => p.id === "chirps")!;
-    expect(chirps.name).toBe("CHIRPS v2.0");
-    expect(chirps.tier).toBe("Open");
-    expect(chirps.retrieved).toMatch(/^\d{4}-\d{2}-\d{2} \(UTC\)$/);
-    // IMERG is a next-phase row, not a retrieval: its row must not look like a real one
-    expect(merged.provenance.find((p) => p.id === "imerg")!.retrieved).toMatch(/^next phase/);
-    for (const entry of merged.provenance.filter((p) => !["power", "chirps"].includes(p.id))) {
+    const imerg = merged.provenance.find((p) => p.id === "imerg")!;
+    expect(imerg.name).toBe("GPM IMERG");
+    expect(imerg.tier).toBe("NASA");
+    expect(imerg.retrieved).toMatch(/^\d{4}-\d{2}-\d{2} \(UTC\)$/);
+    expect(imerg.version).toContain("IMERG V07");
+    expect(merged.provenance.some((p) => p.id === "chirps")).toBe(false);
+    for (const entry of merged.provenance.filter((p) => !["power", "imerg"].includes(p.id))) {
       expect(entry.retrieved).toMatch(/^(—|next phase)/);
     }
   });
@@ -234,7 +235,7 @@ describe("covered window label", () => {
  * median difference, and neither the headline nor the advisory may claim one.
  */
 describe("onset significance rule", () => {
-  const gated = withRealData(FARMS.find((f) => f.id === "farm-12")!); // CHIRPS: median −6 d, p = 0.764
+  const gated = withRealData(FARMS.find((f) => f.id === "farm-12")!); // GPM IMERG: median −9 d, p = 0.252
   const measured = withRealData(FARMS.find((f) => f.id === "rajshahi-07")!); // POWER: median −6 d, p = 0.173
 
   it("a non-significant measured shift is treated as 0 by the engine", () => {
@@ -253,26 +254,26 @@ describe("onset significance rule", () => {
     const significant: FarmPack = { ...gated, onset: { ...gated.onset, pValue: 0.001 } };
     expect(onsetShiftSignificant(significant)).toBe(true);
     expect(measuredOnsetShift(significant)).toBe(significant.onset.shiftDays);
-    expect(effectiveOnsetShift(significant, DEFAULT_SCENARIO)).toBe(-6);
+    expect(effectiveOnsetShift(significant, DEFAULT_SCENARIO)).toBe(-9);
   });
 
   it("says so in the Why list instead of shrinking the window silently", () => {
     const plan = generateRotations(gated, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, new Set(CROPS.map((c) => c.id)))[0];
     expect(plan.why.map((w) => w.en).join(" ")).toContain("is not significant, so it is treated as 0");
     expect(plan.why.map((w) => w.bn).join(" ")).toContain("উল্লেখযোগ্য নয়");
-    expect(plan.why.map((w) => w.en).join(" ")).toContain("p = 0.764");
+    expect(plan.why.map((w) => w.en).join(" ")).toContain("p = 0.252");
   });
 
   it("the advisory claims no shift when the test is not significant (en + bn, Bangla digits)", () => {
     const plan = generateRotations(gated, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, new Set(CROPS.map((c) => c.id)))[0];
     const en = advisoryText(gated, plan, "en");
     expect(en).toContain("No significant onset shift");
-    expect(en).toContain("p=0.764");
+    expect(en).toContain("p=0.252");
     expect(en).toContain("the calendar treats it as 0");
-    expect(en).not.toMatch(/is 6 days (earlier|later) than/);
+    expect(en).not.toMatch(/is 9 days (earlier|later) than/);
     const bn = advisoryText(gated, plan, "bn");
     expect(bn).toContain("উল্লেখযোগ্য পরিবর্তন ধরা পড়েনি");
-    expect(bn).toContain("০.৭৬৪"); // p in Bengali digits
+    expect(bn).toContain("০.২৫২"); // p in Bengali digits
     expect(bn).not.toContain("দিন আগে হয়েছে");
   });
 
@@ -287,14 +288,14 @@ describe("onset significance rule", () => {
   it("the SMS marks a non-significant shift instead of printing a fake one", () => {
     const plan = generateRotations(gated, DEFAULT_PRIORITIES, DEFAULT_SCENARIO, new Set(CROPS.map((c) => c.id)))[0];
     const en = smsText(gated, plan, "en");
-    expect(en).toContain("onset n.s. (p=0.76)");
-    expect(en).not.toContain("onset -6d");
+    expect(en).toContain("onset n.s. (p=0.25)");
+    expect(en).not.toContain("onset -9d");
     expect(en.length).toBeLessThanOrEqual(160);
     expect(smsText(gated, plan, "bn")).toContain("শুরু উল্লেখযোগ্য নয়");
   });
 
   it("names the product the era figures came from", () => {
-    expect(gated.onset.source).toBe("CHIRPS v2.0");
+    expect(gated.onset.source).toBe("GPM IMERG");
     expect(measured.onset.source).toBe("NASA POWER");
     expect(FARMS[0].onset.source).toBeUndefined();
   });

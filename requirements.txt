@@ -8,9 +8,11 @@ scipy>=1.13
 # the committed SRDI CSV and the cached geoBoundaries geojson, and its ADM3/ADM2 point-in-polygon
 # answers "which upazila is this farm in".
 shapely>=2.0
-# CHIRPS cross-check reader (reads the .nc files the reviewer downloaded into /workspace/fs-cache/chirps)
+# NASA POWER Zarr archive on AWS Open Data (src/acquire/power_zarr.py): MERRA-2 daily/monthly and
+# GPM IMERG daily chunks are decoded with numcodecs (Blosc + FixedScaleOffset); boxes come back as
+# xarray DataArrays for the Niño 3.4 / DMI computation in src/acquire/indices.py.
+numcodecs>=0.12
 xarray>=2024.1
-netCDF4>=1.6
 # Onset ML outlook (src/compute/ml, scripts/build_onset_ml.py)
 lightgbm>=4.7
 # Tests
