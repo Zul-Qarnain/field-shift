@@ -29,22 +29,25 @@ describe("onset outlook payload shape", () => {
     expect(OUTLOOK.label_note).toMatch(/same-source|same product|same rainfall/i);
   });
 
-  it("names CHIRPS as the label source, with its provider", () => {
-    expect(OUTLOOK.sources.labels).toBe("CHIRPS v2.0 (UCSB Climate Hazards Center)");
+  it("names GPM IMERG as the label source and reads NASA data only", () => {
+    expect(OUTLOOK.sources.labels).toBe("NASA/JAXA GPM IMERG V07 (via NASA POWER)");
     expect(OUTLOOK.sources.rainfall_feature).toBe(OUTLOOK.sources.labels);
-    expect(OUTLOOK.data_sources.chirps.retrieved_utc).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    expect(OUTLOOK.data_sources.imerg.retrieved_utc).toMatch(/^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}/);
+    expect(Object.keys(OUTLOOK.data_sources).sort()).toEqual(["dmi", "imerg", "nino34", "power"]);
+    for (const source of Object.values(OUTLOOK.data_sources)) expect(source.name).toMatch(/NASA/);
+    expect(JSON.stringify(OUTLOOK)).not.toMatch(/CHIRPS|NOAA PSL|HadISST/);
     expect(OUTLOOK.sources.power_rainfall_excluded).toMatch(/not used for labels or the rainfall feature/i);
   });
 
   it("reports both rainfall arms and keeps the POWER arm to the comparable years", () => {
     const names = Object.keys(OUTLOOK.variants).sort();
-    expect(names).toEqual(["chirps", "power"]);
+    expect(names).toEqual(["imerg", "power"]);
     const power = OUTLOOK.variants.power;
     expect(power.training_years!.start).toBeGreaterThanOrEqual(2001);
     expect(power.source).toMatch(/NASA POWER/);
-    expect(OUTLOOK.variants.chirps.source).toBe(OUTLOOK.sources.labels);
-    // The shipped decision is taken on the CHIRPS arm, not on POWER.
-    expect(OUTLOOK.status).toBe(OUTLOOK.variants.chirps.metrics.status);
+    expect(OUTLOOK.variants.imerg.source).toBe(OUTLOOK.sources.labels);
+    // The shipped decision is taken on the IMERG arm, not on POWER.
+    expect(OUTLOOK.status).toBe(OUTLOOK.variants.imerg.metrics.status);
   });
 
   for (const row of [...OUTLOOK.districts, ...OUTLOOK.farms]) {
@@ -128,8 +131,8 @@ describe("farm coverage", () => {
     }
   });
 
-  it("states which CHIRPS cell each point actually read", () => {
-    const cells = OUTLOOK.chirps_cells ?? {};
+  it("states which IMERG cell each point actually read", () => {
+    const cells = OUTLOOK.imerg_cells ?? {};
     expect(Object.keys(cells).length).toBe(OUTLOOK.districts.length + OUTLOOK.farms.length);
     for (const [key, cell] of Object.entries(cells)) {
       expect(cell.lat, key).toBeGreaterThanOrEqual(20);
@@ -137,6 +140,19 @@ describe("farm coverage", () => {
       expect(cell.lon, key).toBeGreaterThanOrEqual(88);
       expect(cell.lon, key).toBeLessThanOrEqual(93);
     }
+  });
+
+  it("a zero shrink means the forecast is exactly the district climatology", () => {
+    if (OUTLOOK.shrink !== 0) return;
+    for (const row of [...OUTLOOK.districts, ...OUTLOOK.farms]) {
+      expect(row.predicted_doy, row.key).toBe(row.climatology_doy);
+      expect(row.vs_climatology_days, row.key).toBe(0);
+    }
+  });
+
+  it("the conformal interval covers close to its nominal 80 % in the backtest", () => {
+    expect(OUTLOOK.metrics.coverage!).toBeGreaterThan(0.7);
+    expect(OUTLOOK.metrics.coverage!).toBeLessThan(0.9);
   });
 
   it("covers all 64 districts", () => {

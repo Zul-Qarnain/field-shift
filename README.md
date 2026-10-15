@@ -29,7 +29,7 @@
 
 **Field Shift helps a farmer in Bangladesh choose what to plant next, using NASA satellite data — and shows the reason for every suggestion.**
 
-<img src="assets/steps.png" alt="Step 1, satellites watch the Earth: NASA POWER weather plus CHIRPS rainfall. Step 2, Field Shift does the maths: checks every crop rotation that fits, scores it, shows the working. Step 3, Karim gets a plan: ranked crop plans in Bangla or English, with the reason for each." width="100%">
+<img src="assets/steps.png" alt="Step 1, satellites watch the Earth: NASA POWER weather plus NASA/JAXA GPM IMERG rainfall. Step 2, Field Shift does the maths: checks every crop rotation that fits, scores it, shows the working. Step 3, Karim gets a plan: ranked crop plans in Bangla or English, with the reason for each." width="100%">
 
 ---
 
@@ -54,7 +54,7 @@
 |---|---|---|
 | ✅ | Answers one published 2026 challenge | [Field Shift: Adapting Farms with NASA Data](https://www.spaceappschallenge.org/2026/challenges/field-shift-adapting-farms-with-nasa-data/) |
 | ✅ | Public repository | This repository — public on GitHub |
-| ✅ | Uses NASA open data | NASA POWER and NASA GIBS → [NASA data used](#nasa-data-used) |
+| ✅ | Uses NASA open data | NASA POWER, GPM IMERG, MERRA-2 and NASA GIBS — NASA and NASA-partner data only → [NASA data used](#nasa-data-used) |
 | ✅ | Open source | [Apache-2.0](LICENSE) |
 | ✅ | Team identified, with roles | Six members → [Team Orion](#team) |
 
@@ -84,9 +84,9 @@
 </table>
 
 <details>
-<summary><b>Farm page (full)</b> — onset, heat, soil wetness, the CHIRPS cross-check, salinity, the forecast and the season card</summary>
+<summary><b>Farm page (full)</b> — onset, heat, soil wetness, the GPM IMERG cross-check, salinity, the forecast and the season card</summary>
 
-<img src="docs/screenshots/readme/03_farm_en.png" alt="Farm page: onset statistics, heat days, wetness, CHIRPS cross-check, salinity card, machine-learning forecast and nowcast" width="430">
+<img src="docs/screenshots/readme/03_farm_en.png" alt="Farm page: onset statistics, heat days, wetness, GPM IMERG cross-check, salinity card, machine-learning forecast and nowcast" width="430">
 
 </details>
 
@@ -97,7 +97,7 @@
 
 ```mermaid
 flowchart LR
-  A["NASA satellite data<br/>POWER weather and CHIRPS rain"] --> B["Python prepares it<br/>before the build"]
+  A["NASA satellite data<br/>POWER weather and GPM IMERG rain"] --> B["Python prepares it<br/>before the build"]
   B --> C["Saved JSON files<br/>committed in the repo"]
   C --> D["The app in your browser<br/>scores every crop plan"]
   D --> E["Ranked plans in Bangla or English<br/>each with a See why button"]
@@ -114,9 +114,9 @@ flowchart LR
 flowchart LR
   subgraph SRC["Data sources"]
     PWR["NASA POWER daily point API<br/>7 parameters, 1981 to 2026"]
-    CHI["CHIRPS v2.0 daily rainfall<br/>0.25 degree grid"]
+    CHI["NASA/JAXA GPM IMERG V07 daily rainfall<br/>0.1 degree grid, via NASA POWER Zarr"]
     SALT["SRDI 2010 saline soils<br/>plus FAO-29 Table 4"]
-    IDX["NOAA PSL ONI and DMI"]
+    IDX["Nino 3.4 and DMI<br/>from NASA MERRA-2 SST"]
     GB["geoBoundaries gbOpen BGD<br/>ADM2 and ADM3"]
   end
 
@@ -211,11 +211,13 @@ Longer version: [Technical Reference](docs/TECHNICAL_REFERENCE.md) · [System ar
 
 | NASA dataset | What it is used for | Where it is in the repo |
 |---|---|---|
-| **NASA POWER** daily point API<br>1981–2026 · 70 locations | Rainfall, temperature, soil wetness and humidity — the monsoon onset, the hot-day counts, and the machine-learning inputs | [`src/acquire/power.py`](src/acquire/power.py) · [`scripts/build_packs.py`](scripts/build_packs.py) · [`web/public/data/packs/`](web/public/data/packs/) |
+| **NASA POWER** v10 daily (MERRA-2)<br>1981–2026 · 70 locations · point API or the [POWER Zarr archive on AWS Open Data](https://registry.opendata.aws/nasa-power/) | Rainfall, temperature, soil wetness and humidity — the monsoon onset, the hot-day counts, and the machine-learning inputs | [`src/acquire/power.py`](src/acquire/power.py) · [`src/acquire/power_zarr.py`](src/acquire/power_zarr.py) · [`scripts/build_packs.py`](scripts/build_packs.py) · [`web/public/data/packs/`](web/public/data/packs/) |
+| **NASA/JAXA GPM IMERG** V07 daily (via NASA POWER)<br>1998–2026 · 0.1° | The independent rainfall cross-check in every pack (used when POWER's own rainfall steps), and the onset labels of the machine-learning forecast | [`src/acquire/imerg.py`](src/acquire/imerg.py) · `crossCheck` in every pack |
+| **NASA MERRA-2** monthly skin temperature (via NASA POWER) | Niño 3.4 and Indian Ocean Dipole indices for the forecast, computed in-house — no NOAA file | [`src/acquire/indices.py`](src/acquire/indices.py) |
 | **NASA POWER** nowcast series<br>2017–2026 · also fetched live in the browser | The "This season so far" card on every farm page | [`scripts/build_nowcast.py`](scripts/build_nowcast.py) · [`web/public/data/nowcast/`](web/public/data/nowcast/) · [`web/lib/nowcast.ts`](web/lib/nowcast.ts) |
 | **NASA GIBS** — VIIRS NOAA-20 True Color | The satellite photo layer under the map | [`web/components/MapLive.tsx`](web/components/MapLive.tsx) |
 
-Other open data is used alongside it — CHIRPS v2.0, SRDI soil salinity, FAO-29, NOAA ONI/DMI, geoBoundaries and OpenStreetMap — each labelled with its own tier in the app. Full licences and retrieval dates: [Technical Reference → Data sources](docs/TECHNICAL_REFERENCE.md#data-sources).
+**Every Earth-observation and climate input is NASA or NASA-partner (JAXA, through GPM) data.** The only non-space inputs are the ones the challenge itself asks for — local soil information (SRDI 2010 soil salinity), crop characteristics (FAO-29 salt tolerance) — plus administrative boundaries (geoBoundaries) and the `/locate` basemap tiles (OpenFreeMap / OpenStreetMap); each is labelled with its own tier in the app. Full licences and retrieval dates: [Technical Reference → Data sources](docs/TECHNICAL_REFERENCE.md#data-sources).
 
 ---
 
@@ -226,12 +228,12 @@ Other open data is used alongside it — CHIRPS v2.0, SRDI soil salinity, FAO-29
 |---|---|---|---|
 | **Impact**<br>20 | The scale and significance of the problem, and how far the solution reaches. | Bangladesh's three-season calendar, all 64 districts and six demo farms, in Bangla and English, on a problem the World Bank says may cost one-third of agricultural GDP by 2050. | [Meet Karim](#meet-karim) · [districts.json](web/public/data/districts.json) |
 | **Creativity**<br>20 | Originality of the idea and of the execution. | It ends on a sentence rather than a chart: "See why" opens the arithmetic, the score bar visibly adds up to the total, and the advice comes out SMS-length in Bangla. | [Quick answer](docs/screenshots/readme/05_quick_answer_en.png) · [See why](docs/screenshots/readme/06_quick_answer_see_why_bn.png) |
-| **Validity**<br>20 | Scientific soundness, technical feasibility, usability. | NASA POWER is cross-checked against independent CHIRPS rainfall, gated by a Mann-Whitney test at p < 0.05 and a Pettitt change-point test, and pinned by 260 pytest, 688 Vitest and 12 Playwright tests on a passing CI run. | [Monsoon onset science](docs/science/onset.md) · [CI workflow](.github/workflows/ci.yml) |
+| **Validity**<br>20 | Scientific soundness, technical feasibility, usability. | NASA POWER is cross-checked against independent NASA/JAXA GPM IMERG rainfall, gated by a Mann-Whitney test at p < 0.05 and a Pettitt change-point test, and pinned by 262 pytest, 690 Vitest and 12 Playwright tests on a passing CI run. | [Monsoon onset science](docs/science/onset.md) · [CI workflow](.github/workflows/ci.yml) |
 | **Relevance**<br>20 | Alignment to the challenge, and how deeply NASA data sits at the core. | Every challenge requirement maps to a shipped page, and NASA data is the backbone: every figure names its dataset, version and retrieval date. | [Challenge mapping below](#challenge-mapping) · [NASA data used](#nasa-data-used) |
 | **Presentation**<br>20 | Clarity, structure, storytelling, and reach to a broad audience. | A Karim-centred project video, a bilingual interface, this README, and in-app Method and Data pages that state every rule in plain words. | [See it working](#see-it-working) · [web/app/method/](web/app/method) |
 | **Teamwork**<br>5 | Evidence of genuine collaboration across the team. | Six members with defined roles across engineering, research, design, story and video. | [Team Orion](#team) · [Commit history](https://github.com/Zul-Qarnain/field-shift/commits/main) |
 | **User experience**<br>5 | 5 = anyone can use it. 1 = it needs significant training. | Three choices on one screen give an answer, the whole interface works in Bangla with Bengali digits, and it is built for a phone first. | [Home EN](docs/screenshots/readme/01_home_en.png) · [Home BN](docs/screenshots/readme/02_home_bn.png) |
-| **NASA data usage**<br>5 | 5 = NASA open data plus other agency or third-party sources, clearly shown. | Two NASA POWER series plus NASA GIBS on the map, with non-NASA sources carried alongside under a NASA / Partner / Open tier badge. | [NASA data used](#nasa-data-used) · [web/app/data/](web/app/data) |
+| **NASA data usage**<br>5 | 5 = NASA open data plus other agency or third-party sources, clearly shown. | NASA POWER (MERRA-2 and GPM IMERG), MERRA-2 ocean indices and NASA GIBS on the map; the only non-NASA inputs are local soil and crop references, carried under an Open tier badge. | [NASA data used](#nasa-data-used) · [web/app/data/](web/app/data) |
 
 <a id="challenge-mapping"></a>
 <details>
@@ -258,7 +260,7 @@ Other open data is used alongside it — CHIRPS v2.0, SRDI soil salinity, FAO-29
 
 | Where AI was used | Tool | Data it worked on |
 |---|---|---|
-| **Machine learning** — the monsoon-onset forecast | **LightGBM** gradient boosting, trained offline | CHIRPS rainfall, NASA POWER weather, NOAA ONI / DMI ocean indices |
+| **Machine learning** — the monsoon-onset forecast | **LightGBM** gradient boosting, trained offline | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 / DMI from NASA MERRA-2 |
 | **Coding & documentation** | **Qoder CLI** (Qwen3.8-Flash), plus Cursor / Grok agents — all under human direction | This repository's code and documents, and the public datasets above |
 | **Story clips** in the project video | **Google Veo** (the farmer Karim is fictional) · narration by **Google Gemini text-to-speech** | Text descriptions of scenes, and the team's own narration script |
 | **Video support tools** | **faster-whisper** and **Demucs** | The video's own audio |
@@ -301,16 +303,16 @@ npm ci && npm run dev        # open http://localhost:3000
 # from field-shift/web
 npm run lint                # ESLint
 npx tsc --noEmit            # type check
-npm test                    # 688 Vitest tests
+npm test                    # 690 Vitest tests
 npm run build               # production build, type-checked
 
 # from field-shift/ — the Python data pipeline (Python 3.13)
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m pytest -q     # 260 tests, no network required
+.venv/bin/python -m pytest -q     # 262 tests, no network required
 ```
 
-Rebuilding the committed data packs from NASA POWER, CHIRPS and SRDI:
+Rebuilding the committed data packs from NASA POWER, GPM IMERG and SRDI (no API key needed — `POWER_BACKEND=s3` reads NASA POWER's public AWS archive):
 [Technical Reference → Rebuild the data artifacts](docs/TECHNICAL_REFERENCE.md#rebuild-the-data-artifacts)
 
 </details>
@@ -322,11 +324,11 @@ Rebuilding the committed data packs from NASA POWER, CHIRPS and SRDI:
 
 | # | Milestone | Status |
 |---|---|---|
-| 1 | NASA POWER + CHIRPS data packs for all 64 districts and 6 demo farms, with onset v2, era tests, change-point tests and stated provenance | ✅ Built |
+| 1 | NASA POWER + GPM IMERG data packs for all 64 districts and 6 demo farms, with onset v2, era tests, change-point tests and stated provenance | ✅ Built |
 | 2 | Crop-rotation engine: hard constraints, 8 weighted components, salinity scoring from SRDI + FAO-29, what-if scenarios, Bangla/English UI, advisory + SMS text | ✅ Built |
-| 3 | Machine-learning monsoon forecast: LightGBM on CHIRPS labels + NASA POWER weather + NOAA ONI/DMI, issued 25 April, shown on every farm page | ✅ Built |
+| 3 | Machine-learning monsoon forecast on NASA-only inputs (GPM IMERG labels, NASA POWER weather, MERRA-2 Niño 3.4/DMI), issued 25 April, with conformal 80 % intervals and shrinkage to climatology when the predictors carry no skill | ✅ Built |
 | 4 | Live "This season so far" nowcast with saved-data fallback and outage banner, quick answer `/quick`, location picker `/locate`, Playwright e2e suite | ✅ Built |
-| 5 | New datasets (GPM IMERG, SMAP, MODIS NDVI, SoilGrids) and farmer field tests | 🔄 In progress |
+| 5 | New datasets (SMAP, MODIS NDVI) and farmer field tests | 🔄 In progress |
 
 ---
 
@@ -335,7 +337,7 @@ Rebuilding the committed data packs from NASA POWER, CHIRPS and SRDI:
 
 - Everything else lives in [docs/](docs/README.md): [architecture](docs/FIELD_SHIFT_SYSTEM_ARCHITECTURE.md) · [UI/UX design system](docs/FIELD_SHIFT_UI_UX_DESIGN_SYSTEM.md) · [monsoon onset science](docs/science/onset.md) · [machine-learning outlook](docs/science/onset_ml.md) · [Technical Reference](docs/TECHNICAL_REFERENCE.md)
 
-**Credits:** NASA POWER (Langley Research Center) · NASA EOSDIS GIBS · CHIRPS v2.0 (Climate Hazards Center, UCSB / USGS) · SRDI, Ministry of Agriculture, Government of Bangladesh · FAO · geoBoundaries · NOAA Physical Sciences Laboratory · OpenStreetMap contributors and OpenFreeMap · background music by Kevin MacLeod, CC BY 4.0.
+**Credits:** NASA POWER (Langley Research Center) · NASA/JAXA GPM IMERG (GSFC) · NASA GMAO MERRA-2 · NASA EOSDIS GIBS · SRDI, Ministry of Agriculture, Government of Bangladesh · FAO · geoBoundaries · OpenStreetMap contributors and OpenFreeMap · background music by Kevin MacLeod, CC BY 4.0.
 
 **License:** [Apache-2.0](LICENSE). Third-party datasets keep their own terms.
 

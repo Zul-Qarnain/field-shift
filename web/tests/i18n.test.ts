@@ -77,7 +77,8 @@ describe("the string table", () => {
     expect(t("ml_heading", "en")).toBe("Machine-learning monsoon forecast");
     for (const lang of ["en", "bn"] as const) {
       const trained = t("ml_trained_on", lang);
-      expect(trained).toContain("CHIRPS");
+      expect(trained).toContain("GPM IMERG");
+      expect(trained).not.toMatch(/CHIRPS|NOAA/);
       expect(trained).toContain("NASA POWER");
     }
     const ML_KEYS = STRING_KEYS.filter((key) => key.startsWith("ml_") && key !== "ml_shipped_note");

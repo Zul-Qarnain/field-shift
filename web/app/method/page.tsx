@@ -8,7 +8,7 @@ import { OUTLOOK, num } from "@/lib/outlook";
 const DEFINITIONS = [
   {
     term: "Usable-rainfall onset",
-    body: "Onset definition v2, adapted from the Moron & Robertson (2014) family of local-relative definitions (their exact method differs; this is not a reimplementation of it): the first wet day (≥ 1 mm) in DOY 121–270 whose 5-day rainfall reaches that point's own mean 5-day rainfall over June–September 2001–2025, provided the 30 days after that window contain no 10-day period under 5 mm. Computed per year from NASA POWER daily PRECTOTCORR and cross-checked against CHIRPS v2.0; the two eras (2001–2012 vs 2013–2025) are compared with a two-sided Mann-Whitney U test, with a ±20 % threshold sensitivity and a censoring rate reported for every point. The earlier fixed rule (7-day ≥ 20 mm from DOY 145) was rejected after measurement: it returned the window floor in 50–91 % of years at Bangladeshi points, which cannot express a shift. POWER's precipitation series is not homogeneous over 1981–2025 (Pettitt change point), so the onset and trend figures are labelled with the product they came from and flagged when a change point falls inside the analysis window. See docs/science/onset.md. The measured shift only enters the ranking when its era test is significant — see the significance rule below.",
+    body: "Onset definition v2, adapted from the Moron & Robertson (2014) family of local-relative definitions (their exact method differs; this is not a reimplementation of it): the first wet day (≥ 1 mm) in DOY 121–270 whose 5-day rainfall reaches that point's own mean 5-day rainfall over June–September 2001–2025, provided the 30 days after that window contain no 10-day period under 5 mm. Computed per year from NASA POWER daily PRECTOTCORR and cross-checked against NASA/JAXA GPM IMERG V07; the two eras (2001–2012 vs 2013–2025) are compared with a two-sided Mann-Whitney U test, with a ±20 % threshold sensitivity and a censoring rate reported for every point. The earlier fixed rule (7-day ≥ 20 mm from DOY 145) was rejected after measurement: it returned the window floor in 50–91 % of years at Bangladeshi points, which cannot express a shift. POWER's precipitation series is not homogeneous over 1981–2025 (Pettitt change point), so the onset and trend figures are labelled with the product they came from and flagged when a change point falls inside the analysis window. See docs/science/onset.md. The measured shift only enters the ranking when its era test is significant — see the significance rule below.",
   },
   {
     term: "Significance rule on the onset shift (engine)",
@@ -58,7 +58,8 @@ const DEFINITIONS = [
 
 export default function MethodPage() {
   const { lang } = useLang();
-  const top = (OUTLOOK.variants.chirps?.top_features ?? []).join(", ");
+  const spread = OUTLOOK.label_spread;
+  const shrink = OUTLOOK.shrink;
   return (
     <div className="mx-auto max-w-4xl px-4 py-10 lg:px-8">
       <h1 className="font-display text-3xl font-bold tracking-tight">{t("method_title", lang)}</h1>
@@ -78,17 +79,26 @@ export default function MethodPage() {
 
       <Panel className="mt-4" title={<span className="flex items-center gap-2">{t("ml_heading", lang)} · {OUTLOOK.model_version}</span>}>
         <p className="text-sm leading-relaxed text-ink-mid">
-          {OUTLOOK.onset_rule}. That is the same v2 rule the first entry defines — applied here to CHIRPS v2.0 daily
-          rainfall to make the training labels. The rejected v1 rule (7-day ≥ 20 mm from DOY 145) was set aside on
+          {OUTLOOK.onset_rule}. That is the same v2 rule the first entry defines — applied here to NASA/JAXA GPM IMERG
+          daily rainfall to make the training labels. The rejected v1 rule (7-day ≥ 20 mm from DOY 145) was set aside on
           measurement: run over the cached series it pinned 50–91 % of Bangladeshi years to its own window floor. The
           outlook is issued on {OUTLOOK.issue_date}, before the window opens at DOY 121, so
-          every feature is cut off at that date: CHIRPS and POWER rainfall and weather for 1 Mar – 20 Apr, last
-          season&apos;s onset, ONI DJF and FMA, and DMI Feb–Mar. Weather anomalies are measured against a climatology
+          every feature is cut off at that date: IMERG rainfall and POWER weather for 1 Mar – 20 Apr, last
+          season&apos;s onset, Niño 3.4 for DJF and FMA and the Dipole Mode Index for Feb–Mar (both computed from NASA
+          MERRA-2 sea-surface skin temperature). Weather anomalies are measured against a climatology
           rebuilt inside each backtest fold from that fold&apos;s training years only — and for a training row, with its
           own year dropped from the baseline it is compared to.
         </p>
         <p className="mt-2 text-sm leading-relaxed text-ink-mid">{OUTLOOK.issue_before_onset}</p>
-        <table className="mt-3 w-full border-collapse text-xs">
+        <p className="mt-2 text-sm leading-relaxed text-ink-mid">
+          The model predicts the onset <em>anomaly</em> — observed minus the district&apos;s climatology — and its
+          correction is multiplied by a factor in [0, 1] chosen by a cross-validation inside the training years only;
+          the 80 % range is conformal (residual quantiles of held-out years), not a model quantile. The final factor is{" "}
+          {num(shrink ?? null, 1) ?? "—"}
+          {shrink === 0 ? ": the April predictors show no out-of-sample signal, so the forecast is the district climatology." : "."}
+        </p>
+        <div className="mt-3 overflow-x-auto">
+        <table className="w-full min-w-[520px] border-collapse text-xs">
           <thead>
             <tr className="border-b border-line text-left text-ink-low">
               <th className="py-1.5 pr-2 font-medium">Arm</th>
@@ -121,6 +131,7 @@ export default function MethodPage() {
             ))}
           </tbody>
         </table>
+        </div>
         <p className="mt-3 text-sm leading-relaxed text-ink-mid">
           Leave-one-year-out holds a whole year back across every district at once ({OUTLOOK.backtest}); the baseline
           is each district&apos;s own mean onset over the fold&apos;s training years. Because last season&apos;s onset is
@@ -138,10 +149,10 @@ export default function MethodPage() {
               })}
         </p>
         <p className="mt-2 text-sm leading-relaxed text-ink-mid">
-          Read this next to the feature ranking on the held-out years: the top movers are {top} — mostly
-          <em>where</em> a district sits, which the climatology baseline already knows for free. In the labels,
-          districts differ from each other by about 5.8 days while the year-to-year scatter inside one district is
-          about 13.0 days: the hard part of the problem is the part these April features do not explain.
+          Why the problem is hard: in the labels, districts differ from each other by about{" "}
+          {num(spread?.between_district_sd_days ?? null, 1) ?? "—"} days while the year-to-year scatter inside one
+          district is about {num(spread?.within_district_sd_days ?? null, 1) ?? "—"} days. Climatology captures the
+          first for free; the second is the part these April predictors would have to explain.
         </p>
         <p className="mt-2 text-xs leading-relaxed text-ink-low">{OUTLOOK.label_note}</p>
         <p className="mt-1 text-xs leading-relaxed text-ink-low">{OUTLOOK.sources.power_rainfall_excluded}</p>

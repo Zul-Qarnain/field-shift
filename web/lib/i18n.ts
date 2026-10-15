@@ -41,8 +41,8 @@ const STRINGS = {
     bn: "ডেটাসেট ও পণ্যের নাম, সংস্করণ, ফাইলের পথ ও ISO সংগ্রহের তারিখ ইংরেজিতেই থাকে — এগুলো উদ্ধৃতি, ইন্টারফেসের লেখা নয়। ভূমিকা, রেজোলিউশন ও অবস্থার লেখা আপনার বাছাই করা ভাষায় আসে।",
   },
   generated_fixtures: {
-    en: "Climate numbers come from the NASA POWER packs (cross-checked with CHIRPS); soil moisture, NDVI, soil and crop traits are still deterministic demo fixtures.",
-    bn: "জলবায়ুর সংখ্যাগুলো NASA POWER প্যাক থেকে আসে (CHIRPS দিয়ে যাচাই করা); মাটির আর্দ্রতা, NDVI, মাটি ও ফসলের বৈশিষ্ট্য এখনও নির্ধারিত ডেমো ফিক্সচার।",
+    en: "Climate numbers come from the NASA POWER packs (cross-checked with GPM IMERG); soil moisture, NDVI, soil and crop traits are still deterministic demo fixtures.",
+    bn: "জলবায়ুর সংখ্যাগুলো NASA POWER প্যাক থেকে আসে (GPM IMERG দিয়ে যাচাই করা); মাটির আর্দ্রতা, NDVI, মাটি ও ফসলের বৈশিষ্ট্য এখনও নির্ধারিত ডেমো ফিক্সচার।",
   },
   footer_line: {
     en: "Built for the NASA Space Apps Challenge — a community science initiative. Not an official NASA product.",
@@ -52,8 +52,8 @@ const STRINGS = {
   hero_line1: { en: "The rains shifted.", bn: "বৃষ্টির সময় বদলেছে।" },
   hero_line2: { en: "Your calendar should too.", bn: "আপনার ফসলের ক্যালেন্ডারও বদলান।" },
   hero_intro: {
-    en: "Field Shift is designed to turn NASA Earth observations (POWER, SMAP, MODIS …) — rainfall onset, soil moisture, heat days, greenness — into ranked, explainable crop-rotation strategies for a specific farm. Every number traces to its dataset. Rainfall onset, rainfall trend, heat days and temperature already come from real NASA POWER data cross-checked with CHIRPS; the remaining inputs are demo fixtures. Offline mode is planned.",
-    bn: "Field Shift একটি নির্দিষ্ট খামারের জন্য NASA-র পৃথিবী পর্যবেক্ষণ (POWER, SMAP, MODIS …) — বর্ষার শুরু, মাটির আর্দ্রতা, তাপের দিন, সবুজাভতা — থেকে র‍্যাঙ্ক করা, ব্যাখ্যাযোগ্য ফসল-পর্যায় পরিকল্পনা বানানোর জন্য তৈরি। প্রতিটি সংখ্যা কোন ডেটাসেট থেকে এসেছে তা দেখা যায়। বর্ষার শুরু, বৃষ্টিপাতের ধারা, তাপের দিন ও তাপমাত্রা এখনই CHIRPS দিয়ে যাচাই করা প্রকৃত NASA POWER ডেটা থেকে আসে; বাকি ইনপুট ডেমো ফিক্সচার। অফলাইন মোড পরিকল্পনায় আছে।",
+    en: "Field Shift is designed to turn NASA Earth observations (POWER, SMAP, MODIS …) — rainfall onset, soil moisture, heat days, greenness — into ranked, explainable crop-rotation strategies for a specific farm. Every number traces to its dataset. Rainfall onset, rainfall trend, heat days and temperature already come from real NASA POWER data cross-checked with GPM IMERG; the remaining inputs are demo fixtures. Offline mode is planned.",
+    bn: "Field Shift একটি নির্দিষ্ট খামারের জন্য NASA-র পৃথিবী পর্যবেক্ষণ (POWER, SMAP, MODIS …) — বর্ষার শুরু, মাটির আর্দ্রতা, তাপের দিন, সবুজাভতা — থেকে র‍্যাঙ্ক করা, ব্যাখ্যাযোগ্য ফসল-পর্যায় পরিকল্পনা বানানোর জন্য তৈরি। প্রতিটি সংখ্যা কোন ডেটাসেট থেকে এসেছে তা দেখা যায়। বর্ষার শুরু, বৃষ্টিপাতের ধারা, তাপের দিন ও তাপমাত্রা এখনই GPM IMERG দিয়ে যাচাই করা প্রকৃত NASA POWER ডেটা থেকে আসে; বাকি ইনপুট ডেমো ফিক্সচার। অফলাইন মোড পরিকল্পনায় আছে।",
   },
   cta_open_farm: { en: "Open demo farm", bn: "ডেমো খামার দেখুন" },
   cta_plan_rotation: { en: "Plan a rotation", bn: "ফসল-পর্যায় পরিকল্পনা করুন" },
@@ -250,8 +250,8 @@ const STRINGS = {
     bn: "ইন্টারফেস যে সংজ্ঞাগুলো ব্যবহার করে, সব এখানে খুলে বলা হয়েছে। সাহিত্যে onset-এর একাধিক সংজ্ঞা আছে — আমাদের সংজ্ঞা কোনটি, আর আজ কতটা হিসাব হচ্ছে বনাম কতটা পরিকল্পনায় আছে, সেটাই এই পাতার কাজ।",
   },
   demo_build_note: {
-    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against CHIRPS; the soil-salinity penalty reads SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2. The rest of the numbers on these pages — soil moisture, NDVI, SoilGrids soil properties, water availability, crop traits, irrigation access — are still sample fixtures, and the onset outlook is a model built offline, never computed in the browser.",
-    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, CHIRPS দিয়ে যাচাই করা; মাটির লবণাক্ততার জরিমানা SRDI (২০১০) \"Saline Soils of Bangladesh\"-এর Appendix-2 থেকে পড়া। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, SoilGrids-এর মাটির বৈশিষ্ট্য, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার, আর বর্ষার শুরুর পূর্বাভাসটি অফলাইনে তৈরি মডেল, ব্রাউজারে হিসাব হয় না।",
+    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against GPM IMERG; the soil-salinity penalty reads SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2. The rest of the numbers on these pages — soil moisture, NDVI, SoilGrids soil properties, water availability, crop traits, irrigation access — are still sample fixtures, and the onset outlook is a model built offline, never computed in the browser.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, GPM IMERG দিয়ে যাচাই করা; মাটির লবণাক্ততার জরিমানা SRDI (২০১০) \"Saline Soils of Bangladesh\"-এর Appendix-2 থেকে পড়া। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, SoilGrids-এর মাটির বৈশিষ্ট্য, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার, আর বর্ষার শুরুর পূর্বাভাসটি অফলাইনে তৈরি মডেল, ব্রাউজারে হিসাব হয় না।",
   },
   method_footnote: {
     en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation arrives with the next phase.",
@@ -259,8 +259,8 @@ const STRINGS = {
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
-    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), CHIRPS v2.0 as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the machine-learning monsoon forecast. Rows marked NEXT PHASE arrive in the following data build; until then the app renders those values from demo fixtures and labels them. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
-    bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের ভূমিকা এবং থাকলে সংগ্রহের তারিখ। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি, লবণাক্ততা, সীমানা ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। সত্যিই সংগ্রহ করা হয়েছে ও দেখা মানগুলো চালাচ্ছে: NASA POWER (৭০ বিন্দু), স্বাধীন যাচাই হিসেবে CHIRPS v2.0, মাটির লবণাক্ততার জন্য SRDI ২০১০ ও FAO-29, জেলা বিন্দু ও উপজেলা মিলের জন্য geoBoundaries, এবং অফলাইনে তৈরি ML পূর্বাভাসের ফিচার হিসেবে NOAA PSL ONI/DMI। যা NEXT PHASE চিহ্নে আছে তা পরবর্তী ডেটা বিল্ডে আসবে; সে পর্যন্ত অ্যাপ সেসব মান ডেমো ফিক্সচার থেকে দেখায় এবং তা স্পষ্ট করে লেখে। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
+    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), GPM IMERG as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the machine-learning monsoon forecast. Rows marked NEXT PHASE arrive in the following data build; until then the app renders those values from demo fixtures and labels them. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
+    bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের ভূমিকা এবং থাকলে সংগ্রহের তারিখ। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি, লবণাক্ততা, সীমানা ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। সত্যিই সংগ্রহ করা হয়েছে ও দেখা মানগুলো চালাচ্ছে: NASA POWER (৭০ বিন্দু), স্বাধীন যাচাই হিসেবে GPM IMERG, মাটির লবণাক্ততার জন্য SRDI ২০১০ ও FAO-29, জেলা বিন্দু ও উপজেলা মিলের জন্য geoBoundaries, এবং অফলাইনে তৈরি ML পূর্বাভাসের ফিচার হিসেবে NOAA PSL ONI/DMI। যা NEXT PHASE চিহ্নে আছে তা পরবর্তী ডেটা বিল্ডে আসবে; সে পর্যন্ত অ্যাপ সেসব মান ডেমো ফিক্সচার থেকে দেখায় এবং তা স্পষ্ট করে লেখে। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
   },
   status_retrieved: {
     en: "RETRIEVED {date} · {detail}",
@@ -287,11 +287,15 @@ const STRINGS = {
   ml_heading: { en: "Machine-learning monsoon forecast", bn: "মেশিন লার্নিং বর্ষা পূর্বাভাস" },
   ml_badge: { en: "ML prediction", bn: "মডেলের পূর্বাভাস" },
   ml_trained_on: {
-    en: "Trained on satellite rainfall (CHIRPS) and NASA POWER, with NOAA ocean indices.",
-    bn: "স্যাটেলাইট বৃষ্টিপাত (CHIRPS) ও NASA POWER ডেটায় প্রশিক্ষিত, সঙ্গে NOAA-র সমুদ্র সূচক।",
+    en: "Trained on NASA/JAXA GPM IMERG satellite rainfall and NASA POWER, with ocean indices from NASA MERRA-2.",
+    bn: "NASA/JAXA GPM IMERG স্যাটেলাইট বৃষ্টিপাত ও NASA POWER ডেটায় প্রশিক্ষিত, সঙ্গে NASA MERRA-2 থেকে সমুদ্র সূচক।",
   },
-  ml_predicted_onset: { en: "Model's predicted onset", bn: "মডেল অনুযায়ী বর্ষার শুরু" },
-  ml_interval: { en: "Model's 10–90 range", bn: "মডেলের 10–90 ব্যবধান" },
+  ml_predicted_onset: { en: "Forecast onset", bn: "পূর্বাভাসে বর্ষার শুরু" },
+  ml_interval: { en: "80% range (calibrated)", bn: "৮০% ব্যবধান (ক্যালিব্রেটেড)" },
+  ml_fallback_note: {
+    en: "Cross-validation inside the training years found no usable signal in the April predictors, so the model's correction is switched off and the forecast is this district's average start. The range is calibrated on held-out years.",
+    bn: "প্রশিক্ষণ-বছরের ভেতরের ক্রস-ভ্যালিডেশনে এপ্রিলের সূচকগুলোতে কাজে লাগার মতো সংকেত পাওয়া যায়নি, তাই মডেলের সংশোধন বন্ধ রাখা হয়েছে এবং পূর্বাভাস হলো এই জেলার গড় শুরু। ব্যবধানটি বাদ-রাখা বছরে ক্যালিব্রেট করা।",
+  },
   ml_climatology: { en: "District climatology", bn: "জেলার গড় শুরু" },
   ml_vs_climatology: { en: "{days} days vs climatology", bn: "গড়ের তুলনায় {days} দিন" },
   ml_observed: { en: "Already observed this season", bn: "এই মৌসুমে ইতিমধ্যে পর্যবেক্ষিত" },
@@ -316,13 +320,13 @@ const STRINGS = {
     bn: "একই ব্যাকটেস্ট থেকে: মডেলের গড় ত্রুটি {model} দিন, জেলার নিজের গড় শুরুর {clim} দিন। ফসল-পর্যায়ের স্কোর জেলার গড় শুরু ব্যবহার করে; পূর্বাভাসটি তার পাশে দেখানো হয়।",
   },
   ml_offline_note: {
-    en: "Built offline from cached CHIRPS, NASA POWER and NOAA data — not run in your browser.",
-    bn: "এই পূর্বাভাস অফলাইনে তৈরি (CHIRPS, NASA POWER ও NOAA ক্যাশ ডেটা) — আপনার ব্রাউজারে হিসাব হয় না।",
+    en: "Built offline from NASA data only (GPM IMERG, NASA POWER, MERRA-2) — not run in your browser.",
+    bn: "এই পূর্বাভাস অফলাইনে শুধু NASA ডেটা দিয়ে তৈরি (GPM IMERG, NASA POWER, MERRA-2) — আপনার ব্রাউজারে হিসাব হয় না।",
   },
   ml_model_line: { en: "Model {version} · issued {issue} for {year}", bn: "মডেল {version} · {year} সালের জন্য {issue} তারিখে জারি" },
   ml_same_source_note: {
-    en: "Onset labels and the rainfall feature both come from CHIRPS, so the backtest scores the model against CHIRPS's own onset record.",
-    bn: "শুরুর লেবেল ও বৃষ্টির ফিচার দুটোই CHIRPS থেকে, তাই ব্যাকটেস্ট মডেলকে CHIRPS-এর নিজস্ব শুরুর রেকর্ডের সঙ্গে মেলায়।",
+    en: "Onset labels and the rainfall feature both come from GPM IMERG, so the backtest scores the model against IMERG's own onset record.",
+    bn: "শুরুর লেবেল ও বৃষ্টির ফিচার দুটোই GPM IMERG থেকে, তাই ব্যাকটেস্ট মডেলকে IMERG-এর নিজস্ব শুরুর রেকর্ডের সঙ্গে মেলায়।",
   },
   ml_missing: {
     en: "The forecast file has no row for this farm.",
@@ -365,8 +369,8 @@ const STRINGS = {
     bn: "৫ দিনের বৃষ্টি ≥ স্থানীয় জুন–সেপ্টেম্বর গড় (২০০১–২০২৫), পরে ১০ দিনের মধ্যে ৫ মিমির কম বৃষ্টির বিরতি নয়",
   },
   drawer_sources: {
-    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, cited to a register in the next phase · onset shift: this farm's NASA POWER data pack, cross-checked with CHIRPS, used only when its era test is significant (else 0), plus the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
-    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, পরবর্তী ধাপে নিবন্ধ থেকে উদ্ধৃত হবে · শুরুর পরিবর্তন: এই খামারের NASA POWER ডেটা প্যাক (CHIRPS দিয়ে যাচাই), উল্লেখযোগ্য হলেই কেবল ব্যবহৃত (নয় হলে ০) + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
+    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, cited to a register in the next phase · onset shift: this farm's NASA POWER data pack, cross-checked with GPM IMERG, used only when its era test is significant (else 0), plus the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
+    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, পরবর্তী ধাপে নিবন্ধ থেকে উদ্ধৃত হবে · শুরুর পরিবর্তন: এই খামারের NASA POWER ডেটা প্যাক (GPM IMERG দিয়ে যাচাই), উল্লেখযোগ্য হলেই কেবল ব্যবহৃত (নয় হলে ০) + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
   },
 
   // Added with the NASA POWER data packs (ITEM 4). English + Bangla, numbers via tf/fmtNum.
@@ -375,8 +379,8 @@ const STRINGS = {
     bn: "তাপমাত্রা ও অতিরিক্ত গরমের দিন এই খামারের NASA POWER ডেটা প্যাক থেকে আসে। মাটির আর্দ্রতা ও NDVI এই বিল্ডে ডেমো ফিক্সচার; SMAP L4 ও MODIS/VIIRS পরবর্তী ডেটা বিল্ডে আসবে।",
   },
   uncertainty_note_real: {
-    en: "Onset, rainfall trend, heat days and temperature come from real daily data for this point — NASA POWER, cross-checked against CHIRPS v2.0 — using the stated rule and complete years only, not a forecast. POWER's rainfall series is not homogeneous over 1981–2025, so each number names the product it came from and is flagged when a change point falls inside the analysis window. Soil moisture, NDVI and soil are still modelled or demo fixture values.",
-    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এই স্থানের প্রকৃত দৈনিক ডেটা থেকে আসে — NASA POWER, CHIRPS v2.0 দিয়ে যাচাই করা — নির্দিষ্ট নিয়ম ও শুধু পূর্ণ বছর ব্যবহার করে, পূর্বাভাস নয়। POWER-এর বৃষ্টিপাতের ধারা ১৯৮১–২০২৫ সমজাতীয় নয়, তাই প্রতিটি সংখ্যা তার উৎস পণ্যের নাম বলে এবং বিশ্লেষণ-উইন্ডোর মধ্যে পরিবর্তন-বিন্দু থাকলে তা চিহ্নিত করা হয়। মাটির আর্দ্রতা, NDVI ও মাটির তথ্য এখনও মডেল বা ডেমো ফিক্সচার।",
+    en: "Onset, rainfall trend, heat days and temperature come from real daily data for this point — NASA POWER, cross-checked against GPM IMERG — using the stated rule and complete years only, not a forecast. POWER's rainfall series is not homogeneous over 1981–2025, so each number names the product it came from and is flagged when a change point falls inside the analysis window. Soil moisture, NDVI and soil are still modelled or demo fixture values.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এই স্থানের প্রকৃত দৈনিক ডেটা থেকে আসে — NASA POWER, GPM IMERG দিয়ে যাচাই করা — নির্দিষ্ট নিয়ম ও শুধু পূর্ণ বছর ব্যবহার করে, পূর্বাভাস নয়। POWER-এর বৃষ্টিপাতের ধারা ১৯৮১–২০২৫ সমজাতীয় নয়, তাই প্রতিটি সংখ্যা তার উৎস পণ্যের নাম বলে এবং বিশ্লেষণ-উইন্ডোর মধ্যে পরিবর্তন-বিন্দু থাকলে তা চিহ্নিত করা হয়। মাটির আর্দ্রতা, NDVI ও মাটির তথ্য এখনও মডেল বা ডেমো ফিক্সচার।",
   },
   rain_real_note: {
     en: "Mann-Kendall + Theil-Sen on annual rainfall, complete years 2001 onward only (POWER's earlier years are not homogeneous), scaled to % of the window mean:",
@@ -414,8 +418,8 @@ const STRINGS = {
     bn: "সীমাবদ্ধতা: {total} বছরের {count}টি ({pct}%) প্রথম খোঁজ-যোগ্য দিনেই (DOY {doy}) পড়ে — তার আগে নিয়ম শুরু বলতে পারে না, তাই ছোট পরিবর্তন উইন্ডোর হতে পারে, বর্ষার নয়।",
   },
   pack_caution_power_flagged: {
-    en: "NASA POWER rainfall steps at {year} inside 2001–2025, so its shift ({days} d, p={p}) is not used — this figure comes from the independent CHIRPS cross-check.",
-    bn: "NASA POWER-এর বৃষ্টিপাত ২০০১–২০২৫-এর ভেতর {year} সালে ধাপ বদলায়, তাই তার পরিবর্তন ({days} দিন, p={p}) ব্যবহার হয়নি — এই মান স্বাধীন CHIRPS যাচাই থেকে।",
+    en: "NASA POWER rainfall steps at {year} inside 2001–2025, so its shift ({days} d, p={p}) is not used — this figure comes from the independent GPM IMERG cross-check.",
+    bn: "NASA POWER-এর বৃষ্টিপাত ২০০১–২০২৫-এর ভেতর {year} সালে ধাপ বদলায়, তাই তার পরিবর্তন ({days} দিন, p={p}) ব্যবহার হয়নি — এই মান স্বাধীন GPM IMERG যাচাই থেকে।",
   },
   pack_alternative_line: {
     en: "Cross-check ({product}): shift {days} d, p={p} — {verdict}.",
@@ -425,9 +429,9 @@ const STRINGS = {
     en: "{product}: {pct}%/decade — the two products disagree on magnitude, so this trend is not treated as an established local change.",
     bn: "{product}: {pct}%/দশক — দুই পণ্যের মান মিলে না, তাই এই ধারা প্রমাণিত স্থানীয় পরিবর্তন হিসেবে ধরা হয় না।",
   },
-  trend_caution_chirps: {
-    en: "Caution: POWER precipitation has a change point at {year} inside the analysis window; this trend comes from the CHIRPS cross-check instead.",
-    bn: "সতর্কতা: বিশ্লেষণ-উইন্ডোর ভেতর {year} সালে POWER-এর বৃষ্টিপাতে পরিবর্তন-বিন্দু আছে; এই ধারাটি CHIRPS যাচাই থেকে নেওয়া।",
+  trend_caution_satellite: {
+    en: "Caution: POWER precipitation has a change point at {year} inside the analysis window; this trend comes from the GPM IMERG cross-check instead.",
+    bn: "সতর্কতা: বিশ্লেষণ-উইন্ডোর ভেতর {year} সালে POWER-এর বৃষ্টিপাতে পরিবর্তন-বিন্দু আছে; এই ধারাটি GPM IMERG যাচাই থেকে নেওয়া।",
   },
   trend_caution_power_flagged: {
     en: "Caution: POWER precipitation has a change point at {year} inside 2001–2025, so this trend describes the product as much as the climate — see the cross-check.",
@@ -460,14 +464,14 @@ const STRINGS = {
   homog_temp_clean: { en: "no significant step in the analysis window", bn: "বিশ্লেষণ-উইন্ডোতে উল্লেখযোগ্য ধাপ নেই" },
   cp_era_b: { en: "inside era B", bn: "যুগ B-এর ভেতর" },
   cp_era_a: { en: "in era A or at the era boundary", bn: "যুগ A-তে বা যুগের সীমায়" },
-  xcheck_label: { en: "CHIRPS cross-check", bn: "CHIRPS যাচাই" },
+  xcheck_label: { en: "GPM IMERG cross-check", bn: "GPM IMERG যাচাই" },
   xcheck_line: {
     en: "{deg}° cell {lat}, {lon}; retrieved {date}: onset r={r}, MAE {mae} d, {n} years; annual rainfall r={r2}, MAE {mae2} mm. Used for: trend ← {trend}, onset ← {onset}.",
     bn: "{deg}° ঘর {lat}, {lon}; সংগ্রহ {date}: শুরু r={r}, MAE {mae} দিন, {n} বছর; বার্ষিক বৃষ্টি r={r2}, MAE {mae2} মিমি. ব্যবহৃত: ধারা ← {trend}, শুরু ← {onset}।",
   },
   xcheck_missing: {
-    en: "This point has no CHIRPS cross-check on file, so its POWER figures rest on NASA POWER alone; an independent product arrives with the next data build.",
-    bn: "এই স্থানের জন্য CHIRPS যাচাই ফাইলে নেই — তাই এর POWER সংখ্যাগুলো শুধু NASA POWER-এর ওপর দাঁড়িয়ে আছে; স্বাধীন একটি পণ্য পরবর্তী ডেটা বিল্ডে যোগ হবে।",
+    en: "This point has no GPM IMERG cross-check on file, so its POWER figures rest on NASA POWER alone; an independent product arrives with the next data build.",
+    bn: "এই স্থানের জন্য GPM IMERG যাচাই ফাইলে নেই — তাই এর POWER সংখ্যাগুলো শুধু NASA POWER-এর ওপর দাঁড়িয়ে আছে; স্বাধীন একটি পণ্য পরবর্তী ডেটা বিল্ডে যোগ হবে।",
   },
 
   // “This season so far” nowcast card + data-outage banner.

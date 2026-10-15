@@ -9,10 +9,11 @@ import rangpur21 from "../public/data/packs/farms/rangpur-21.json";
 import sylhet15 from "../public/data/packs/farms/sylhet-15.json";
 
 /**
- * A NASA POWER data pack (schema v2), as written by scripts/build_packs.py. Every number came
- * from a real request; `retrievedUtc` is the timestamp of that request, not of the pack rebuild.
- * Schema v2 carries onset definition v2, a Pettitt homogeneity test, and an independent CHIRPS
- * cross-check, because POWER precipitation is not homogeneous over 1981–2025.
+ * A NASA POWER data pack (schema v3), as written by scripts/build_packs.py. Every number came
+ * from NASA data the build actually read; `retrievedUtc` is when it was read, not when the pack
+ * was rebuilt. Schema v3 carries onset definition v2, a Pettitt homogeneity test, and an
+ * independent NASA/JAXA GPM IMERG cross-check (v2 used CHIRPS), because POWER precipitation is
+ * not homogeneous over 1981–2025.
  */
 export interface PowerPack {
   schema_version: number;
@@ -133,13 +134,13 @@ export interface PowerPack {
     meanTempLast10: { label: string[]; values: number[] };
     rootZoneWetnessLast12Months: { label: string[]; values: number[] };
   };
-  crossCheck: ChirpsCrossCheck;
+  crossCheck: SatelliteCrossCheck;
   preferred: {
     rainfallTrend: SourceChoice;
     onsetShift: SourceChoice;
     powerFlagged: boolean;
-    chirpsFlagged: boolean;
-    chirpsAvailable: boolean;
+    satelliteFlagged: boolean;
+    satelliteAvailable: boolean;
   };
   quality: {
     rainfallNaN: number;
@@ -155,7 +156,7 @@ export interface PowerPack {
 }
 
 export interface SourceChoice {
-  source: "NASA POWER" | "CHIRPS v2.0" | "none";
+  source: "NASA POWER" | typeof SATELLITE | "none";
   reason: string;
   field: string;
 }
@@ -188,7 +189,10 @@ export interface HomogeneityReport {
   implication: string;
 }
 
-export interface ChirpsOnset {
+/** The independent rainfall product's label, exactly as the build writes it. */
+export const SATELLITE = "GPM IMERG" as const;
+
+export interface SatelliteOnset {
   definition: string;
   perYear: Record<string, number | null>;
   yearsDetected: number;
@@ -203,7 +207,7 @@ export interface ChirpsOnset {
   eraB: { label: string; years: number[]; values: number[]; n: number };
 }
 
-export interface ChirpsCrossCheck {
+export interface SatelliteCrossCheck {
   available: boolean;
   reason?: string;
   source?: string;
@@ -215,7 +219,8 @@ export interface ChirpsCrossCheck {
   covered?: { days: number; daysWithData: number; missingSharePct: number | null; first: string | null; last: string | null; annualNaN: number };
   retrievedUtc?: string;
   sourceUrlSample?: string;
-  yearsOnDisk?: { first: number; last: number; count: number };
+  timeStandard?: string;
+  yearsComplete?: { first: number; last: number; count: number } | null;
   thresholdMm?: number | null;
   annualRainfall?: { label: string[]; values: number[] };
   rainfallTrend2001toLatest?: {
@@ -229,7 +234,7 @@ export interface ChirpsCrossCheck {
     n: number;
   };
   homogeneity?: HomogeneityReport;
-  onset?: ChirpsOnset;
+  onset?: SatelliteOnset;
   agreement?: {
     onsetYears: { yearsCompared: number; pearsonR: number | null; spearmanRho: number | null; mae: number | null; bias: number | null };
     annualRainfallMm: { yearsCompared: number; pearsonR: number | null; spearmanRho: number | null; mae: number | null; bias: number | null };
@@ -237,7 +242,7 @@ export interface ChirpsCrossCheck {
   };
 }
 
-export type OnsetProduct = "NASA POWER" | "CHIRPS v2.0";
+export type OnsetProduct = "NASA POWER" | typeof SATELLITE;
 
 /** The onset statistics the UI should show, plus which product they came from. */
 export interface OnsetView {
@@ -290,7 +295,7 @@ export interface PackIndexEntry {
   rainfallTrendPctPerDecade: number | null;
   rainfallTrendCaution: string | null;
   precipChangePoint: number | null;
-  chirps: {
+  satellite: {
     available: boolean;
     onsetShiftDays?: number | null;
     onsetPValue?: number | null;
@@ -335,24 +340,24 @@ const round = (value: number | null | undefined, digits = 1): number | null =>
 /**
  * Which product the onset number comes from, decided by the pack's own homogeneity test:
  * POWER is used unless its precipitation series steps inside 2001–2025, in which case the
- * CHIRPS cross-check is used, and if neither is homogeneous the honest answer is "neither".
+ * GPM IMERG cross-check is used, and if neither is homogeneous the honest answer is "neither".
  */
 export function onsetView(pack: PowerPack): OnsetView | null {
   const power = pack.onset;
-  const chirps = pack.crossCheck?.available ? pack.crossCheck.onset : undefined;
+  const sat = pack.crossCheck?.available ? pack.crossCheck.onset : undefined;
   if (power.medianA === null || power.medianB === null) return null;
 
-  const preferChirps = pack.preferred.onsetShift.source === "CHIRPS v2.0" && !!chirps && chirps.medianA !== null && chirps.medianB !== null;
-  const product: OnsetProduct = preferChirps ? "CHIRPS v2.0" : "NASA POWER";
-  const chosen = preferChirps && chirps ? chirps : power;
+  const preferSat = pack.preferred.onsetShift.source === SATELLITE && !!sat && sat.medianA !== null && sat.medianB !== null;
+  const product: OnsetProduct = preferSat ? SATELLITE : "NASA POWER";
+  const chosen = preferSat && sat ? sat : power;
   const medianA = chosen.medianA as number;
   const medianB = chosen.medianB as number;
   const changePoint = pack.quality.precipHomogeneity.changePointInsideAnalysisWindow;
 
-  const caution = preferChirps
+  const caution = preferSat
     ? `NASA POWER precipitation steps at ${changePoint} inside 2001–2025, so its onset shift (${power.shiftDays} d, p=${
         power.pValue?.toFixed(3) ?? "n/a"
-      }) is not used; this figure comes from the independent CHIRPS cross-check.`
+      }) is not used; this figure comes from the independent NASA/JAXA GPM IMERG cross-check.`
     : power.caution;
 
   return {
@@ -367,13 +372,13 @@ export function onsetView(pack: PowerPack): OnsetView | null {
     eraBLabel: chosen.eraB.label,
     yearsDetected: chosen.yearsDetected,
     censored: chosen.censoredAtWindowStart,
-    thresholdMm: preferChirps ? (pack.crossCheck.thresholdMm ?? null) : power.thresholdMm,
+    thresholdMm: preferSat ? (pack.crossCheck.thresholdMm ?? null) : power.thresholdMm,
     caution,
     alternative:
-      product === "CHIRPS v2.0"
+      product === SATELLITE
         ? { product: "NASA POWER", shiftDays: power.shiftDays, pValue: power.pValue }
-        : chirps
-          ? { product: "CHIRPS v2.0", shiftDays: chirps.shiftDays, pValue: chirps.pValue }
+        : sat
+          ? { product: SATELLITE, shiftDays: sat.shiftDays, pValue: sat.pValue }
           : null,
   };
 }
@@ -389,25 +394,25 @@ export function trendView(pack: PowerPack): {
   alternative: { product: string; pctPerDecade: number | null } | null;
 } | null {
   const power = pack.metrics;
-  const chirps = pack.crossCheck?.available ? pack.crossCheck.rainfallTrend2001toLatest : undefined;
+  const sat = pack.crossCheck?.available ? pack.crossCheck.rainfallTrend2001toLatest : undefined;
   const powerValue = power.rainfallTrendPctPerDecade;
-  if (powerValue === null && !chirps?.pctPerDecade) return null;
+  if (powerValue === null && (sat?.pctPerDecade === null || sat?.pctPerDecade === undefined)) return null;
 
-  const preferChirps = pack.preferred.rainfallTrend.source === "CHIRPS v2.0" && chirps?.pctPerDecade !== null && chirps?.pctPerDecade !== undefined;
+  const preferSat = pack.preferred.rainfallTrend.source === SATELLITE && sat?.pctPerDecade !== null && sat?.pctPerDecade !== undefined;
   const changePoint = pack.quality.precipHomogeneity.changePointInsideAnalysisWindow;
   return {
-    pctPerDecade: (preferChirps ? chirps!.pctPerDecade : powerValue) as number,
-    product: preferChirps ? "CHIRPS v2.0" : "NASA POWER",
-    window: preferChirps ? (chirps!.window ?? null) : power.rainfallTrendWindow,
-    tau: preferChirps ? chirps!.tau : power.rainfallTau,
-    pValue: preferChirps ? chirps!.pValue : power.rainfallPValue,
-    caution: preferChirps
-      ? `POWER gives ${powerValue}%/decade over the same window but its precipitation series steps at ${changePoint}; CHIRPS is used instead.`
+    pctPerDecade: (preferSat ? sat!.pctPerDecade : powerValue) as number,
+    product: preferSat ? SATELLITE : "NASA POWER",
+    window: preferSat ? (sat!.window ?? null) : power.rainfallTrendWindow,
+    tau: preferSat ? sat!.tau : power.rainfallTau,
+    pValue: preferSat ? sat!.pValue : power.rainfallPValue,
+    caution: preferSat
+      ? `POWER gives ${powerValue}%/decade over the same window but its precipitation series steps at ${changePoint}; GPM IMERG is used instead.`
       : power.rainfallTrendCaution,
-    alternative: preferChirps
+    alternative: preferSat
       ? { product: "NASA POWER", pctPerDecade: powerValue }
-      : chirps
-        ? { product: "CHIRPS v2.0", pctPerDecade: chirps.pctPerDecade }
+      : sat
+        ? { product: SATELLITE, pctPerDecade: sat.pctPerDecade }
         : null,
   };
 }
@@ -434,19 +439,15 @@ export function withPowerPack(farm: FarmPack, pack: PowerPack): FarmPack {
       }
     : { ...farm.onset, threshold: pack.onset.thresholdText };
 
-  const chirpsEntry: ProvEntry | null =
-    pack.crossCheck?.available
-      ? {
-          id: "chirps",
-          name: "CHIRPS v2.0",
-          detail: `Independent rainfall cross-check · ${pack.crossCheck.tierLabel ?? "Open (UCSB CHC / USGS)"} · 0.25° cell ${pack.crossCheck.grid?.cell.join(", ") ?? "n/a"}`,
-          detail_bn: `স্বাধীন বৃষ্টিপাত যাচাই · ${pack.crossCheck.tierLabel ?? "Open (UCSB CHC / USGS)"} · ০.২৫° ঘর ${pack.crossCheck.grid?.cell.join(", ") ?? "n/a"}`,
-          version: `${pack.crossCheck.source} · ${pack.crossCheck.yearsOnDisk?.first ?? "1981"}–${pack.crossCheck.yearsOnDisk?.last ?? "2025"}`,
-          retrieved: pack.crossCheck.retrievedUtc ? `${pack.crossCheck.retrievedUtc.slice(0, 10)} (UTC)` : "not retrieved",
-          tier: "Open",
-          url: "https://www.chc.ucsb.edu/data/chirps",
-        }
-      : null;
+  const cross = pack.crossCheck;
+  const imergEntry: Partial<ProvEntry> | null = cross?.available
+    ? {
+        detail: `Independent rainfall cross-check · ${cross.tierLabel ?? "NASA + JAXA (GPM)"} · 0.1° cell ${cross.grid?.cell.join(", ") ?? "n/a"}`,
+        detail_bn: `স্বাধীন বৃষ্টিপাত যাচাই · ${cross.tierLabel ?? "NASA + JAXA (GPM)"} · ০.১° ঘর ${toBnDigits(cross.grid?.cell.join(", ") ?? "n/a")}`,
+        version: `IMERG V07 via NASA POWER · ${cross.yearsComplete?.first ?? 1998}–${cross.yearsComplete?.last ?? 2025}`,
+        retrieved: cross.retrievedUtc ? `${cross.retrievedUtc.slice(0, 10)} (UTC)` : "not retrieved",
+      }
+    : null;
 
   return {
     ...farm,
@@ -466,12 +467,13 @@ export function withPowerPack(farm: FarmPack, pack: PowerPack): FarmPack {
               ...entry,
               detail: `Daily rainfall, T2M, solar — ${pack.lat.toFixed(4)}°N, ${pack.lon.toFixed(4)}°E (${pack.covered.daysWithData} days)`,
               detail_bn: `দৈনিক বৃষ্টি, T2M, সৌর — ${toBnDigits(pack.lat.toFixed(4))}°N, ${toBnDigits(pack.lon.toFixed(4))}°E (${toBnDigits(pack.covered.daysWithData)} দিন)`,
-              version: `Daily API ${pack.powerApiVersion} · ${pack.powerProductVersion ?? "MERRA-2"}`,
+              version: `${pack.powerApiVersion ?? "POWER v10"} · ${pack.powerProductVersion ?? "MERRA2"}`,
               retrieved: `${retrievedDay(pack)} (UTC)`,
             }
-          : entry,
+          : entry.id === "imerg" && imergEntry
+            ? { ...entry, ...imergEntry }
+            : entry,
       ),
-      ...(chirpsEntry ? [chirpsEntry] : []),
     ],
   };
 }
@@ -516,7 +518,7 @@ export async function loadDistrictPack(slug: string): Promise<PowerPack | null> 
 export function sourceLabel(pack: PowerPack): string {
   const preferred = pack.preferred.onsetShift.source;
   const power = `NASA POWER · retrieved ${retrievedDay(pack)}`;
-  if (preferred === "CHIRPS v2.0") return `CHIRPS v2.0 cross-check · ${power}`;
+  if (preferred === SATELLITE) return `GPM IMERG cross-check · ${power}`;
   if (preferred === "none") return "no homogeneous rainfall source · see caution";
   return power;
 }

@@ -1,8 +1,10 @@
 # FIELD SHIFT — SYSTEM ARCHITECTURE
 
 **Project:** Field Shift: Adapting Farms with NASA Data — NASA Space Apps Challenge 2026, Bangladesh local event (Dhaka), theme "The Next Frontier"
-**Document version:** 1.5 · 9 October 2026 (v1.4 · 30 September 2026) · Phase 1 approved 26 Sep — Phase 2 built against real data; the contract below stands except where ADR-008/009/010 amend it
+**Document version:** 1.6 · 15 October 2026 (v1.5 · 9 October 2026; v1.4 · 30 September 2026) · Phase 1 approved 26 Sep — Phase 2 built against real data; the contract below stands except where ADR-008/009/010 amend it
 **Status:** READY FOR REVIEW — implementation does not begin until this document is approved, and is re-validated against the full challenge statement on 28 October 2026.
+**v1.6 changes (15 Oct 2026 — NASA-only data sources; new decision in ADR-013 at the end of this document):** every Earth-observation and climate input is now NASA or NASA-partner data. CHIRPS v2.0 (UCSB/USGS) is replaced by NASA/JAXA GPM IMERG V07 as the independent rainfall product in every pack and as the ML label source; NOAA PSL ONI/DMI are replaced by Niño 3.4 and DMI computed from NASA MERRA-2; NASA POWER can be read from its public Zarr archive on AWS Open Data. The ML outlook becomes `onset-ml-v3` (anomaly target, inner-CV shrinkage, conformal intervals). ADR-009's CHIRPS labels and ADR-010 item 3 (CHIRPS cross-check tier) are superseded by ADR-013; their text below is kept as the record of what was decided then.
+
 **v1.5 changes (9 Oct 2026 — "next improvements" round; new decisions in ADR-011 and ADR-012 at the end of this document):** (1) **"This season so far" nowcast** per farm and per district point: the last 30 or 60 days of NASA POWER `PRECTOTCORR`, `T2M` and `GWETTOP` against that point's own 2017–2025 calendar-day normal, fetched live from the public POWER daily API in the browser (8 s timeout) with a committed fallback pack for all 70 points (ADR-011). This is the app's first runtime call to a NASA data API (the map already streamed NASA GIBS imagery tiles); it is context only and never feeds a score. (2) **Data-outage behaviour**: when the live call fails, a banner says so, the saved pack is shown with its retrieval date, and a Retry button re-runs the call; no blank or invented numbers. (3) **Quick answer** (`/quick`: district → current crop → priority → top 3 rotations with a stacked score breakdown that adds up to the total, full analysis behind "See why") and a **location picker** (`/locate`: map click or any of the 64 districts, snapped to the nearest of the 70 precomputed points with the distance stated) — ADR-012. (4) Playwright end-to-end tests against the production build. (5) In-app wording is forward-looking: the ML model is presented as built — the card is headed "Machine-learning monsoon forecast" and says it is trained on satellite rainfall (CHIRPS) and NASA POWER with NOAA ocean indices; its backtest errors are printed beside the district mean's (the payload `status` field reads `validating` while skill against the district mean is not above zero; the engine still never reads it). Farmer field tests and more satellite layers are described as the next phase, and planned datasets read "next phase".
 
 **v1.4 changes (30 Sep 2026 — Phase 2 build results recorded; new decisions in ADR-008, ADR-009, ADR-010 at the end of this document):** (1) **Crop pool recorded as built: 12 entries** (`web/lib/data.ts` → `CROPS`, ADR-008) — the crops v1.3 named **plus Sesame, Jute and Fallow**. The v1.3 "lock" was never enforced in code (sesame and jute have been in the demo crop table since the first commit); what the Phase 2 engine work added was **Aus** and **Fallow**, together with the soft family penalty and the 365-day calendar that make the pool a real decision surface. Sesame and Jute are the pre-kharif options Bangladesh actually rotates through (Potato–Jute–T.Aman in the jute belt, sesame as the low-water oilseed of the south-west); Fallow is in the pool so the real Boro–Fallow–T.Aman pattern can be represented instead of forced into a crop the calendar has no room for, and Fallow is idle land (0 season days, 0 water) priced by a penalty scaled to how much of the year was genuinely still free (`IDLE_FALLLOW_POINTS` 4 × `idleScale`), not banned. Every trait value in the pool — durations, water demand, tolerances, N and residue indices, income and staple values — is still a **demo `ESTIMATE` pending citation**; the one cited field per crop is `salt` (FAO-29 Table 4), and it is `null` with a stated reason where FAO-29 publishes no number (sesame, jute, mustard, lentil, mungbean). (2) **Onset definition v1 → v2**: the originally specified rule (7-day ≥ 20 mm from DOY 145) was measured on the real cached series and censored **50–91 %** of years to its own window floor, so the shipped rule is v2 — first wet day in DOY 121–270 whose 5-day rainfall reaches that point's own Jun–Sep 2001–2025 mean, no 10-day break under 5 mm in the following 30 days (adapted from the Moron & Robertson 2014 family). (3) **NASA POWER precipitation found inhomogeneous over 1981–2025** — a significant Pettitt change point inside 2001–2025 in 63 of the 64 district packs and 5 of the 6 farm packs (68 of 70) — so an independent cross-check was added and is shipped with every pack: **CHIRPS v2.0, tiered honestly as an open non-space product (UCSB Climate Hazards Center / USGS), not NASA and not a Space Agency Partner product**; rainfall trends are published only for 2001–2025, and each pack names the product its onset and trend figures came from. (4) **Significance gate on the shift**: the measured two-era difference enters the engine, the headline card, the advisory and the SMS only when the Mann-Whitney test rejects at p < 0.05; otherwise it is 0 and the UI says "No significant onset shift". **Net headline finding, shipped as-is: no monsoon-onset shift is established here** — across the 64 district packs CHIRPS gives a median −1.5 d with 4/64 significant while POWER gives −14.8 d with 38/64 significant on a series that steps at 2015–2016, and at the six demo farms the preferred product's era test is non-significant at all six (p = 0.157–0.978), so the engine is handed 0 everywhere. (5) **ML admitted for the first time, and only outside the decision path** (ADR-009, amending ADR-005 without deleting it): a build-time onset outlook (`src/compute/ml`, `scripts/build_onset_ml.py`) — LightGBM with CHIRPS-derived labels, features cut off at a 25 April issue date, leave-one-year-out backtest against each district's own mean onset, shipped only if skill > 0. Backtest skill against climatology is **−0.155** (model MAE 11.59 d vs climatology 10.04 d over 2 880 district-years, 45 folds); the payload `status` is `validating` for as long as that skill is not above zero, and no recommendation depends on the outlook. (6) **Coastal soil salinity added as a named open non-space layer** (ADR-010): SRDI (2010) *Saline Soils of Bangladesh* Appendix-2 — 102 upazilas in 18 districts, a May-2009 dry-season survey, EC on a 1:5 soil-water extract — joined to a farm point by geoBoundaries gbOpen ADM3 point-in-polygon and scored with FAO Irrigation & Drainage Paper 29 Rev.1 Table 4 / Maas-Hoffman lines (Y = 100 − b·(ECe − a)); outside the surveyed belt the value is **absent, not zero**, and the engine says so.
@@ -742,6 +744,44 @@ Numbering continues the ADRs referenced inline above (ADR-001 no runtime backend
 
 **Risk.** A district ranking can be read as district-specific soil advice. Mitigation: the inputs list on every "See why" names the borrowed farm, and the page states that district soil and irrigation layers come in the next phase.
 
+
+
+## ADR-013 — NASA and NASA-partner data only; GPM IMERG replaces CHIRPS, MERRA-2 replaces NOAA indices; onset ML v3
+
+**Status.** Accepted, 15 Oct 2026. Supersedes ADR-009's label source and ADR-010 item 3.
+
+**Context.** The team set the rule that every Earth-observation and climate dataset must be NASA or a
+NASA partner's. Two inputs broke it: CHIRPS v2.0 (UCSB Climate Hazards Center / USGS) as the rainfall
+cross-check and ML label source, and NOAA PSL's ONI (ERSST) and DMI (HadISST) as ML predictors. The
+v2 model also lost to climatology (skill −0.155) and its 10–90 band covered 55 % of outcomes.
+
+**Decision.**
+1. **Rainfall cross-check and labels → NASA/JAXA GPM IMERG V07**, read as NASA POWER's daily
+   aggregation (`IMERG_PRECTOT`, 0.1°, 1998→) from POWER's public Zarr store on AWS Open Data
+   (`src/acquire/imerg.py`, `power_zarr.py`). JAXA is a Space Agency Partner via the GPM Core
+   Observatory's DPR. Pack schema → v3 (`preferred.satelliteFlagged/satelliteAvailable`, index
+   `satellite`, product label `"GPM IMERG"`).
+2. **Ocean indices → computed from NASA MERRA-2** monthly skin temperature (`src/acquire/indices.py`):
+   Niño 3.4 (ONI-equivalent, 1991–2020 base) and the Saji DMI, ocean cells chosen with MERRA-2's own
+   land model. Validated against NOAA's ONI to ±0.2 °C at every checked event.
+3. **NASA POWER gains an AWS backend** (`POWER_BACKEND=api|s3|auto`): the same v10 archive, values
+   identical to the point API (checked to 0.1 mm), so the pipeline rebuilds with no key and no API
+   throttling.
+4. **Onset ML v3**: anomaly target, fixed shallow LightGBM, inner year-grouped CV choosing a
+   shrinkage factor by the one-SE rule, and a conformal 80 % band from inner residuals.
+
+**Measured result.** IMERG has no Pettitt change point inside 2001–2025 at any of the 70 points, so it
+is the homogeneous product at 68 of them (POWER's own series is clean at 2). No onset shift is
+significant in IMERG at any district (0/64, median −3.0 d); the "no established shift" conclusion of
+ADR-010 stands. ML v3: inner CV sets the shrinkage to 0 in every fold — the April predictors carry no
+out-of-sample skill — so the forecast equals climatology (skill 0.000, MAE 10.73 d) with 80.3 %
+coverage, and the card says so.
+
+**Consequences.** Non-space inputs remain only where the challenge asks for local knowledge (SRDI
+soil salinity, FAO-29 crop salt tolerance), plus administrative boundaries and basemap tiles. IMERG's
+most recent months are near-real-time until the Final run replaces them, so the 2026 single-season
+check is provisional. The IMERG record is 28 years against CHIRPS's 45, which widens era-test
+uncertainty; the trade is accepted for a NASA-only, homogeneous product.
 
 ---
 

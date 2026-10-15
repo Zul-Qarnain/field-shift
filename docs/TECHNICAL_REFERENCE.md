@@ -86,9 +86,9 @@ Click the map or choose a district. The pick snaps to the nearest of the **70 pr
 
 ### Field analysis — `/field`
 
-One card per farm, built from the committed pack: **monsoon onset under definition v2** (a local-relative 5-day accumulation rule adapted from the Moron & Robertson 2014 family, searched DOY 121–270), the two eras 2001–2012 vs 2013–2025 compared with a two-sided **Mann-Whitney U**, ±20 % threshold sensitivity, heat days above 35 °C from `T2M_MAX`, mean temperature and modelled root-zone wetness (`GWETROOT`), and the **same rainfall statistics re-computed independently from CHIRPS v2.0** with a **Pettitt change-point test** on both series — each figure naming the product it came from, and a stated preference rule deciding which one the app reads.
+One card per farm, built from the committed pack: **monsoon onset under definition v2** (a local-relative 5-day accumulation rule adapted from the Moron & Robertson 2014 family, searched DOY 121–270), the two eras 2001–2012 vs 2013–2025 compared with a two-sided **Mann-Whitney U**, ±20 % threshold sensitivity, heat days above 35 °C from `T2M_MAX`, mean temperature and modelled root-zone wetness (`GWETROOT`), and the **same rainfall statistics re-computed independently from NASA/JAXA GPM IMERG V07** with a **Pettitt change-point test** on both series — each figure naming the product it came from, and a stated preference rule deciding which one the app reads.
 
-<img src="screenshots/readme/03_farm_en.png" alt="Farm page: onset v2 statistics, heat days, wetness, CHIRPS cross-check, salinity card, ML forecast and nowcast" width="430">
+<img src="screenshots/readme/03_farm_en.png" alt="Farm page: onset v2 statistics, heat days, wetness, GPM IMERG cross-check, salinity card, ML forecast and nowcast" width="430">
 
 ### Soil salinity — the local soil layer
 
@@ -174,27 +174,28 @@ total = 100 × Σ(component value × component weight) − Σ(penalties) + early
 
 **What-if scenarios** re-run the same engine on the same data: rainfall −10 % / −20 %, temperature +1 °C / +2 °C, and onset +7 / +15 days. The plan page shows the re-ranking and labels the scenario as the stated hypothetical it is.
 
-**Deterministic and explainable.** Same inputs, same output, every time — which is what makes the stacked bar honest: the quick answer's parts add up to the shown total to the last decimal (largest-remainder rounding). *See why* lists every component's value × weight, every penalty with its rule and source, and the reasons and risks. 688 Vitest tests pin the constraints, the weights, the penalties and the bilingual output.
+**Deterministic and explainable.** Same inputs, same output, every time — which is what makes the stacked bar honest: the quick answer's parts add up to the shown total to the last decimal (largest-remainder rounding). *See why* lists every component's value × weight, every penalty with its rule and source, and the reasons and risks. 690 Vitest tests pin the constraints, the weights, the penalties and the bilingual output.
 
 ---
 
 ## Machine-learning monsoon forecast
 
-**Built, and shown on every farm page** under the heading *"Machine-learning monsoon forecast"*, with the line *"Trained on satellite rainfall (CHIRPS) and NASA POWER, with NOAA ocean indices."*
+**Built, and shown on every farm page** under the heading *"Machine-learning monsoon forecast"*, with the line *"Trained on NASA/JAXA GPM IMERG satellite rainfall and NASA POWER, with ocean indices from NASA MERRA-2."*
 
 | | |
 |---|---|
-| Model | **LightGBM** gradient boosting (`onset-ml-v2`), one conditional-mean head plus two quantile heads (α = 0.1 / 0.9) for the range |
-| Labels | Monsoon onset dates derived from **CHIRPS v2.0** daily rainfall under the same deterministic onset rule v2 the packs use |
-| Weather features | **NASA POWER** daily point series — pre-monsoon rainfall anomaly, `T2M`, `T2M_MAX` and `RH2M` anomalies, end-of-window root-zone wetness, and the previous season's onset |
-| Ocean indices | **NOAA PSL** ONI (ERSSTv6 Niño 3.4, Dec–Feb and Feb–Apr centres) and DMI (HadISST1.1, Feb–Mar) |
+| Model | **LightGBM** gradient boosting (`onset-ml-v3`) on the onset *anomaly* vs the district climatology, its correction shrunk by inner cross-validation (one-SE rule), with a conformal 80 % range from held-out-year residuals |
+| Labels | Monsoon onset dates derived from **NASA/JAXA GPM IMERG V07** daily rainfall (via NASA POWER) under the same deterministic onset rule v2 the packs use |
+| Weather features | IMERG pre-monsoon rainfall anomaly; **NASA POWER** `T2M`, `T2M_MAX` and `RH2M` anomalies and end-of-window root-zone wetness; the previous season's onset anomaly |
+| Ocean indices | **Niño 3.4 and DMI computed from NASA MERRA-2** monthly sea-surface skin temperature (Dec–Feb and Feb–Apr centres; Feb–Mar) — agree with NOAA's ONI to ±0.2 °C |
 | Geography | All **64 districts** as training points, with coordinates as features; the 6 demo farms read their own forecast row |
-| Training span | 45 seasons, 1981–2025, validated by a leave-one-year-out backtest in which a whole season's districts are held out together |
+| Training span | 28 seasons, 1998–2025 (the IMERG record), validated by a leave-one-year-out backtest in which a whole season's districts are held out together |
 | Issue date | **25 April** — no feature may use information that did not exist by then, and the leakage controls are asserted in tests |
-| What the card shows | The forecast onset date for **2026**, the model's **10–90 range**, and *"What moved this prediction"* — the top drivers in days, from exact tree SHAP contributions (`pred_contrib=True`) |
+| What the card shows | The forecast onset date for **2026**, the calibrated **80 % range**, and either the top drivers in days (exact tree SHAP) or — as in the current build, where inner CV found no skill and set the shrinkage to 0 — the plain statement that the forecast is the district climatology |
+| Result | Backtest skill vs climatology **0.000** (MAE 10.73 d both), 80 % coverage **0.803**; v2 on CHIRPS was −0.155 with 55 % coverage. Details: [`science/onset_ml.md`](science/onset_ml.md) |
 | Where it runs | Built offline by `../scripts/build_onset_ml.py` into `../web/public/data/onset_outlook.json`. The browser reads JSON; it never runs the model |
 
-Pipeline: `../src/acquire/chirps.py` + `power.py` + `indices.py` → `../src/compute/ml/features.py` (fold-local climatology, leakage-guarded) → `../src/compute/ml/onset_ml.py` → `../src/compute/ml/outlook.py` → JSON payload → `../web/components/OnsetOutlookCard.tsx`. Method, feature table and leakage controls: [`science/onset_ml.md`](science/onset_ml.md).
+Pipeline: `../src/acquire/imerg.py` + `power.py` + `indices.py` (all reading NASA POWER's Zarr stores through `power_zarr.py`) → `../src/compute/ml/features.py` (fold-local climatology, leakage-guarded) → `../src/compute/ml/onset_ml.py` → `../src/compute/ml/outlook.py` → JSON payload → `../web/components/OnsetOutlookCard.tsx`. Method, feature table and leakage controls: [`science/onset_ml.md`](science/onset_ml.md).
 
 The forecast is season context alongside the measured onset statistics. The rotation ranking keeps running on the deterministic onset rule, so a plan never depends on a single model output.
 
@@ -206,12 +207,14 @@ The forecast is season context alongside the measured onset statistics. The rota
 
 | NASA dataset | Parameters / product | Used for |
 |---|---|---|
-| **NASA POWER** daily point API (v2.10.0, community AG), 1981-01-01 → 2026-09-27, 70 locations | `PRECTOTCORR` — corrected precipitation | Monsoon-onset detection (rule v2), the two-era Mann-Whitney comparison, rainfall trend and change-point statistics |
+| **NASA POWER** v10 daily (MERRA-2, community AG), 1981-01-01 → 2026-08-31, 70 locations — read from POWER's Zarr archive on AWS Open Data (values identical to the daily point API) | `PRECTOTCORR` — corrected precipitation | Monsoon-onset detection (rule v2), the two-era Mann-Whitney comparison, rainfall trend and change-point statistics |
 | | `T2M`, `T2M_MAX` — 2 m mean and maximum temperature | Mean-temperature change, heat days above 35 °C, the engine's thermal-fit and resilience components, and ML features |
 | | `GWETROOT` — root-zone soil wetness | Modelled root-zone wetness on every farm and district card, and an ML feature |
 | | `RH2M` — 2 m relative humidity | ML feature (humidity anomaly) |
 | | `T2M_MIN`, `ALLSKY_SFC_SW_DWN` | Retrieved with the series and kept in the local cache for reproducibility |
 | **NASA POWER** nowcast series, 2017-01-01 → 2026-10-07, 70 locations; also called live from the browser | `PRECTOTCORR`, `T2M`, `GWETTOP` — surface soil wetness | The "This season so far" card: last 30/60 days against each point's own 2017–2025 calendar normal |
+| **NASA/JAXA GPM IMERG** V07 daily (via NASA POWER), 1998-01-01 → 2026-09-14, 0.1° | `IMERG_PRECTOT` | Independent rainfall cross-check in every pack (Pettitt-tested; used where POWER rainfall steps) and the ML onset labels + pre-monsoon rainfall feature |
+| **NASA MERRA-2** monthly (via NASA POWER), 1981 → 2026-08 | `TS` over ocean (land masked with `GWETROOT`) | Niño 3.4 and Dipole Mode Index for the ML forecast |
 | **NASA GIBS** — VIIRS NOAA-20 True Color (EOSDIS) | WMTS `GoogleMapsCompatible_Level9` tiles | Satellite imagery overlay on the location picker and farm map |
 
 ### Full register with versions, retrieval dates and licences
@@ -220,15 +223,15 @@ Retrieval dates, versions and licences are read from the committed artifacts (`.
 
 | Dataset | Provider | What we use it for | Version / resolution | Retrieved | Licence |
 |---|---|---|---|---|---|
-| **NASA POWER daily point series** | NASA Langley Research Center (POWER) | Climate backbone: onset detection, heat days, temperature, rainfall statistics, modelled root-zone wetness | Daily API **v2.10.0**, community AG, 7 parameters (`PRECTOTCORR, T2M, T2M_MAX, T2M_MIN, GWETROOT, RH2M, ALLSKY_SFC_SW_DWN`), point (0.5°/1° grid), 1981-01-01 → 2026-09-27 | 2026-09-30, 08:53:57–09:08:07 UTC (70 points) | NASA open data |
+| **NASA POWER daily series** | NASA Langley Research Center (POWER) | Climate backbone: onset detection, heat days, temperature, rainfall statistics, modelled root-zone wetness | **POWER v10**, 7 parameters (`PRECTOTCORR, T2M, T2M_MAX, T2M_MIN, GWETROOT, RH2M` from MERRA-2 at 0.5°×0.625°; `ALLSKY_SFC_SW_DWN` from CERES SYN1deg, 2001→), 1981-01-01 → 2026-08-31, read from the public POWER Zarr archive on AWS Open Data | 2026-10-15 (store metadata) | NASA open data |
 | **NASA POWER — nowcast series** | NASA Langley (POWER) | "This season so far": last 30/60 days and the 2017–2025 calendar normal; the same API is also called **live in the browser** | Daily API **v2.10.0**, `PRECTOTCORR, T2M, GWETTOP`, 2017-01-01 → 2026-10-07 (data to 2026-10-05) | 2026-10-08, 19:27:56–19:29:57 UTC (70 points) | NASA open data |
-| **CHIRPS v2.0 daily rainfall** | Climate Hazards Center, UCSB / USGS | Independent cross-check of every rainfall statistic, the ML onset labels and the pre-monsoon rainfall feature | CHIRPS **v2.0**, daily, 0.25° (~25 km) nearest cell, 1981–2025 (+ 2026 outlook file) | 2026-09-30 | Open data from UCSB CHC / USGS — see provider terms · citation: Funk et al. 2015, *Scientific Data* 2:150066 |
+| **NASA/JAXA GPM IMERG V07 daily** | NASA GSFC / JAXA (GPM mission); daily aggregation by NASA POWER | Independent cross-check of every rainfall statistic, the ML onset labels and the pre-monsoon rainfall feature | IMERG **V07**, `IMERG_PRECTOT`, UTC day, 0.1° (~11 km) containing cell, 1998-01-01 → 2026-09-14 (recent months near-real-time until the Final run replaces them) | 2026-10-15 (store metadata) | NASA open data · Huffman et al., doi:10.5067/GPM/IMERG/3B-HH/07 |
 | **SRDI — *Saline Soils of Bangladesh* (2010), Appendix-2** | Soil Resource Development Institute, Ministry of Agriculture, Government of Bangladesh | Upazila soil-salinity class areas S1–S5 → representative ECe → expected yield loss | 102 upazilas in 18 coastal districts; May-2009 dry-season survey, 2 500 samples, EC on a 1:5 soil-water extract; published 2010 | 2026-09-30 | Government of Bangladesh, Ministry of Agriculture — public document |
 | **FAO Irrigation & Drainage Paper 29 Rev.1, Table 4** | FAO (Ayers & Westcot, 1985) | Crop salt tolerance thresholds and slopes: the line Y = 100 − b·(ECe − a) behind the salinity penalty | Rev. 1, Table 4 + equation 10, per crop (dS/m) | read 2026-09-30 | FAO open |
 | **geoBoundaries gbOpen BGD ADM2** | wmGeolab / geoBoundaries (BBS / OCHA ROAP) | The 64 district polygons: centroids, representative data points, the location picker register | ADM2, release revision `9469f09`; Runfola et al. 2020, *PLoS ONE* 15(4): e0231866 | 2026-09-30 | CC BY 3.0 IGO |
 | **geoBoundaries gbOpen BGD ADM3** | wmGeolab / geoBoundaries (BBS / OCHA ROAP) | Upazila point-in-polygon: which SRDI unit each farm falls in | ADM3, release revision `9469f09` | 2026-09-30 | CC BY 3.0 IGO |
-| **NOAA PSL ONI** | NOAA Physical Sciences Laboratory | ENSO state as ML features only (Dec–Feb and Feb–Apr centres) | 3-month running mean of ERSSTv6 Niño 3.4 | 2026-09-30, 08:57:03 UTC | NOAA public data |
-| **NOAA PSL DMI** | NOAA Physical Sciences Laboratory | Indian Ocean Dipole state as an ML feature (Feb–Mar) | Dipole z-score, HadISST1.1 | 2026-09-30, 08:57:03 UTC | NOAA public data |
+| **Niño 3.4 from NASA MERRA-2** | computed in `src/acquire/indices.py` from NASA GMAO MERRA-2 (via POWER) | ENSO state as ML features only (Dec–Feb and Feb–Apr centres) | `TS` over ocean, 5°S–5°N 170°W–120°W, anomalies vs 1991–2020, 3-month running mean | 2026-10-15 | NASA open data |
+| **DMI from NASA MERRA-2** | computed in `src/acquire/indices.py` from MERRA-2 (via POWER) | Indian Ocean Dipole state as an ML feature (Feb–Mar) | Saji et al. (1999) boxes, anomalies vs 1991–2020 (°C) | 2026-10-15 | NASA open data |
 | **NASA GIBS — VIIRS NOAA-20 True Color** | NASA EOSDIS GIBS | Satellite imagery overlay on the map | WMTS `GoogleMapsCompatible_Level9`, ~306 m pixels, scene date 2026-09-20 | live tile requests | NASA open data |
 | **OpenFreeMap + OpenStreetMap** | OpenFreeMap / OSM contributors | Basemap vector tiles for `/locate` and the farm map | `liberty` style, vector tiles | live tile requests | ODbL / free (OpenStreetMap contributors) |
 
@@ -255,7 +258,7 @@ Every figure the app shows traces to one of these rows, and the in-app **Data** 
 |---|---|
 | Acquisition | requests ≥2.32 · shapely ≥2.0 (point-in-polygon) |
 | Science | pandas ≥2.2 · numpy ≥2.0 · scipy ≥1.13 (Mann-Whitney, Mann-Kendall, Theil-Sen, Pettitt) |
-| Gridded data | xarray ≥2024.1 · netCDF4 ≥1.6 (CHIRPS reader) |
+| Gridded data | numcodecs ≥0.12 (Zarr chunk decoding for the NASA POWER AWS archive) · xarray ≥2024.1 |
 | Machine learning | LightGBM ≥4.7 |
 | Testing | pytest ≥8.0 |
 
@@ -268,14 +271,15 @@ No runtime backend, server database, LLM call or paid service anywhere in the de
 ```text
 field-shift/
 ├── src/
-│   ├── acquire/         # power.py (NASA POWER point API), chirps.py (netCDF reader),
-│   │                    # districts.py (geoBoundaries), indices.py (NOAA PSL ONI/DMI),
+│   ├── acquire/         # power.py (NASA POWER API + AWS backend), power_zarr.py (Zarr reader),
+│   │                    # imerg.py (GPM IMERG), indices.py (Niño 3.4 / DMI from MERRA-2),
+│   │                    # districts.py (geoBoundaries),
 │   │                    # salinity.py (SRDI CSV + ADM3 join), bd_districts.csv
 │   ├── compute/         # onset.py (rule v1/v2), trends.py, nowcast.py, ml/ (features, model, outlook)
 │   └── data/salinity/   # srdi_2010_upazila.csv (committed transcription) + README.md provenance
 ├── scripts/             # build_packs.py, build_nowcast.py, build_onset_ml.py,
-│                        # build_district_table.py, fetch_chirps_2026.py
-├── tests/               # pytest suite (260 tests) + tests/fixtures (ONI/DMI sample series)
+│                        # build_district_table.py
+├── tests/               # pytest suite (262 tests), all offline
 ├── web/
 │   ├── app/             # / , /field , /plan , /quick , /locate , /method , /data
 │   ├── components/      # NowcastCard, LiveDataBanner, QuickAnswerCard, OnsetOutlookCard,
@@ -284,7 +288,7 @@ field-shift/
 │   │                    # outlook.ts, i18n.ts, lang.tsx, clipboard.ts
 │   ├── public/data/     # packs/ (index + 6 farms + 64 districts), nowcast/ (70 + index),
 │   │                    # districts.json, salinity.json, onset_outlook.json
-│   ├── tests/           # Vitest suite (11 files, 688 tests)
+│   ├── tests/           # Vitest suite (11 files, 690 tests)
 │   └── e2e/             # Playwright suite (3 files, 12 tests) + playwright.config.ts
 ├── docs/                # architecture (v1.5, ADR-001–012), UI/UX design system,
 │   ├── science/         # onset.md, onset_ml.md
@@ -302,11 +306,11 @@ field-shift/
 
 | Suite | Count | What it covers |
 |---|---|---|
-| **pytest** (`../tests/`) | **260 tests** | The onset rule — v1 for comparison and v2 as shipped (window, local threshold, break check, censoring accounting, two-era test) — plus Mann-Kendall, Theil-Sen and Pettitt on synthetic series; the POWER reader (fill handling, cache reuse, request shape) and the CHIRPS reader against a synthetic netCDF; NOAA index parsing; the SRDI salinity pipeline and its geoBoundaries upazila join; shape and provenance invariants of every committed pack; the nowcast summaries recomputed from the raw daily series and the committed district table; and the ML feature frames, leakage guards, year-wise splitter, outlook payload and metrics. No network required |
-| **Vitest** (`../web/tests/`, 11 files) | **688 tests** | Rotation-engine constraints and scoring, determinism, the eight weights and every penalty, the onset significance gate, FAO-29 salinity math, the bilingual output of every reason/risk/penalty sentence, data-pack contracts validated against the committed JSON, nowcast maths, location snapping, the quick answer ranking and its score breakdown that must add up to the total, and the ML forecast payload |
+| **pytest** (`../tests/`) | **262 tests** | The onset rule — v1 for comparison and v2 as shipped (window, local threshold, break check, censoring accounting, two-era test) — plus Mann-Kendall, Theil-Sen and Pettitt on synthetic series; the POWER reader (fill handling, cache reuse, request shape, the AWS backend contract), the Zarr chunk decoder against a synthetic on-disk store, and the MERRA-2 index maths (land mask, anomalies, running mean); the SRDI salinity pipeline and its geoBoundaries upazila join; shape and provenance invariants of every committed pack; the nowcast summaries recomputed from the raw daily series and the committed district table; and the ML feature frames, leakage guards, year-wise splitter, shrinkage and conformal-coverage behaviour, outlook payload and metrics. No network required |
+| **Vitest** (`../web/tests/`, 11 files) | **690 tests** | Rotation-engine constraints and scoring, determinism, the eight weights and every penalty, the onset significance gate, FAO-29 salinity math, the bilingual output of every reason/risk/penalty sentence, data-pack contracts validated against the committed JSON, nowcast maths, location snapping, the quick answer ranking and its score breakdown that must add up to the total, and the ML forecast payload |
 | **Playwright** (`../web/e2e/`, 3 files) | **12 tests** | End-to-end journeys against `npm start` on the production build: home + the বাংলা toggle across a reload, a farm page reading the nowcast, a what-if that re-ranks, the outage banner and its Retry, `?nowcast=offline`, the quick answer arithmetic and its no-pack/Retry path, district and coordinate snapping, an out-of-country pick, and a map click. NASA POWER is mocked from the committed packs, so no live API call is made |
 
-**CI** — [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on pushes to `main` and on pull requests: `npm ci`, the Vitest unit suite, and a production build (type-check included) on Node 22.
+**CI** — [`.github/workflows/ci.yml`](../.github/workflows/ci.yml) runs on pushes to `main` and on pull requests: the pytest suite on Python 3.13, and `npm ci`, ESLint, the Vitest unit suite and a production build (type-check included) on Node 22.
 
 ### Running the checks
 
@@ -317,7 +321,7 @@ cd web
 npm ci                      # install from the lockfile
 npm run dev                 # http://localhost:3000
 
-npm test                    # 688 Vitest tests (engine, packs, nowcast maths, quick answer, i18n)
+npm test                    # 690 Vitest tests (engine, packs, nowcast maths, quick answer, i18n)
 npm run lint                # ESLint
 npx tsc --noEmit            # type check
 npm run build               # production build (type-checked)
@@ -329,7 +333,7 @@ npm run test:all            # lint + type check + unit + build + e2e
 ```bash
 python -m venv .venv
 .venv/bin/pip install -r requirements.txt
-.venv/bin/python -m pytest -q          # 260 tests, no network required
+.venv/bin/python -m pytest -q          # 262 tests, no network required
 ```
 
 ---
@@ -340,23 +344,22 @@ Each script caches its raw responses under `cache/` (gitignored) and records the
 
 ```bash
 python -m src.acquire.districts        # geoBoundaries ADM2 → src/acquire/bd_districts.csv
-python scripts/build_packs.py          # NASA POWER + CHIRPS → web/public/data/packs/ (70 packs + index)
+POWER_BACKEND=s3 python scripts/build_packs.py     # NASA POWER + GPM IMERG → web/public/data/packs/ (70 packs + index)
 python scripts/build_nowcast.py        # POWER nowcast series → web/public/data/nowcast/ (70 packs + index)
-python scripts/build_onset_ml.py       # backtest + outlook → web/public/data/onset_outlook.json
-python scripts/fetch_chirps_2026.py    # one real CHIRPS download for the outlook year
+POWER_BACKEND=s3 python scripts/build_onset_ml.py  # backtest + outlook → web/public/data/onset_outlook.json
 python src/acquire/salinity.py         # SRDI CSV + geoBoundaries ADM3 → web/public/data/salinity.json
 python scripts/build_district_table.py # district register → web/public/data/districts.json
 ```
 
 Run these from the repository root, inside the environment built from `../requirements.txt`.
 
-`build_packs.py` also takes `--only-farms`; `build_nowcast.py` takes `--limit N` and `--end YYYYMMDD`; `build_onset_ml.py` takes `--limit`, `--years` and `--rounds`. The CHIRPS cross-check reads local netCDF boxes from `${CHIRPS_DIR}` — those files are not committed, and each keeps the `source_url` and `retrieved_utc` attributes its download wrote, which the packs surface as `crossCheck.retrievedUtc`.
+`build_packs.py` also takes `--only-farms`; `build_nowcast.py` takes `--limit N` and `--end YYYYMMDD`; `build_onset_ml.py` takes `--limit`, `--years` and `--rounds`. `POWER_BACKEND` picks the POWER source: `api` (the daily point API), `s3` (the same POWER v10 archive from the public `nasa-power` Zarr bucket on AWS Open Data — no key, no Earthdata login) or `auto` (API first, AWS on failure). GPM IMERG and the MERRA-2 indices are always read from the AWS stores. Raw chunks are cached under `cache/power_zarr/` (gitignored) exactly as downloaded.
 
 ---
 
 ## Next phase
 
-Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadmap). In the next phase we plan to add GPM IMERG, SMAP, MODIS NDVI and SoilGrids as scored inputs, district-level soil and irrigation layers for the quick answer, and validation from farmer field tests in the demo districts.
+Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadmap). In the next phase we plan to add SMAP, MODIS NDVI and SoilGrids as scored inputs, district-level soil and irrigation layers for the quick answer, and validation from farmer field tests in the demo districts.
 
 ---
 
@@ -365,7 +368,10 @@ Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadm
 - World Bank (2022). *Country Climate and Development Report for Bangladesh.* [Key highlights](https://www.worldbank.org/en/news/feature/2022/10/31/key-highlights-country-climate-and-development-report-for-bangladesh).
 - NASA Langley Research Center. *Prediction Of Worldwide Energy Resources (POWER) Project*, daily API. [power.larc.nasa.gov](https://power.larc.nasa.gov/).
 - NASA EOSDIS — *Global Imagery Browse Services (GIBS)*. [earthdata.nasa.gov/gibs](https://earthdata.nasa.gov/gibs).
-- Funk, C. et al. (2015). The climate hazards infrared precipitation with stations — a new environmental record for monitoring extremes. *Scientific Data* 2:150066.
+- Huffman, G. J. et al. (2023). NASA Global Precipitation Measurement (GPM) Integrated Multi-satellitE Retrievals for GPM (IMERG), V07. NASA GES DISC. [doi:10.5067/GPM/IMERG/3B-HH/07](https://doi.org/10.5067/GPM/IMERG/3B-HH/07)
+- Gelaro, R. et al. (2017). The Modern-Era Retrospective Analysis for Research and Applications, Version 2 (MERRA-2). *Journal of Climate* 30(14):5419–5454.
+- Saji, N. H. et al. (1999). A dipole mode in the tropical Indian Ocean. *Nature* 401:360–363.
+- Breiman, L. et al. (1984). *Classification and Regression Trees* (the one-standard-error rule).
 - Moron, V. & Robertson, A. W. (2014). Interannual variability of Indian summer monsoon rainfall onset date at local scale. *International Journal of Climatology* 34(4):1050–1061. [doi:10.1002/joc.3745](https://doi.org/10.1002/joc.3745)
 - Pettitt, A. N. (1979). A non-parametric approach to the change-point problem. *Journal of the Royal Statistical Society C* 28(2):126–135.
 - Mann, H. B. & Whitney, D. R. (1947). On a test of whether one of two random variables is stochastically larger than the other. *Annals of Mathematical Statistics* 18(1):50–60.
@@ -374,7 +380,7 @@ Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadm
 - Runfola, D. et al. (2020). geoBoundaries: a global database of political administrative boundaries. *PLoS ONE* 15(4): e0231866.
 - Ke, G. et al. (2017). LightGBM: a highly efficient gradient boosting decision tree. *Advances in Neural Information Processing Systems* 30.
 - Lundberg, S. M. et al. (2020). From local explanations to global understanding with explainable AI for trees. *Nature Machine Intelligence* 2:56–67.
-- NOAA Physical Sciences Laboratory — Oceanic Niño Index (ERSSTv6 Niño 3.4) and Dipole Mode Index (HadISST1.1). [psl.noaa.gov/data/climateindices](https://psl.noaa.gov/data/climateindices/list/).
+- NASA POWER on the AWS Registry of Open Data. [registry.opendata.aws/nasa-power](https://registry.opendata.aws/nasa-power/).
 
 ---
 
@@ -383,11 +389,10 @@ Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadm
 Data and infrastructure credits, in the order our pipeline reads them:
 
 - **NASA POWER** (NASA Langley Research Center) — the climate backbone, and the live nowcast call.
-- **CHIRPS v2.0** — the Climate Hazards Center at UCSB and USGS (Funk et al. 2015, *Scientific Data* 2:150066) — our independent rainfall cross-check and the ML onset labels. CHIRPS is an open non-space product, and we label it as such in every pack and in the app.
+- **NASA/JAXA GPM IMERG** (NASA GSFC, JAXA) — our independent rainfall cross-check and the ML onset labels; **NASA GMAO MERRA-2** — the ocean indices.
 - **SRDI / Ministry of Agriculture, Government of the People's Republic of Bangladesh** — *Saline Soils of Bangladesh* (2010), Appendix-2.
 - **FAO** — Irrigation & Drainage Paper 29 Rev.1 (Ayers & Westcot, 1985) for crop salt tolerance.
 - **geoBoundaries (wmGeolab)** and the Bangladesh Bureau of Statistics / OCHA ROAP — administrative boundaries (Runfola et al. 2020).
-- **NOAA Physical Sciences Laboratory** — ONI and DMI indices.
 - **OpenStreetMap contributors and OpenFreeMap** — basemap tiles; **NASA EOSDIS GIBS** — satellite imagery tiles.
 
 **License:** [Apache-2.0](../LICENSE). Third-party datasets keep their own terms, listed in the table above, on the in-app Data page and in `docs/`.

@@ -1,7 +1,7 @@
 "use client";
 
 import { BrainCircuit } from "lucide-react";
-import { OUTLOOK, num, outlookDate, outlookForFarm, signedDays } from "@/lib/outlook";
+import { OUTLOOK, isClimatologyFallback, num, outlookDate, outlookForFarm, signedDays } from "@/lib/outlook";
 import { useLang } from "@/lib/lang";
 import { t, tf } from "@/lib/i18n";
 import { Panel, SourceChip } from "@/components/ui";
@@ -17,6 +17,7 @@ export function OnsetOutlookCard({ farmId }: { farmId: string }) {
   const { lang } = useLang();
   const row = outlookForFarm(farmId);
   const shipped = OUTLOOK.status === "shipped";
+  const fallback = isClimatologyFallback(OUTLOOK);
 
   if (!row) {
     return (
@@ -79,17 +80,25 @@ export function OnsetOutlookCard({ farmId }: { farmId: string }) {
         </div>
       </dl>
 
-      <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-ink-low">{t("ml_why", lang)}</p>
-      <ul className="mt-1 space-y-1">
-        {row.top_contributions.map((c) => (
-          <li key={c.feature} className="flex items-start justify-between gap-3 text-[11px] leading-relaxed text-ink-mid">
-            <span className="min-w-0">{lang === "bn" ? c.label_bn : c.label_en}</span>
-            <span className="shrink-0 font-mono tabular text-ink-hi">
-              {signedDays(c.effect_days) ?? "0"} d
-            </span>
-          </li>
-        ))}
-      </ul>
+      {fallback ? (
+        <p className="mt-1 rounded-lg border border-amber/40 bg-amber/5 p-2.5 text-[11px] leading-relaxed text-ink-mid">
+          {t("ml_fallback_note", lang)}
+        </p>
+      ) : (
+        <>
+          <p className="mt-1 text-[11px] font-semibold uppercase tracking-wide text-ink-low">{t("ml_why", lang)}</p>
+          <ul className="mt-1 space-y-1">
+            {row.top_contributions.map((c) => (
+              <li key={c.feature} className="flex items-start justify-between gap-3 text-[11px] leading-relaxed text-ink-mid">
+                <span className="min-w-0">{lang === "bn" ? c.label_bn : c.label_en}</span>
+                <span className="shrink-0 font-mono tabular text-ink-hi">
+                  {signedDays(c.effect_days) ?? "0"} d
+                </span>
+              </li>
+            ))}
+          </ul>
+        </>
+      )}
 
       <div className="mt-3 rounded-lg border border-line bg-inset p-3">
         <p className="text-[11px] font-semibold uppercase tracking-wide text-ink-low">{t("ml_backtest", lang)}</p>

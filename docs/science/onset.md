@@ -1,7 +1,7 @@
 # Monsoon onset — definition, homogeneity, cross-check, and what the data actually shows
 
 Code: `src/compute/onset.py` (rule + tests in `tests/test_onset.py`), `src/compute/trends.py`
-(Mann-Kendall, Theil-Sen, Pettitt), `src/acquire/power.py`, `src/acquire/chirps.py`.
+(Mann-Kendall, Theil-Sen, Pettitt), `src/acquire/power.py`, `src/acquire/imerg.py` (NASA/JAXA GPM IMERG; replaced CHIRPS on 15 Oct 2026 so that every Earth-observation input is NASA or NASA-partner data).
 Pack builder: `scripts/build_packs.py`. Packs: `web/public/data/packs/`.
 
 ## 1. Onset definition v2 — the rule, exactly
@@ -72,12 +72,12 @@ definition was much noisier (sd 35–55 days). Every pack carries both censoring
 
 | Farm | Full-record 1981–2025 change year | Step | Change point inside 2001–2025 | Onset/trend source used |
 |---|---|---|---|---|
-| farm-12 | 1998 | +1,159 mm | **2016** | CHIRPS |
+| farm-12 | 1998 | +1,159 mm | **2016** | GPM IMERG |
 | rajshahi-07 | 1998 | +592 mm | none | NASA POWER |
-| barishal-03 | 1998 | +1,082 mm | **2015** | CHIRPS |
-| khulna-09 | 2007 | +925 mm | **2015** | CHIRPS |
-| rangpur-21 | 1998 | +1,094 mm | **2016** | CHIRPS |
-| sylhet-15 | 2000 | +1,927 mm | **2015** | CHIRPS |
+| barishal-03 | 1998 | +1,082 mm | **2015** | GPM IMERG |
+| khulna-09 | 2007 | +925 mm | **2015** | GPM IMERG |
+| rangpur-21 | 1998 | +1,094 mm | **2016** | GPM IMERG |
+| sylhet-15 | 2000 | +1,927 mm | **2015** | GPM IMERG |
 
 63 of 64 district packs carry a significant step inside 2001–2025. Consequences built into the
 pipeline:
@@ -89,40 +89,45 @@ pipeline:
 * The onset block carries the same caution, because the threshold and both eras sit on the
   inhomogeneous series.
 * `preferred` in each pack decides, from the tests, which product the UI reads — POWER when its own
-  series is clean, CHIRPS when POWER steps and CHIRPS does not, and `"none"` if both step.
+  series is clean, GPM IMERG when POWER steps and IMERG does not, and `"none"` if both step.
 
 Independent spot check of the same point (hand-run, 2026-09-30, ERA5 daily archive via Open-Meteo,
 24.2514 N 89.9152 E): annual totals 1,423 mm (1985), 1,993 (2005), 2,606 (2017), 1,937 (2024)
 versus POWER's 831 / 1,976 / 4,159 / 2,982 mm — POWER's early years too dry and its recent years
-too wet. CHIRPS (below) gives 1,802 / 1,963 / 2,578 / 1,890 mm, tracking ERA5 far more closely.
+too wet. GPM IMERG (below; record starts 1998) gives 2,289 / 2,473 / 1,985 mm for 2005 / 2017 / 2024 — no step, though wetter than ERA5 in 2005 and drier in 2017. (CHIRPS, the cross-check before 15 Oct 2026, gave 1,963 / 2,578 / 1,890.)
 
-## 4. POWER vs CHIRPS: the actual onset result
+## 4. POWER vs GPM IMERG: the actual onset result
 
-Both products, same v2 rule, same eras (2001–2012 vs 2013–2025), CHIRPS v2.0 daily 0.25° at the
-nearest cell (files retrieved 2026-09-30; Climate Hazards Center UCSB / USGS; Funk et al. 2015,
-*Sci Data* 2:150066 — labelled **Open (UCSB CHC / USGS)**, not NASA).
+Both products, same v2 rule, same eras (2001–2012 vs 2013–2025). The independent product is
+NASA/JAXA **GPM IMERG V07** daily precipitation at the 0.1° cell containing the point, as
+aggregated to the UTC day by NASA POWER and read from POWER's public Zarr store on AWS Open Data
+(`src/acquire/imerg.py`, `src/acquire/power_zarr.py`; Huffman et al., IMERG V07). It is a NASA
+and Space Agency Partner (JAXA) product — tier **NASA + JAXA (GPM)** — and independent of POWER's
+MERRA-2 rainfall. Its record starts in 1998, so its homogeneity test covers 1998–2025.
 
-| Farm | POWER `T` mm | POWER med A→B | shift | p | CHIRPS `T` mm | CHIRPS med A→B | shift | p | onset-year r | MAE d | bias d |
+| Farm | POWER `T` mm | POWER med A→B | shift | p | IMERG `T` mm | IMERG med A→B | shift | p | onset-year r | MAE d | bias d |
 |---|---|---|---|---|---|---|---|---|---|---|---|
-| farm-12 | 57.1 | 138→123 | **−15.0** | 0.016 | 51.3 | 134→128 | −6.0 | 0.764 | 0.10 | 15.8 | +10.5 |
-| rajshahi-07 | 37.2 | 142→136 | −6.0 | 0.173 | 42.9 | 145→140 | −5.0 | 0.531 | 0.35 | 16.3 | +5.8 |
-| barishal-03 | 59.1 | 155→127 | **−28.0** | 0.041 | 62.3 | 135→140 | **+5.0** | 0.568 | 0.27 | 19.2 | +13.4 |
-| khulna-09 | 51.4 | 150→127 | −23.5 | 0.064 | 50.1 | 138→129 | −9.0 | 0.806 | 0.53 | 16.3 | +11.8 |
-| rangpur-21 | 57.4 | 142→131 | **−11.0** | 0.017 | 63.3 | 132→137 | **+5.0** | 0.157 | −0.12 | 23.2 | +13.3 |
-| sylhet-15 | 103.1 | 143→128 | **−15.0** | 0.000 | 103.9 | 130→130 | 0.0 | 0.978 | −0.06 | 16.5 | +12.8 |
+| farm-12 | 57.1 | 138→123 | **−15.0** | 0.016 | 53.8 | 136→127 | −9.0 | 0.252 | 0.78 | 4.8 | −0.0 |
+| rajshahi-07 | 37.2 | 142→136 | −6.0 | 0.173 | 40.6 | 139→147 | +8.0 | 0.892 | 0.68 | 11.9 | −1.1 |
+| barishal-03 | 59.1 | 155→127 | **−28.0** | 0.041 | 63.3 | 140→133 | −7.0 | 0.479 | 0.61 | 10.4 | +2.8 |
+| khulna-09 | 51.4 | 150→127 | −23.5 | 0.064 | 55.1 | 144→137 | −7.0 | 0.264 | 0.41 | 13.3 | +0.4 |
+| rangpur-21 | 57.4 | 142→131 | **−11.0** | 0.017 | 62.4 | 132→139 | +7.5 | 0.252 | 0.01 | 13.8 | +2.8 |
+| sylhet-15 | 103.1 | 143→128 | **−15.0** | 0.000 | 87.9 | 130→127 | −3.0 | 0.323 | 0.27 | 10.5 | +8.9 |
 
-Across all 64 districts: POWER median shift **−14.8 d** with 38/64 at p < 0.05; CHIRPS median shift
-**−1.5 d** with only **4/64** at p < 0.05; median year-to-year agreement r = **0.26**.
+(MAE and bias are POWER minus IMERG, in days, over the shared years.)
+
+Across all 64 districts: POWER median shift **−14.8 d** with 38/64 at p < 0.05; IMERG median shift
+**−3.0 d** with **0/64** at p < 0.05; median year-to-year onset agreement r = **0.40** (CHIRPS,
+the earlier cross-check, gave −1.5 d, 4/64 and r = 0.26 — the same conclusion).
 
 **Reading.** POWER alone would support "the monsoon now arrives about two weeks earlier, and the
-change is statistically significant at most farms". The independent product does not corroborate
-that: CHIRPS finds a small, non-significant shift and at Barishal and Rangpur the *opposite sign*.
-Since POWER's precipitation series steps upward at 2015–2016 inside exactly the era boundary being
-compared, and since the two products barely agree on which year the onset fell in (r ≈ 0.26, MAE
-16–23 days), **the defensible statement is that no onset shift is established by these data** — and
-that is what the packs, the UI and the engine now carry (the era figure is taken from CHIRPS where
-POWER is flagged). Reporting POWER's −15 d/p = 0.016 as a climate finding would be reporting the
-product's own discontinuity as weather.
+change is statistically significant at most farms". The independent satellite product does not
+corroborate that: IMERG finds small, non-significant shifts everywhere and at Rajshahi and Rangpur
+the *opposite sign*. Since POWER's precipitation series steps upward at 2015–2016, inside exactly
+the era boundary being compared, **the defensible statement is that no onset shift is established
+by these data** — and that is what the packs, the UI and the engine carry (the era figure is taken
+from IMERG where POWER is flagged). Reporting POWER's −15 d/p = 0.016 as a climate finding would be
+reporting the product's own discontinuity as weather.
 
 ## 5. What the product does with a non-significant shift
 
@@ -139,16 +144,16 @@ The gate is applied everywhere the shift appears, so the interface cannot say on
 compute another:
 
 * Headline card: **"No significant onset shift"**, with the measured figures as secondary text
-  ("median −6 days, p = 0.76, not significant"). Only p < 0.05 renders "… days earlier/later".
+  ("median −9 days, p = 0.25, not significant"). Only p < 0.05 renders "… days earlier/later".
 * "What this changes" copy switches to a statement that the two eras are not distinguishable,
   instead of claiming the window opens earlier or later.
-* Advisory and SMS: `No significant onset shift on this farm (CHIRPS v2.0, p=0.764; median −6 days)
-  — the calendar treats it as 0`, and the SMS shortens to `onset n.s. (p=0.76)`. Bangla carries the
+* Advisory and SMS: `No significant onset shift on this farm (GPM IMERG, p=0.252; median −9 days)
+  — the calendar treats it as 0`, and the SMS shortens to `onset n.s. (p=0.25)`. Bangla carries the
   same wording with Bengali digits.
 * Home farm cards mark a gated value `n.s.` and stop colouring it as good/bad news.
 * Plan page states the baseline the engine is using: `Baseline onset shift used by the engine: 0 days
-  (measured −6 days, p = 0.764, not significant)`.
-* Why list carries "The measured onset shift (median −6 days, p = 0.764) is not significant, so it is
+  (measured −9 days, p = 0.252, not significant)`.
+* Why list carries "The measured onset shift (median −9 days, p = 0.252) is not significant, so it is
   treated as 0 here", and the late-onset penalty's source line names the rule.
 * The calendar budget and the late-onset/early-onset terms all read `effectiveOnsetShift`, so a
   non-significant shift can no longer buy or cost a farm growing days. The what-if buttons (+7/+15 d)
@@ -161,32 +166,32 @@ corners, while at Tangail it drops from 3rd to 4th (by 0.2 points) in the Water 
 
 ## 6. Rainfall and temperature trends (2001–2025, never 1981–2025)
 
-| Farm | POWER %/decade | CHIRPS %/decade (τ, p) | CHIRPS Mann-Kendall | Heat days > 35 °C era Δ (p) | Mean T2M era Δ | T2M_MAX step in window |
+| Farm | POWER %/decade | IMERG %/decade (τ, p) | IMERG Mann-Kendall significant? | Heat days > 35 °C era Δ (p) | Mean T2M era Δ | T2M_MAX step in window |
 |---|---|---|---|---|---|---|
-| farm-12 | +21.2 (caution) | −0.0 (0.00, 1.00) | no trend | −12 d (0.006) | +0.05 °C | 2017 |
-| rajshahi-07 | +6.5 | +0.2 (0.00, 1.00) | no trend | +0.5 d (0.785) | +0.26 °C | none |
-| barishal-03 | +26.5 (caution) | +3.4 (0.10, 0.50) | no trend | −17 d (0.027) | −0.00 °C | 2017 |
-| khulna-09 | +27.3 (caution) | +1.1 (0.03, 0.83) | no trend | −13 d (0.026) | −0.09 °C | 2017 |
-| rangpur-21 | +18.6 (caution) | −2.7 (−0.13, 0.39) | no trend | −7 d (0.041) | +0.05 °C | none |
-| sylhet-15 | +28.8 (caution) | −0.6 (−0.01, 0.98) | no trend | −4.5 d (0.105) | +0.20 °C | none |
+| farm-12 | +21.2 (caution) | −0.1 (−0.01, 0.98) | no | −12 d (0.006) | +0.05 °C | 2017 |
+| rajshahi-07 | +6.5 | −7.4 (−0.18, 0.22) | no | +0.5 d (0.785) | +0.26 °C | none |
+| barishal-03 | +26.5 (caution) | −3.1 (−0.09, 0.53) | no | −17 d (0.027) | −0.00 °C | 2017 |
+| khulna-09 | +27.3 (caution) | −2.6 (−0.07, 0.66) | no | −13 d (0.026) | −0.09 °C | 2017 |
+| rangpur-21 | +18.6 (caution) | −7.0 (−0.22, 0.13) | no | −7 d (0.041) | +0.05 °C | none |
+| sylhet-15 | +28.8 (caution) | +0.4 (0.01, 0.94) | no | −4.5 d (0.105) | +0.20 °C | none |
 
-CHIRPS shows **no significant rainfall trend at any of the six farms**; POWER shows +18 to +29 %
-per decade at five of them. That gap is the product, not the climate. Temperature: POWER's own
-T2M/T2M_MAX also drifts (farm-12 1981–1990 mean T2M 26.38 °C vs 25.42 °C for 2016–2025; a hand-run
-ERA5 spot check for 1985 gave 25.28 °C), so the *falling* count of > 35 °C days at four farms is not
-evidence that heat has eased — `quality.tempMaxHomogeneity` states the test result and
-`metrics.heatDaysCaution` fires where a step was found.
+GPM IMERG shows **no significant rainfall trend at any of the six farms** (CHIRPS agreed); POWER
+shows +18 to +29 % per decade at five of them. That gap is the product, not the climate.
+Temperature: POWER's own T2M/T2M_MAX also drifts (farm-12 1981–1990 mean T2M 26.38 °C vs 25.42 °C
+for 2016–2025; a hand-run ERA5 spot check for 1985 gave 25.28 °C), so the *falling* count of
+> 35 °C days at four farms is not evidence that heat has eased — `quality.tempMaxHomogeneity`
+states the test result and `metrics.heatDaysCaution` fires where a step was found.
 
 ## 7. What this pipeline does **not** claim
 
 * No onset shift is established; the app shows the era figure from whichever product survives its
   own homogeneity test, names that product, and prints the other product's figure beside it — and
-  because that figure fails its era test at all six demo farms (p = 0.157–0.978), the engine is handed **0** and the
+  because that figure fails its era test at all six demo farms (p = 0.173–0.479), the engine is handed **0** and the
   headline, advisory, SMS, plan page and Why list all say so (§5).
 * No SMAP soil moisture: `metrics.rootZoneWetnessMonthly` is POWER **GWETROOT** (modelled root-zone
   wetness), labelled in the pack and the UI.
 * No NDVI, no SoilGrids, no crop-trait or irrigation citations: those remain demo fixtures.
-* CHIRPS is a 0.25° grid cell (≈25 km), not the farm; each pack states the cell actually used and
+* GPM IMERG is a 0.1° grid cell (≈11 km), aggregated to the UTC day, not the farm; each pack states the cell actually used and
   its distance from the requested point.
 * No forecast. This is climatology from gridded/reanalysis products.
 * The original "+11 days later at Rajshahi" headline was demo fixture data; the real series does not
@@ -195,15 +200,15 @@ evidence that heat has eased — `quality.tempMaxHomogeneity` states the test re
 ## 8. Reproduce
 
 ```bash
-/workspace/fs-venv/bin/python -m src.acquire.districts      # 64 ADM2 centroids -> bd_districts.csv
-/workspace/fs-venv/bin/python scripts/build_packs.py         # POWER + CHIRPS -> 70 packs (~70 s)
-/workspace/fs-venv/bin/python -m pytest -q                   # 182 tests; no network required
+python -m src.acquire.districts                    # 64 ADM2 centroids -> bd_districts.csv
+POWER_BACKEND=s3 python scripts/build_packs.py     # POWER + GPM IMERG -> 70 packs (~75 s, public AWS archive)
+python -m pytest -q                                # no network required
 ```
 
-The web layer is checked separately: `cd web && npx vitest run` (495 tests, including the onset
+The web layer is checked separately: `cd web && npx vitest run` (including the onset
 significance rule and the A1 guarantees re-run against the real packs), `npx tsc --noEmit`,
 `npx eslint .`.
 
-CHIRPS files are read from `${CHIRPS_DIR:-/workspace/fs-cache/chirps}` and are never committed;
-each keeps the `source_url` and `retrieved_utc` attributes written by the download, which the packs
-surface as `crossCheck.retrievedUtc` / `crossCheck.sourceUrlSample`.
+NASA POWER's Zarr chunks (MERRA-2 and IMERG) are cached under `cache/power_zarr/` exactly as
+downloaded and are never committed; the store metadata's retrieval time is surfaced in the packs as
+`retrievedUtc` / `crossCheck.retrievedUtc`, and the store URL as `crossCheck.sourceUrlSample`.
