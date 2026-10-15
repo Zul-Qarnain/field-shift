@@ -2,12 +2,14 @@
 
 Run from the repo root:
 
-    /workspace/fs-venv/bin/python scripts/build_packs.py                # farms + 64 districts
-    /workspace/fs-venv/bin/python scripts/build_packs.py --only-farms    # 6 demo farms only
+    python scripts/build_packs.py                # farms + 64 districts
+    python scripts/build_packs.py --only-farms   # 6 demo farms only
 
-Every number written into ``web/public/data/packs/`` comes from a POWER request this
-script actually made (raw payloads cached under ``cache/power/``, keyed by rounded point +
-parameters + date window, with the real UTC retrieval timestamp in a sidecar). Nothing is
+Every number written into ``web/public/data/packs/`` comes from NASA data this script actually
+read: NASA POWER daily (the point API, or the same POWER v10 archive from its public Zarr store
+on AWS Open Data — ``POWER_BACKEND``), and NASA/JAXA GPM IMERG daily rainfall from the POWER
+IMERG store as the independent cross-check. Raw payloads/chunks are cached under ``cache/``
+with their real UTC retrieval timestamp. Nothing is
 hand-set here: parameters, window, retrieval time, coverage and the method text are all
 taken from the response, and any value the data cannot produce is written as null.
 
@@ -34,13 +36,15 @@ sys.path.insert(0, str(REPO_ROOT))
 import pandas as pd  # noqa: E402
 import numpy as np  # noqa: E402
 
-from src.acquire import chirps, districts as districts_mod  # noqa: E402
+from src.acquire import districts as districts_mod, imerg  # noqa: E402
 from src.acquire.power import DEFAULT_PARAMS, covered_range, fetch_daily, parameter_ranges  # noqa: E402
 from src.compute import onset, trends  # noqa: E402
 
 PACKS_DIR = REPO_ROOT / "web" / "public" / "data" / "packs"
-SCHEMA_VERSION = 2
-SOURCE = "NASA POWER daily point API, community AG"
+SCHEMA_VERSION = 3
+SOURCE = "NASA POWER daily (v10, community AG)"
+#: The label the UI reads for the independent rainfall product.
+SATELLITE = "GPM IMERG"
 POWER_URL = "https://power.larc.nasa.gov/api/temporal/daily/point"
 TREND_WINDOW_FIRST_YEAR = trends.ANALYSIS_FIRST_YEAR
 
@@ -87,13 +91,14 @@ METHOD = {
     ),
     "homogeneity": "Pettitt (1979) rank-based change-point test, own implementation, on annual totals (full record and analysis window) and on annual mean T2M_MAX.",
     "crossCheck": (
-        "CHIRPS v2.0 daily 0.25° (Climate Hazards Center UCSB / USGS; Funk et al. 2015, Sci Data 2:150066) at the nearest grid cell, read from local "
-        "files downloaded 2026-09-30. CHIRPS blends NOAA CPC satellite IR with station gauges; it is NOT a NASA or Space Agency Partner product, and it "
-        "is not homogeneous in the same way POWER is, so it is the tie-breaker for the rainfall trend."
+        "NASA/JAXA GPM IMERG V07 daily precipitation (0.1°; Huffman et al.), as aggregated to the UTC day by NASA POWER and read from POWER's "
+        "public Zarr store on AWS Open Data, at the grid cell containing the point, 1998–latest complete year. IMERG is the GPM mission's "
+        "multi-satellite record (NASA GMI + JAXA DPR calibration, gauge-adjusted in the Final run): a NASA and Space Agency Partner product "
+        "independent of POWER's MERRA-2 rainfall, so it is the tie-breaker for the rainfall trend and the onset shift."
     ),
     "moisture": "GWETROOT is POWER's modelled root-zone wetness (MERRA-2), not a SMAP retrieval. SMAP L4 soil moisture and NDVI are still demo fixtures.",
     "caveats": [
-        "POWER PRECTOTCORR steps upward inside the 1981–2025 record (source changes in the product), so the 1981–2025 annual-rainfall trend is an artefact and is not published as a climate signal. Each pack's quality.precipHomogeneity carries the Pettitt change point and step; metrics.rainfallTrendPctPerDecade is computed over 2001–latest only and is flagged when a change point falls inside that window. crossCheck re-states the same statistics from CHIRPS.",
+        "POWER PRECTOTCORR steps upward inside the 1981–2025 record (source changes in the product), so the 1981–2025 annual-rainfall trend is an artefact and is not published as a climate signal. Each pack's quality.precipHomogeneity carries the Pettitt change point and step; metrics.rainfallTrendPctPerDecade is computed over 2001–latest only and is flagged when a change point falls inside that window. crossCheck re-states the same statistics from GPM IMERG.",
         "Onset v2 inherits that caution: the 5-day threshold is calibrated on 2001–2025 POWER, and a precipitation step inside 2001–2025 moves detections, so an 'earlier onset' from POWER must be read next to crossCheck.onset before it is believed.",
         "Temperature side: POWER's own T2M/T2M_MAX also drifts (1981–1990 mean T2M at farm-12 is 26.38 °C against 25.42 °C for 2016–2025; a hand-run ERA5 spot check for 1985 at the same coordinates gave 25.28 °C), so a falling heat-day count is not evidence that heat has eased. quality.tempMaxHomogeneity states the test result.",
     ],
@@ -284,11 +289,11 @@ def build_series(df: pd.DataFrame) -> dict[str, Any]:
 
 
 def build_cross_check(lat: float, lon: float, power_rain: pd.Series) -> dict[str, Any]:
-    """Re-state the rainfall statistics from CHIRPS at the nearest 0.25° cell."""
+    """Re-state the rainfall statistics from GPM IMERG at the 0.1° cell containing the point."""
     try:
-        series = chirps.series(lat, lon)
-    except (FileNotFoundError, OSError) as error:
-        return {"available": False, "reason": str(error)[:200], "source": chirps.PRODUCT}
+        series = imerg.series(lat, lon)
+    except (FileNotFoundError, OSError, RuntimeError, ValueError) as error:
+        return {"available": False, "reason": str(error)[:200], "source": imerg.PRODUCT}
 
     annual_all = trends.annual_rainfall_mm(series)
     annual = annual_all[annual_all.index >= TREND_WINDOW_FIRST_YEAR]
@@ -302,23 +307,25 @@ def build_cross_check(lat: float, lon: float, power_rain: pd.Series) -> dict[str
     power_annual = power_annual_all[power_annual_all.index >= TREND_WINDOW_FIRST_YEAR]
     power_onset = onset.onset_series(power_rain, threshold_mm=onset.local_threshold(power_rain))
 
-    cell_lat, cell_lon = chirps.cell_of(lat, lon)
-    provenance = chirps.provenance()
-    onset_agreement = chirps.compare(power_onset.dropna(), stats["perYear"].dropna())
-    rain_agreement = chirps.compare(power_annual, annual)
+    cell_lat, cell_lon = imerg.cell_of(lat, lon)
+    provenance = imerg.provenance()
+    onset_agreement = imerg.compare(power_onset.dropna(), stats["perYear"].dropna())
+    rain_agreement = imerg.compare(power_annual, annual)
+    complete_years = imerg.available_years(series)
 
     return {
         "available": True,
-        "source": chirps.PRODUCT,
-        "provider": chirps.PROVIDER,
-        "citation": chirps.CITATION,
-        "tierLabel": "Open (UCSB CHC / USGS)",
-        "grid": {"degrees": 0.25, "cell": [cell_lat, cell_lon], "offsetFromRequestedMeters": round(max(abs(cell_lat - lat), abs(cell_lon - lon)) * 111_320)},
-        "requested": {"start": f"{chirps.FIRST_YEAR}0101", "end": f"{chirps.LAST_YEAR}1231"},
-        "covered": chirps.coverage(series),
+        "source": imerg.PRODUCT,
+        "provider": imerg.PROVIDER,
+        "citation": imerg.CITATION,
+        "tierLabel": imerg.TIER,
+        "grid": {"degrees": 0.1, "cell": [cell_lat, cell_lon], "offsetFromRequestedMeters": round(max(abs(cell_lat - lat), abs(cell_lon - lon)) * 111_320)},
+        "requested": {"start": f"{imerg.FIRST_YEAR}0101", "end": f"{imerg.LAST_YEAR}1231"},
+        "covered": imerg.coverage(series),
         "retrievedUtc": provenance["retrievedUtc"],
         "sourceUrlSample": provenance["sourceUrlSample"],
-        "yearsOnDisk": provenance["yearsOnDisk"],
+        "timeStandard": provenance["timeStandard"],
+        "yearsComplete": {"first": complete_years[0], "last": complete_years[-1], "count": len(complete_years)} if complete_years else None,
         "thresholdMm": threshold_mm,
         "annualRainfall": {"label": [str(int(y)) for y in annual_all.index], "values": [round(float(v), 1) for v in annual_all]},
         "rainfallTrend2001toLatest": {
@@ -349,7 +356,7 @@ def build_cross_check(lat: float, lon: float, power_rain: pd.Series) -> dict[str
         "agreement": {
             "onsetYears": {k: onset_agreement[k] for k in ("yearsCompared", "pearsonR", "spearmanRho", "mae", "bias")},
             "annualRainfallMm": rain_agreement,
-            "note": "mae/bias are POWER minus CHIRPS (mm for annual totals, days for onset DOYs)",
+            "note": "mae/bias are POWER minus GPM IMERG (mm for annual totals, days for onset DOYs)",
         },
     }
 
@@ -357,27 +364,29 @@ def build_cross_check(lat: float, lon: float, power_rain: pd.Series) -> dict[str
 def preferred_source(power_homogeneity: dict[str, Any], cross_check: dict[str, Any]) -> dict[str, Any]:
     """Which product the UI should read each number from, decided from the tests, not by hand."""
     power_flagged = power_homogeneity["changePointInsideAnalysisWindow"] is not None
-    chirps_ok = bool(cross_check.get("available"))
-    chirps_flagged = bool(cross_check.get("homogeneity", {}).get("changePointInsideAnalysisWindow")) if chirps_ok else True
+    satellite_ok = bool(cross_check.get("available"))
+    satellite_flagged = (
+        bool(cross_check.get("homogeneity", {}).get("changePointInsideAnalysisWindow")) if satellite_ok else True
+    )
 
     if not power_flagged:
         decision = {"source": "NASA POWER", "reason": "No significant change point in the POWER analysis window."}
-    elif chirps_ok and not chirps_flagged:
+    elif satellite_ok and not satellite_flagged:
         decision = {
-            "source": "CHIRPS v2.0",
-            "reason": "POWER PRECTOTCORR has a significant Pettitt change point inside the 2001–2025 analysis window; CHIRPS does not.",
+            "source": SATELLITE,
+            "reason": "POWER PRECTOTCORR has a significant Pettitt change point inside the 2001–2025 analysis window; GPM IMERG does not.",
         }
     else:
         decision = {
             "source": "none",
-            "reason": "Both POWER and CHIRPS carry a change point inside the analysis window — no homogeneous rainfall series is available for this point.",
+            "reason": "Both POWER and GPM IMERG carry a change point inside the analysis window — no homogeneous rainfall series is available for this point.",
         }
     return {
         "rainfallTrend": {**decision, "field": "rainfallTrendPctPerDecade"},
         "onsetShift": {**decision, "field": "shiftDays"},
         "powerFlagged": power_flagged,
-        "chirpsFlagged": chirps_flagged,
-        "chirpsAvailable": chirps_ok,
+        "satelliteFlagged": satellite_flagged,
+        "satelliteAvailable": satellite_ok,
     }
 
 
@@ -406,7 +415,7 @@ def build_pack(lat: float, lon: float, identity: dict[str, Any], *, sleep_s: flo
         "lat": round(lat, 4),
         "lon": round(lon, 4),
         "source": SOURCE,
-        "source_url": POWER_URL,
+        "source_url": frame.attrs.get("source_url", POWER_URL),
         "community": "AG",
         "parameters": {name: PARAMETER_UNITS[name] for name in DEFAULT_PARAMS},
         "requested": {"start": frame.attrs["start"], "end": frame.attrs["end"]},
@@ -417,7 +426,7 @@ def build_pack(lat: float, lon: float, identity: dict[str, Any], *, sleep_s: flo
         "powerProductVersion": ", ".join(frame.attrs.get("power_sources") or []) or None,
         "powerApiVersion": frame.attrs.get("power_api"),
         "timeStandard": frame.attrs.get("time_standard"),
-        "fillValueHandling": "header fill_value and -999 converted to NaN",
+        "fillValueHandling": "POWER fill values (-999 / NaN) kept as NaN, never filled",
         "completeYears": {"count": len(complete), "first": complete[0], "last": complete[-1]},
         "method": METHOD,
         "onset": build_onset_block(rain, precip_homogeneity),
@@ -436,7 +445,7 @@ def build_pack(lat: float, lon: float, identity: dict[str, Any], *, sleep_s: flo
             "soil": "not retrieved — SoilGrids values are demo fixtures",
         },
     }
-    return _clean(pack), str(frame.attrs["cache_path"])
+    return _clean(pack), str(frame.attrs.get("cache_path") or frame.attrs.get("source_url", ""))
 
 
 def _index_entry(pack: dict[str, Any], cache_path: str | None = None) -> dict[str, Any]:
@@ -465,7 +474,7 @@ def _index_entry(pack: dict[str, Any], cache_path: str | None = None) -> dict[st
         "rainfallTrendPctPerDecade": pack["metrics"]["rainfallTrendPctPerDecade"],
         "rainfallTrendCaution": pack["metrics"]["rainfallTrendCaution"],
         "precipChangePoint": pack["quality"]["precipHomogeneity"]["changePointInsideAnalysisWindow"],
-        "chirps": (
+        "satellite": (
             {
                 "available": True,
                 "onsetShiftDays": cross["onset"]["shiftDays"],
@@ -479,7 +488,7 @@ def _index_entry(pack: dict[str, Any], cache_path: str | None = None) -> dict[st
         ),
         "preferredOnsetSource": pack["preferred"]["onsetShift"]["source"],
         "preferredTrendSource": pack["preferred"]["rainfallTrend"]["source"],
-        "source": "NASA POWER daily point API, community AG",
+        "source": SOURCE,
     }
     if cache_path:
         entry["cache"] = cache_path
@@ -510,7 +519,7 @@ def main() -> int:
         "onsetDefinition": onset.RULE_LABEL,
         "onsetRule": onset.RULE_TEXT,
         "onsetWindow": {"startDoy": onset.WINDOW_START_DOY, "endDoy": onset.WINDOW_END_DOY},
-        "crossCheck": {"source": chirps.PRODUCT, "provider": chirps.PROVIDER, "citation": chirps.CITATION, "grid": "0.25°"},
+        "crossCheck": {"source": imerg.PRODUCT, "provider": imerg.PROVIDER, "citation": imerg.CITATION, "grid": "0.1°"},
         "trendWindow": f"{TREND_WINDOW_FIRST_YEAR}–latest complete year",
         "homogeneity": "Pettitt change-point test on annual PRECTOTCORR and annual mean T2M_MAX; per pack in quality",
         "farms": [],

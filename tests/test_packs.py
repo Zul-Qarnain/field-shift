@@ -25,8 +25,8 @@ def index() -> dict:
 
 
 def test_index_covers_six_farms_and_all_sixty_four_districts(index: dict) -> None:
-    assert index["schema_version"] == 2
-    assert index["source"] == "NASA POWER daily point API, community AG"
+    assert index["schema_version"] == 3
+    assert index["source"] == "NASA POWER daily (v10, community AG)"
     assert index["counts"] == {"farms": 6, "districts": 64}
     assert len(index["farms"]) == 6
     assert len(index["districts"]) == 64
@@ -36,7 +36,7 @@ def test_index_covers_six_farms_and_all_sixty_four_districts(index: dict) -> Non
 def test_index_states_the_rule_and_the_cross_check_it_was_built_with(index: dict) -> None:
     assert index["onsetWindow"] == {"startDoy": 121, "endDoy": 270}
     assert "Moron & Robertson" in index["onsetDefinition"]
-    assert index["crossCheck"]["source"].startswith("CHIRPS")
+    assert index["crossCheck"]["source"].startswith("NASA GPM IMERG")
     assert index["trendWindow"].startswith("2001")
 
 
@@ -98,19 +98,20 @@ def test_rainfall_trend_is_windowed_and_flagged_when_needed(farm_id: str) -> Non
 def test_cross_check_is_a_real_independent_series(farm_id: str) -> None:
     cross = load(f"farms/{farm_id}.json")["crossCheck"]
     assert cross["available"] is True
-    assert cross["source"].startswith("CHIRPS")
-    assert cross["tierLabel"] == "Open (UCSB CHC / USGS)"
-    assert "Funk" in cross["citation"]
+    assert cross["source"].startswith("NASA GPM IMERG")
+    assert cross["tierLabel"] == "NASA + JAXA (GPM)"
+    assert "Huffman" in cross["citation"]
     assert cross["retrievedUtc"].startswith("2026-")
-    assert cross["yearsOnDisk"] == {"first": 1981, "last": 2025, "count": 45}
-    assert cross["grid"]["degrees"] == 0.25
-    assert len(cross["annualRainfall"]["label"]) == len(cross["annualRainfall"]["values"]) == 45
+    assert cross["yearsComplete"] == {"first": 1998, "last": 2025, "count": 28}
+    assert cross["grid"]["degrees"] == 0.1
+    # 1998–2025 complete years, plus the partial current year the archive already holds.
+    assert len(cross["annualRainfall"]["label"]) == len(cross["annualRainfall"]["values"]) >= 28
     trend = cross["rainfallTrend2001toLatest"]
     assert trend["window"].startswith("2001") and trend["n"] == 25
     onset = cross["onset"]
     assert onset["medianB"] - onset["medianA"] == pytest.approx(onset["shiftDays"])
     agreement = cross["agreement"]["onsetYears"]
-    assert agreement["yearsCompared"] >= 40
+    assert agreement["yearsCompared"] >= 25
     assert 0.0 <= abs(agreement["mae"]) < 60
 
 
@@ -119,11 +120,11 @@ def test_preferred_source_follows_the_tests_not_a_hand_choice(farm_id: str) -> N
     pack = load(f"farms/{farm_id}.json")
     preferred = pack["preferred"]
     flagged = pack["quality"]["precipHomogeneity"]["changePointInsideAnalysisWindow"] is not None
-    chirps_flagged = pack["crossCheck"]["homogeneity"]["changePointInsideAnalysisWindow"] is not None
+    sat_flagged = pack["crossCheck"]["homogeneity"]["changePointInsideAnalysisWindow"] is not None
     if not flagged:
         assert preferred["rainfallTrend"]["source"] == "NASA POWER"
-    elif not chirps_flagged:
-        assert preferred["rainfallTrend"]["source"] == "CHIRPS v2.0"
+    elif not sat_flagged:
+        assert preferred["rainfallTrend"]["source"] == "GPM IMERG"
     else:
         assert preferred["rainfallTrend"]["source"] == "none"
     assert preferred["onsetShift"]["source"] == preferred["rainfallTrend"]["source"]
@@ -162,7 +163,7 @@ def _numbers(node):
 def test_no_power_fill_value_or_raw_nan_leaked_into_any_pack(index: dict) -> None:
     """POWER's -999 sentinel must never survive as a value; NaN must not appear as raw JSON.
 
-    Only the exact sentinel is checked: a legitimate statistic (e.g. a POWER-minus-CHIRPS annual
+    Only the exact sentinel is checked: a legitimate statistic (e.g. a POWER-minus-IMERG annual
     bias of -963 mm at Sylhet) must not be mistaken for a fill value.
     """
     relative_paths = [f"farms/{farm_id}.json" for farm_id in FARM_IDS] + [
@@ -193,5 +194,5 @@ def test_method_text_documents_the_rejected_rule_and_the_products(index: dict) -
     assert "DOY 145" in method["onsetRejected"]
     assert "Mann-Whitney" in method["eras"]
     assert "Pettitt" in method["homogeneity"]
-    assert "UCSB" in method["crossCheck"]
-    assert any("CHIRPS" in caveat for caveat in method["caveats"])
+    assert "GPM IMERG" in method["crossCheck"] and "JAXA" in method["crossCheck"]
+    assert any("GPM IMERG" in caveat for caveat in method["caveats"])
