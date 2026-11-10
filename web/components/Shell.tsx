@@ -7,6 +7,7 @@ import { Home, Sprout, CalendarRange, BookOpen, Database, Search, MapPin, Zap } 
 import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
 import { fmtNum, t } from "@/lib/i18n";
 import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
+import { ChatWidget } from "@/components/ChatWidget";
 
 const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] = [
   { href: "/", key: "nav_home", icon: Home },
@@ -155,6 +156,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
           <main className="flex-1">{children}</main>
         </div>
       </div>
+      <ChatWidget />
     </LangContext.Provider>
   );
 }
