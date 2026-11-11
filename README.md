@@ -277,7 +277,7 @@ Full disclosure: [docs/AI_USE.md](docs/AI_USE.md) · prompt log: [docs/prompts_u
 | Name | Role |
 |---|---|
 | Mohammad Shihab Hossain | Team Leader |
-| Durjo | AI/ML Engineer |
+| Durjoy | AI/ML Engineer |
 | Simon | Full-Stack Developer |
 | Nafis | Video Editor |
 | Bipro | Researcher |
