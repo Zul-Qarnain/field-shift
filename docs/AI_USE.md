@@ -27,16 +27,16 @@ This is the only trained model in the product. It is a gradient-boosted decision
 
 | | |
 |---|---|
-| Purpose | Forecast, for 2026, the date the usable-rainfall monsoon onset begins at each point, with a 10–90 range and the drivers that moved it. Shown as the card **"Machine-learning monsoon forecast"** on every farm page |
-| Model | LightGBM, version label `onset-ml-v2`: one conditional-mean model and two quantile models (α = 0.1 and 0.9) for the range |
-| Training data, labels | Monsoon-onset dates derived from **CHIRPS v2.0** daily rainfall (Climate Hazards Center, UCSB / USGS) with the same deterministic onset rule v2 the data packs use (`src/compute/onset.py`) |
-| Training data, features | **NASA POWER** daily point series: pre-monsoon anomalies of `T2M`, `T2M_MAX`, `RH2M`, end-of-window root-zone wetness `GWETROOT`; **CHIRPS** pre-monsoon rainfall anomaly (1 Mar – 20 Apr); the previous season's onset; **NOAA PSL** ONI (Dec–Feb and Feb–Apr centres, ERSSTv6 Niño 3.4) and DMI (Feb–Mar, HadISST1.1); point latitude and longitude |
-| Places and years | All 64 districts of Bangladesh as training points; 45 seasons, 1981–2025. The six demo farms read their own forecast row and are not used for training |
+| Purpose | Forecast, for 2026, the date the usable-rainfall monsoon onset begins at each point, with a calibrated 10–90 % conformal range and the drivers that moved it. Shown as the card **"Machine-learning monsoon forecast"** on every farm page |
+| Model | LightGBM, version label `onset-ml-v3`: an $L_1$ (`regression_l1`) anomaly model over district-local pre-monsoon features with inner year-grouped out-of-fold shrinkage (`s`) and a split-conformal 10–90 % interval |
+| Training data, labels | Monsoon-onset dates derived from **NASA/JAXA GPM IMERG V07** daily rainfall (via NASA POWER Zarr) with the same deterministic onset rule v2 the data packs use (`src/compute/onset.py`) |
+| Training data, features | **NASA POWER** daily point series: pre-monsoon anomalies of `T2M`, `T2M_MAX`, `RH2M`, end-of-window root-zone wetness `GWETROOT`; **GPM IMERG V07** pre-monsoon rainfall anomaly (1 Mar – 20 Apr); the previous season's onset anomaly (`prior_onset_anom`); **NASA MERRA-2** Niño 3.4 (`nino34_djf`, `nino34_fma`) and DMI (`dmi_feb_mar`, tracked in the feature table and masked from tree splits by `_LocalFeatureBooster` so year-constant ocean scalars cannot memorize individual training years); point latitude and longitude |
+| Places and years | All 64 districts of Bangladesh as training points; 28 seasons, 1998–2025 (1,792 district-years) in the primary GPM IMERG arm, plus 25 seasons (2001–2025) in the NASA POWER comparison arm. The six demo farms read their own forecast row and are not used for training |
 | Issue date | 25 April. A feature may only use information that existed by then; this is enforced in code and asserted in tests (`tests/test_onset_ml.py`) |
-| Training procedure | Fixed hyper-parameters (`num_leaves=15`, `learning_rate=0.05`, `min_data_in_leaf=25`, `feature_fraction=0.9`, 250 rounds, seed 0, deterministic, single thread), no tuning loop. Anomalies use a climatology built from the training years only. A leave-one-year-out backtest holds out all 64 districts of a year together |
-| Explanation | The "What moved this prediction" list uses exact tree SHAP contributions (`pred_contrib=True`), in days |
+| Training procedure | Fixed hyper-parameters (`objective="regression_l1"`, `num_leaves=5`, `max_depth=2`, `learning_rate=0.03`, `min_data_in_leaf=120`, `lambda_l2=30.0`, `feature_fraction=0.8`, 50 rounds, seed 0, deterministic, single thread), no outer tuning loop. Anomalies use a `FoldClimatology` built from the training years only (excluding each training row's own year). A leave-one-year-out backtest holds out all 64 districts of a year together (`MAE 10.63 d` vs `10.73 d` climatology, `skill +0.009`, `17/28` years beating climatology, `79.7 %` empirical 80 % conformal coverage, `status: "shipped"`) |
+| Explanation | The "What moved this prediction" list uses exact tree SHAP contributions (`pred_contrib=True`) scaled by the fold shrinkage factor, in days |
 | Where it runs | Offline only: `scripts/build_onset_ml.py` writes `web/public/data/onset_outlook.json`. The browser reads that JSON; it never runs the model |
-| Reasoning | Onset timing matters to the planting calendar, and satellite rainfall plus ocean indices are the standard drivers in the literature. The forecast is season context beside the measured onset statistics; the rotation ranking runs on the deterministic onset rule |
+| Reasoning | Onset timing matters to the planting calendar, and pre-monsoon soil moisture, heat, humidity, and rainfall anomalies carry localized predictive signal. The forecast is season context beside the measured onset statistics; the rotation ranking runs on the deterministic onset rule |
 
 Retrieval times of every input are recorded in the payload (`data_sources.*.retrieved_utc`). Method, feature table and leakage controls: [`docs/science/onset_ml.md`](science/onset_ml.md).
 
@@ -55,8 +55,8 @@ The team lead set the tasks, chose the data and the scope, and reviewed the resu
 
 | Gate | Count | What it covers |
 |---|---|---|
-| `pytest` (`tests/`) | 260 tests | Onset rule v1/v2, Mann-Kendall, Theil-Sen, Pettitt, the POWER and CHIRPS readers, NOAA index parsing, the SRDI salinity pipeline, pack invariants, nowcast summaries, ML features, leakage guards and outlook payload |
-| `vitest` (`web/tests/`) | 688 tests, 11 files | Rotation-engine constraints and scoring, determinism, weights and penalties, the significance gate, FAO-29 maths, bilingual output, data-pack contracts, nowcast maths, location snapping, quick-answer arithmetic |
+| `pytest` (`tests/`) | 262 tests | Onset rule v1/v2, Mann-Kendall, Theil-Sen, Pettitt, the POWER and GPM IMERG readers, MERRA-2 index computation, the SRDI salinity pipeline, pack invariants, nowcast summaries, ML features, leakage guards and outlook payload |
+| `vitest` (`web/tests/`) | 690 tests, 11 files | Rotation-engine constraints and scoring, determinism, weights and penalties, the significance gate, FAO-29 maths, bilingual output, data-pack contracts, nowcast maths, location snapping, quick-answer arithmetic |
 | Playwright (`web/e2e/`) | 12 tests, 3 files | Home, Bangla toggle, farm page, what-if re-ranking, outage banner and retry, quick answer, location snapping, map click, with NASA POWER mocked |
 | `eslint`, `tsc --noEmit`, `next build` | 0 errors | Lint, type check and the production build |
 
