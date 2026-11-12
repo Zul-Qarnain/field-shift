@@ -225,7 +225,7 @@ def main() -> None:
         subset=["onset_doy", "base_onset"]
     )
     target = M.anomaly_target(train["onset_doy"], train["base_onset"])
-    mean_model = M.fit({}, train[F.FEATURE_NAMES], target, args.rounds)
+    mean_model = M.fit({"objective": "regression"}, train[F.FEATURE_NAMES], target, args.rounds)
     calibration = M.inner_calibration(train[F.FEATURE_NAMES], target, train["year"], rounds=args.rounds)
     print(
         f"  final model on {len(train)} district-years; shrink {calibration.shrink:.1f}, conformal band "

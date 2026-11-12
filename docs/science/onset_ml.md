@@ -4,27 +4,27 @@ A build-time model that forecasts the *date* of Bangladesh's usable-rainfall ons
 from what April already knows. It is trained and scored offline; the browser only reads the
 JSON it writes. Nothing in the app runs a model at request time.
 
-**Status: `shipped` — built, trained on NASA and NASA-partner data only, and shown in the app** as the
-"Machine-learning monsoon forecast" card on every farm page. At a 25 April issue date, the shipped
-`onset-ml-v3` $L_1$ district-local anomaly model beats each district's fold climatology in **17 of 28
-held-out seasons (60.7 %)** in leave-one-year-out cross-validation (`MAE 10.63 d` vs `10.73 d`
-climatology, `skill +0.009`; `+0.181` vs the 2–3-season mean; `+0.281` vs prior-season persistence)
-with a **calibrated** 80 % split-conformal range (`79.7 %` empirical coverage) and exact Tree SHAP
-driver contributions (`mean_shrink = 0.44`).
+**Status: built, trained on NASA and NASA-partner data only, and shown in the app** as the
+"Machine-learning monsoon forecast" card on every farm page. The honest headline of model
+`onset-ml-v3`: **at a 25 April issue date, none of the April predictors carries out-of-sample
+skill over each district's own average onset.** The model knows this about itself: a
+cross-validation inside the training years switches its correction off (shrinkage factor 0), so
+the published forecast is the district climatology with a **calibrated** 80 % range, and the card
+says so in plain words. The payload's `status` stays `validating` while backtest skill is not
+above zero (the rule in [Backtest](#backtest)).
 
-## What changed in v3 (Oct–Nov 2026)
+## What changed in v3 (15 Oct 2026)
 
-| | v2 | v3 (initial L2) | v3 (shipped L1 local) |
-| --- | --- | --- | --- |
-| Labels + pre-monsoon rainfall | CHIRPS v2.0 (UCSB CHC / USGS) | **NASA/JAXA GPM IMERG V07** via NASA POWER | **NASA/JAXA GPM IMERG V07** via NASA POWER |
-| ENSO / IOD | NOAA PSL ONI (ERSST) and DMI (HadISST) | **Niño 3.4 and DMI computed from NASA MERRA-2** sea-surface skin temperature | **Niño 3.4 and DMI computed from NASA MERRA-2** SST (excluded from tree splits to prevent year-ID memorization) |
-| Target | absolute onset day-of-year | **onset anomaly** vs the district's fold climatology | **onset anomaly** vs the district's fold climatology |
-| Prior-season feature | raw day-of-year | anomaly vs the same baseline | anomaly vs the same baseline (`prior_onset_anom`) |
-| Loss / Objective | $L_2$ + quantile heads | $L_2$ (`regression`) | **$L_1$ (`regression_l1`, MAE loss)** |
-| Interval | LightGBM quantile heads (α 0.1 / 0.9) — covered **55 %** | **conformal** band from held-out-year residuals — covers **80.3 %** | **conformal** band from held-out-year residuals — covers **79.7 %** |
-| Guard against noise | none | **shrinkage** of the correction, chosen by inner CV with the one-SE rule | **shrinkage** of the correction, chosen by inner CV min-OOF MAE (`mean_shrink = 0.44`) |
-| Hyper-parameters | 15 leaves, 25 per leaf, 250 rounds | 7 leaves, depth 3, 80 per leaf, λ₂ = 10, 150 rounds | **5 leaves, depth 2, 120 per leaf, λ₂ = 30, 50 rounds** |
-| Backtest skill vs climatology | **−0.155** (worse than climatology) | **0.000** (0/28 years beating climatology) | **+0.009** (**17/28 years beating climatology, `shipped`**) |
+| | v2 | v3 |
+| --- | --- | --- |
+| Labels + pre-monsoon rainfall | CHIRPS v2.0 (UCSB CHC / USGS) | **NASA/JAXA GPM IMERG V07** via NASA POWER |
+| ENSO / IOD | NOAA PSL ONI (ERSST) and DMI (HadISST) | **Niño 3.4 and DMI computed from NASA MERRA-2** sea-surface skin temperature |
+| Target | absolute onset day-of-year | **onset anomaly** vs the district's fold climatology |
+| Prior-season feature | raw day-of-year | anomaly vs the same baseline |
+| Interval | LightGBM quantile heads (α 0.1 / 0.9) — covered **55 %** | **conformal** band from held-out-year residuals — covers **80 %** |
+| Guard against noise | none | **shrinkage** of the correction, chosen by inner CV with the one-SE rule |
+| Hyper-parameters | 15 leaves, 25 per leaf, 250 rounds | 7 leaves, depth 3, 80 per leaf, λ₂ = 10, 150 rounds |
+| Backtest skill vs climatology | **−0.155** (worse than climatology) | **0.000** (never worse, never better) |
 
 A bug was fixed on the way: permutation importance was aggregated with `dict.update`, so v2's
 "feature ranking" was the *last* fold's ranking, not the mean over folds.
@@ -113,16 +113,12 @@ is a *nowcast at the edge of the season*, not a seasonal forecast (`issue_before
 
 * **Target:** onset anomaly `y − base`, where `base` is the district's mean onset over the fold's
   training years (own year excluded for training rows). Prediction = `base + s · f(x)`.
-* **f:** LightGBM $L_1$ (`objective="regression_l1"`) regression restricted via `_LocalFeatureBooster`
-  to the 8 district-varying local features (`rain_anom_mar_apr`, `t2m_anom`, `t2m_max_anom`,
-  `rh2m_anom`, `gwetroot_eow_anom`, `prior_onset_anom`, `lat`, `lon`) so year-constant ocean
-  teleconnections (`nino34_djf`, `nino34_fma`, `dmi_feb_mar`) cannot isolate and memorize individual
-  training years. Fixed hyper-parameters: `num_leaves=5`, `max_depth=2`, `learning_rate=0.03`,
-  `min_data_in_leaf=120`, `lambda_l2=30`, `feature_fraction=0.8`, 50 rounds, `num_threads=1`,
-  `deterministic=true`, seed 0.
+* **f:** LightGBM regression with fixed, a-priori hyper-parameters — `num_leaves=7`, `max_depth=3`,
+  `learning_rate=0.03`, `min_data_in_leaf=80`, `lambda_l2=10`, `feature_fraction=0.8`, 150 rounds,
+  `num_threads=1`, `deterministic=true`, seed 0. No tuning loop (one would leak the folds).
 * **s (shrinkage):** out-of-fold predictions from the inner year-grouped 5-fold give MAE for
-  `s ∈ {0, 0.1, …, 1}`; `s` is chosen to minimize inner out-of-fold MAE (`mean_shrink = 0.44` across
-  the 28 IMERG folds).
+  `s ∈ {0, 0.1, …, 1}`; `s` is the smallest value within one standard error (over years) of the
+  best — Breiman's one-SE rule — so a flat, noisy curve stays at 0.
 * **Interval:** the 10th/90th percentiles of those inner out-of-fold residuals (after shrinkage),
   added to the point prediction — a split-conformal band with years as the exchangeable unit.
 
@@ -131,15 +127,15 @@ is a *nowcast at the edge of the season*, not a seasonal forecast (`issue_before
 `scripts/build_onset_ml.py`, 64 districts, leave-one-year-out, real NASA data (model
 `onset-ml-v3`; full numbers in `src/compute/ml/metrics.json`):
 
-| Arm | Years | Folds | District-years | MAE model (d) | MAE climatology (d) | Skill | Years < Clim | RMSE (d) | 80 % coverage | Mean shrink | Role |
-| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
-| GPM IMERG labels | 1998–2025 | 28 | 1792 | **10.63** | 10.73 | **+0.009** | **17 / 28 (60.7 %)** | 14.09 | **0.797** | 0.44 | **shipped arm** |
-| POWER labels, restricted | 2001–2025 | 25 | 1600 | 13.13 | 13.20 | +0.005 | 12 / 25 (48.0 %) | 16.47 | 0.811 | 0.46 | comparison arm |
+| Arm | Years | Folds | District-years | MAE model (d) | MAE climatology (d) | Skill | RMSE (d) | 80 % coverage | Mean shrink | Role |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+| GPM IMERG labels | 1998–2025 | 28 | 1792 | 10.73 | 10.73 | **0.000** | 14.06 | **0.803** | 0.00 | shipped arm |
+| POWER labels, restricted | 2001–2025 | 25 | 1600 | 13.20 | 13.20 | 0.000 | 16.46 | 0.814 | 0.00 | comparison arm |
 
 Against the stricter comparators in the shipped arm: **12.98 d** for the mean of the two and three
-seasons back (model skill over it **+0.181**) and **14.80 d** for "last season again" (**+0.281**).
-The long-run district mean is the hardest baseline to beat here, and the $L_1$ local-feature model
-beats it in **17 of 28 held-out seasons** while maintaining calibrated 80 % conformal coverage.
+seasons back (climatology's skill over it +0.173) and **14.80 d** for "last season again" (+0.275).
+The long-run district mean is the hardest baseline to beat here, and neither persistence rule
+comes close to it.
 
 **Before the guard (same data, no shrinkage):** the anomaly model alone scored MAE 11.75 d vs
 10.73 d (skill −0.095) in the IMERG arm and −0.131 in the POWER arm — the learned corrections were

@@ -13,11 +13,11 @@
 - [x] Kaggle dataset `shihabdev20/field-shift-ml` created (source + requirements)
 - [x] Kaggle kernel `shihabdev20/field-shift-onset-ml-baseline-v3-reproduction` pushed, RUNNING
 
-## Phase 5 ML experiments (Kaggle / Google Colab)
-- [x] Understand current null result (skill 0.0) — documented (year-ID memorization on year-constant SST indices + $L_2$ loss chasing right-skewed late-onset outliers)
-- [x] Experiment plan: feature variants, $L_1$ vs $L_2$ vs Huber loss, local vs teleconnection feature ablation (written in `EXPERIMENT_LOG.md`)
-- [x] Baseline reproduction on Google Colab (`notebooks/field_shift_onset_ml_colab.ipynb`); then variant grid; honest evaluation (LOYO across 28 folds, 1,792 district-years)
-- [x] If any variant beats climatology × stricter baselines → pick, export artifact (`L1_MAE_local_only_50r`: MAE `10.63 d` vs `10.73 d` climatology, `skill = +0.009`, `17/28` years beating climatology, `skill_vs_clim2 = +0.181`, `skill_vs_lag1 = +0.281`, `coverage = 0.797`, `status = "shipped"`)
+## Phase 5 ML experiments (Kaggle)
+- [ ] Understand current null result (skill 0.0) — documented
+- [ ] Experiment plan: feature variants, GP, spatial pooling, different targets (write EXPERIMENT_LOG)
+- [ ] Baseline reproduction on Kaggle; then variant grid; honest evaluation (LOYO)
+- [ ] If any variant beats climatology × stricter baselines → pick, export artifact
 
 ## Phase 4/6 Product integration
 - [ ] Replace soil-moisture/NDVI fixtures with real SMAP L4 / MODIS NDVI (via pipeline; Kaggle for heavy processing)

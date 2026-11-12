@@ -44,21 +44,14 @@ ISSUE_TEXT = "25 April"
 RANDOM_SEED = 0
 QUANTILES = (0.1, 0.9)
 
-#: Year-constant teleconnection indices have zero spatial variance within a year, so GBDT
-#: splits on them memorize individual training years. Tree splits are restricted to the 8
-#: district-varying local pre-monsoon features.
-YEAR_GLOBAL_FEATURES = ("nino34_djf", "nino34_fma", "dmi_feb_mar")
-LOCAL_FEATURE_NAMES = [f for f in FEATURE_NAMES if f not in YEAR_GLOBAL_FEATURES]
-
-#: Fixed a priori for ~25–45 effective (year) samples: shallow L1 (MAE) trees, large leaves,
-#: L2 shrinkage. Not tuned against the backtest — a tuning loop would leak the folds.
+#: Fixed a priori for ~25–45 effective (year) samples: shallow trees, large leaves, L2
+#: shrinkage. Not tuned against the backtest — a tuning loop would leak the folds.
 BASE_PARAMS: dict[str, object] = {
-    "objective": "regression_l1",
-    "num_leaves": 5,
-    "max_depth": 2,
+    "num_leaves": 7,
+    "max_depth": 3,
     "learning_rate": 0.03,
-    "min_data_in_leaf": 120,
-    "lambda_l2": 30.0,
+    "min_data_in_leaf": 80,
+    "lambda_l2": 10.0,
     "feature_fraction": 0.8,
     "extra_seed": RANDOM_SEED,
     "first_metric_only": True,
@@ -67,7 +60,7 @@ BASE_PARAMS: dict[str, object] = {
     "deterministic": True,
     "force_row_wise": True,
 }
-NUM_BOOST_ROUND = 50
+NUM_BOOST_ROUND = 150
 #: Inner year-grouped folds used to collect out-of-fold residuals for the conformal band.
 CONFORMAL_FOLDS = 5
 TARGET_TEXT = "onset anomaly: observed onset minus the district's fold climatology (training years, own year excluded)"
@@ -186,37 +179,10 @@ def backtest_rows(samples: pd.DataFrame, splits: list[tuple[int, list[int]]]) ->
     return folds
 
 
-class _LocalFeatureBooster:
-    """Adapter around a LightGBM Booster trained on `LOCAL_FEATURE_NAMES` that accepts full
-    `FEATURE_NAMES` DataFrames and pads 0.0 SHAP contributions for year-global columns."""
-
-    def __init__(self, booster, all_cols: list[str], local_cols: list[str]) -> None:
-        self._booster = booster
-        self._all_cols = list(all_cols)
-        self._local_cols = list(local_cols)
-        self._local_idx = [self._all_cols.index(c) for c in self._local_cols]
-
-    def predict(self, data, pred_contrib: bool = False, **kwargs):
-        sub = data[self._local_cols] if isinstance(data, pd.DataFrame) and set(self._local_cols) <= set(data.columns) else data
-        out = np.asarray(self._booster.predict(sub, pred_contrib=pred_contrib, **kwargs), dtype=float)
-        if not pred_contrib:
-            return out
-        n_rows = out.shape[0]
-        full = np.zeros((n_rows, len(self._all_cols) + 1), dtype=float)
-        for j, full_pos in enumerate(self._local_idx):
-            full[:, full_pos] = out[:, j]
-        full[:, -1] = out[:, -1]
-        return full
-
-
 def fit(params: dict[str, object], x: pd.DataFrame, y: pd.Series, rounds: int = NUM_BOOST_ROUND):
     import lightgbm as lgb
 
     merged = {**BASE_PARAMS, **params}
-    if isinstance(x, pd.DataFrame) and list(x.columns) == FEATURE_NAMES:
-        dataset = lgb.Dataset(x[LOCAL_FEATURE_NAMES], label=y, free_raw_data=False)
-        booster = lgb.train(merged, dataset, num_boost_round=rounds)
-        return _LocalFeatureBooster(booster, FEATURE_NAMES, LOCAL_FEATURE_NAMES)
     dataset = lgb.Dataset(x, label=y, free_raw_data=False)
     return lgb.train(merged, dataset, num_boost_round=rounds)
 
@@ -277,14 +243,21 @@ def inner_calibration(
         held = assignment == fold
         if held.all() or not held.any():
             continue
-        model = fit({}, x.iloc[~held], target.iloc[~held], rounds)
+        model = fit({"objective": "regression"}, x.iloc[~held], target.iloc[~held], rounds)
         oof[held] = np.asarray(model.predict(x.iloc[held]), dtype=float)
     finite = np.isfinite(oof) & np.isfinite(values)
     if not finite.any():
         return InnerCalibration(0.0, float("nan"), float("nan"), float("nan"), float("nan"))
     errors = {a: float(np.mean(np.abs(values[finite] - a * oof[finite]))) for a in SHRINK_GRID}
     best_shrink = min(errors, key=lambda a: (errors[a], a))
-    shrink = best_shrink
+    # One-standard-error rule (Breiman et al. 1984), with years as the unit: the smallest factor
+    # whose error is within one SE of the best. A flat, noisy curve therefore stays at 0
+    # (climatology) instead of chasing a chance minimum.
+    best_by_year = (
+        pd.Series(np.abs(values[finite] - best_shrink * oof[finite])).groupby(years[finite]).mean()
+    )
+    se = float(best_by_year.std(ddof=1) / np.sqrt(len(best_by_year))) if len(best_by_year) > 1 else 0.0
+    shrink = min(a for a, e in errors.items() if e <= errors[best_shrink] + se)
     residuals = values[finite] - shrink * oof[finite]
     return InnerCalibration(
         shrink=float(shrink),
@@ -382,7 +355,7 @@ def metrics_from_predictions(predictions: list[Prediction]) -> dict[str, object]
         "mae_lag1": _round(mae_lag1, 2),
         "skill_vs_lag1": _round(skill_vs_lag1, 3),
         "n_missing_prior": len(scored) - len(persistent),
-        "status": status_from_skill(_round(skill, 3)),
+        "status": status_from_skill(skill),
     }
 
 
@@ -416,7 +389,7 @@ def run_backtest(
         target = anomaly_target(fold.y_train.reset_index(drop=True), train_base).iloc[usable]
         train_years = fold.train_keys["year"].to_numpy(dtype=int)[usable]
 
-        mean_model = fit({}, x_train, target, rounds)
+        mean_model = fit({"objective": "regression"}, x_train, target, rounds)
         calibration = inner_calibration(x_train, target, train_years, quantiles=quantiles, rounds=rounds)
         q_low, q_high = calibration.low, calibration.high
         shrinks.append(calibration.shrink)

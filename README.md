@@ -326,7 +326,7 @@ Rebuilding the committed data packs from NASA POWER, GPM IMERG and SRDI (no API 
 |---|---|---|
 | 1 | NASA POWER + GPM IMERG data packs for all 64 districts and 6 demo farms, with onset v2, era tests, change-point tests and stated provenance | ✅ Built |
 | 2 | Crop-rotation engine: hard constraints, 8 weighted components, salinity scoring from SRDI + FAO-29, what-if scenarios, Bangla/English UI, advisory + SMS text | ✅ Built |
-| 3 | Machine-learning monsoon forecast on NASA-only inputs (GPM IMERG labels, NASA POWER weather, MERRA-2 Niño 3.4/DMI), issued 25 April, beating district climatology in 17/28 held-out seasons (`MAE 10.63 d` vs `10.73 d`, `status: shipped`) with calibrated 80 % conformal intervals | ✅ Built |
+| 3 | Machine-learning monsoon forecast on NASA-only inputs (GPM IMERG labels, NASA POWER weather, MERRA-2 Niño 3.4/DMI), issued 25 April, with conformal 80 % intervals and shrinkage to climatology when the predictors carry no skill | ✅ Built |
 | 4 | Live "This season so far" nowcast with saved-data fallback and outage banner, quick answer `/quick`, location picker `/locate`, Playwright e2e suite | ✅ Built |
 | 5 | New datasets (SMAP, MODIS NDVI) and farmer field tests | 🔄 In progress |
 
