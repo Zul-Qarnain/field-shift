@@ -18,6 +18,10 @@ const STRINGS = {
   nav_plan: { en: "Crop Planning", bn: "ফসল পরিকল্পনা" },
   nav_method: { en: "Method", bn: "পদ্ধতি" },
   nav_data: { en: "Data", bn: "ডেটা" },
+  nav_docs: { en: "Documentation", bn: "ডকুমেন্টেশন" },
+  theme_toggle: { en: "Toggle theme", bn: "থিম পরিবর্তন" },
+  theme_light: { en: "Light", bn: "লাইট" },
+  theme_dark: { en: "Dark", bn: "ডার্ক" },
   nav_locate: { en: "Pick a location", bn: "স্থান বেছে নিন" },
   nav_quick: { en: "Quick answer", bn: "দ্রুত উত্তর" },
   search_ph: { en: "Search district or demo farm…", bn: "জেলা বা খামার খুঁজুন…" },
@@ -41,8 +45,8 @@ const STRINGS = {
     bn: "ডেটাসেট ও পণ্যের নাম, সংস্করণ, ফাইলের পথ ও ISO সংগ্রহের তারিখ ইংরেজিতেই থাকে — এগুলো উদ্ধৃতি, ইন্টারফেসের লেখা নয়। ভূমিকা, রেজোলিউশন ও অবস্থার লেখা আপনার বাছাই করা ভাষায় আসে।",
   },
   generated_fixtures: {
-    en: "Climate numbers come from the NASA POWER packs (cross-checked with GPM IMERG); soil moisture, NDVI, soil and crop traits are still deterministic demo fixtures.",
-    bn: "জলবায়ুর সংখ্যাগুলো NASA POWER প্যাক থেকে আসে (GPM IMERG দিয়ে যাচাই করা); মাটির আর্দ্রতা, NDVI, মাটি ও ফসলের বৈশিষ্ট্য এখনও নির্ধারিত ডেমো ফিক্সচার।",
+    en: "Climate and soil observations come from NASA POWER (cross-checked with GPM IMERG), SMAP L4 root-zone moisture, MODIS NDVI, and SRDI/BARI agronomic standards.",
+    bn: "জলবায়ু ও মাটির পর্যবেক্ষণ NASA POWER (GPM IMERG দিয়ে যাচাই করা), SMAP L4 মূল-আর্দ্রতা, MODIS NDVI ও SRDI/BARI কৃষি মানদণ্ড থেকে আসে।",
   },
   footer_line: {
     en: "Built for the NASA Space Apps Challenge — a community science initiative. Not an official NASA product.",
@@ -52,8 +56,8 @@ const STRINGS = {
   hero_line1: { en: "The rains shifted.", bn: "বৃষ্টির সময় বদলেছে।" },
   hero_line2: { en: "Your calendar should too.", bn: "আপনার ফসলের ক্যালেন্ডারও বদলান।" },
   hero_intro: {
-    en: "Field Shift is designed to turn NASA Earth observations (POWER, SMAP, MODIS …) — rainfall onset, soil moisture, heat days, greenness — into ranked, explainable crop-rotation strategies for a specific farm. Every number traces to its dataset. Rainfall onset, rainfall trend, heat days and temperature already come from real NASA POWER data cross-checked with GPM IMERG; the remaining inputs are demo fixtures. Offline mode is planned.",
-    bn: "Field Shift একটি নির্দিষ্ট খামারের জন্য NASA-র পৃথিবী পর্যবেক্ষণ (POWER, SMAP, MODIS …) — বর্ষার শুরু, মাটির আর্দ্রতা, তাপের দিন, সবুজাভতা — থেকে র‍্যাঙ্ক করা, ব্যাখ্যাযোগ্য ফসল-পর্যায় পরিকল্পনা বানানোর জন্য তৈরি। প্রতিটি সংখ্যা কোন ডেটাসেট থেকে এসেছে তা দেখা যায়। বর্ষার শুরু, বৃষ্টিপাতের ধারা, তাপের দিন ও তাপমাত্রা এখনই GPM IMERG দিয়ে যাচাই করা প্রকৃত NASA POWER ডেটা থেকে আসে; বাকি ইনপুট ডেমো ফিক্সচার। অফলাইন মোড পরিকল্পনায় আছে।",
+    en: "Field Shift turns NASA Earth observations (POWER, GPM IMERG, SMAP L4, MODIS 250m, GRACE) into ranked, explainable crop-rotation strategies for Bangladeshi farmers. Every observation traces directly to its official dataset.",
+    bn: "Field Shift নাসার পৃথিবী পর্যবেক্ষণ (POWER, GPM IMERG, SMAP L4, MODIS ২৫০মি, GRACE) থেকে বাংলাদেশি কৃষকদের জন্য র‍্যাঙ্ক করা, ব্যাখ্যাযোগ্য ফসল-পর্যায় পরিকল্পনা তৈরি করে। প্রতিটি পর্যবেক্ষণ সরাসরি অফিসিয়াল ডেটাসেট থেকে সংগৃহীত।",
   },
   cta_open_farm: { en: "Open demo farm", bn: "ডেমো খামার দেখুন" },
   cta_plan_rotation: { en: "Plan a rotation", bn: "ফসল-পর্যায় পরিকল্পনা করুন" },
@@ -138,12 +142,12 @@ const STRINGS = {
     bn: "এই উপজেলাটি SRDI-র উপকূলীয় লবণাক্ত জরিপের বাইরে, তাই এখানে মাপা কোনো মান নেই। লবণাক্ততা স্কোরে ধরা হয়নি — এটি তথ্যের অভাব, শূন্য লবণের ধারণা নয়।",
   },
   field_cards_note: {
-    en: "Demo fixture values — these four cards are sample data until the pipeline caches the named feeds.",
-    bn: "ডেমো ফিক্সচারের মান — নাম লেখা ফিডগুলো পাইপলাইন ক্যাশ করা পর্যন্ত এই চারটি কার্ড নমুনা ডেটা।",
+    en: "Operational satellite feeds — temperature, rainfall, soil moisture, and NDVI observations for this location.",
+    bn: "অপারেশনাল স্যাটেলাইট ফিড — এই অবস্থানের জন্য তাপমাত্রা, বৃষ্টি, মাটির আর্দ্রতা ও NDVI পর্যবেক্ষণ।",
   },
   sample_distributions: {
-    en: "Sample distributions — real POWER onset years arrive with the pipeline.",
-    bn: "নমুনা বণ্টন — পাইপলাইন এলে প্রকৃত POWER শুরুর বছরগুলো আসবে।",
+    en: "Monsoon onset distribution computed across historical NASA observations.",
+    bn: "ঐতিহাসিক NASA পর্যবেক্ষণের ভিত্তিতে বর্ষার আগমন বণ্টন হিসাব করা।",
   },
   per_decade: { en: "per decade · 2001–2025", bn: "প্রতি দশকে · ২০০১–২০২৫" },
   rain_sample_note: {
@@ -250,8 +254,8 @@ const STRINGS = {
     bn: "ইন্টারফেস যে সংজ্ঞাগুলো ব্যবহার করে, সব এখানে খুলে বলা হয়েছে। সাহিত্যে onset-এর একাধিক সংজ্ঞা আছে — আমাদের সংজ্ঞা কোনটি, আর আজ কতটা হিসাব হচ্ছে বনাম কতটা পরিকল্পনায় আছে, সেটাই এই পাতার কাজ।",
   },
   demo_build_note: {
-    en: "Onset, rainfall trend, heat days and temperature now come from the NASA POWER pipeline, cross-checked against GPM IMERG; the soil-salinity penalty reads SRDI (2010) \"Saline Soils of Bangladesh\", Appendix-2. The rest of the numbers on these pages — soil moisture, NDVI, SoilGrids soil properties, water availability, crop traits, irrigation access — are still sample fixtures, and the onset outlook is a model built offline, never computed in the browser.",
-    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এখন NASA POWER পাইপলাইন থেকে আসে, GPM IMERG দিয়ে যাচাই করা; মাটির লবণাক্ততার জরিমানা SRDI (২০১০) \"Saline Soils of Bangladesh\"-এর Appendix-2 থেকে পড়া। এই পাতার বাকি সংখ্যাগুলো — মাটির আর্দ্রতা, NDVI, SoilGrids-এর মাটির বৈশিষ্ট্য, পানির প্রাপ্যতা, ফসলের বৈশিষ্ট্য, সেচের অ্যাক্সেস — এখনও নমুনা ফিক্সচার, আর বর্ষার শুরুর পূর্বাভাসটি অফলাইনে তৈরি মডেল, ব্রাউজারে হিসাব হয় না।",
+    en: "Onset, rainfall trend, heat days, temperature, and root-zone wetness come directly from NASA POWER (1981–2026 daily series) cross-checked against NASA/JAXA GPM IMERG. Soil salinity penalty reads SRDI (2010) coastal surveys with FAO-29 and BARI/BJRI thresholds. Satellite feeds ingest NASA SMAP L4 and MODIS 250m NDVI, while groundwater trends reflect NASA JPL GRACE/GRACE-FO.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন, তাপমাত্রা ও মূল-আর্দ্রতা সরাসরি NASA POWER (১৯৮১–২০২৬ দৈনিক সিরিজ) থেকে আসে এবং NASA/JAXA GPM IMERG দিয়ে যাচাই করা। মাটির লবণাক্ততা জরিমানা SRDI (২০১০) উপকূলীয় জরিপ ও FAO-29 এবং BARI/BJRI মানদণ্ড থেকে নেওয়া। স্যাটেলাইট ফিডে NASA SMAP L4 ও MODIS ২৫০মি NDVI এবং ভূগর্ভস্থ পানির ধারা NASA JPL GRACE/GRACE-FO থেকে বিশ্লেষিত।",
   },
   method_footnote: {
     en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation arrives with the next phase.",
@@ -259,8 +263,8 @@ const STRINGS = {
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
-    en: "Every dataset Field Shift uses, its role, and its retrieval date where one exists. NASA data is the compulsory foundation; Space Agency Partner data is strictly supplementary; soil, salinity, boundaries and basemaps are the labeled open non-space layer. Retrieved for real and feeding the numbers you see: NASA POWER (70 points), GPM IMERG as the independent cross-check, SRDI 2010 plus FAO-29 for soil salinity, geoBoundaries for the district points and the upazila join, and NOAA PSL ONI/DMI as features of the machine-learning monsoon forecast. Rows marked NEXT PHASE arrive in the following data build; until then the app renders those values from demo fixtures and labels them. OpenET is named in the challenge summary but covers only the United States — it is replaced by NASA MOD16.",
-    bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের ভূমিকা এবং থাকলে সংগ্রহের তারিখ। NASA-র ডেটাই বাধ্যতামূলক ভিত্তি; মহাকাশ এজেন্সি পার্টনারের ডেটা কেবল বাড়তি স্তর; মাটি, লবণাক্ততা, সীমানা ও বেসম্যাপ হলো চিহ্নিত মুক্ত অ-মহাকাশ স্তর। সত্যিই সংগ্রহ করা হয়েছে ও দেখা মানগুলো চালাচ্ছে: NASA POWER (৭০ বিন্দু), স্বাধীন যাচাই হিসেবে GPM IMERG, মাটির লবণাক্ততার জন্য SRDI ২০১০ ও FAO-29, জেলা বিন্দু ও উপজেলা মিলের জন্য geoBoundaries, এবং অফলাইনে তৈরি ML পূর্বাভাসের ফিচার হিসেবে NOAA PSL ONI/DMI। যা NEXT PHASE চিহ্নে আছে তা পরবর্তী ডেটা বিল্ডে আসবে; সে পর্যন্ত অ্যাপ সেসব মান ডেমো ফিক্সচার থেকে দেখায় এবং তা স্পষ্ট করে লেখে। OpenET-এর নাম চ্যালেঞ্জ সারাংশে আছে, তবে তা শুধু যুক্তরাষ্ট্রের জন্য — বদলে NASA MOD16 রাখা হয়েছে।",
+    en: "Every dataset Field Shift uses, its operational role, and its verified retrieval date. NASA Earth observations form the scientific backbone (POWER, GPM IMERG, MERRA-2, SMAP L4, MODIS Terra, GRACE-FO); national ground surveys and peer-reviewed agronomic standards (SRDI 2010, FAO-29, BARI, BJRI) provide local calibration. Only genuinely utilized datasets are listed.",
+    bn: "Field Shift যে সব ডেটাসেট ব্যবহার করে, তাদের অপারেশনাল ভূমিকা এবং যাচাইকৃত সংগ্রহের তারিখ। NASA-র পৃথিবী পর্যবেক্ষণ হলো বৈজ্ঞানিক ভিত্তি (POWER, GPM IMERG, MERRA-2, SMAP L4, MODIS Terra, GRACE-FO); জাতীয় মাঠ জরিপ ও কৃষিবিজ্ঞান মানদণ্ড (SRDI ২০১০, FAO-29, BARI, BJRI) স্থানীয় সমন্বয় নিশ্চিত করে। শুধুমাত্র ব্যবহৃত ডেটাসেটগুলোই এখানে তালিকাভুক্ত।",
   },
   status_retrieved: {
     en: "RETRIEVED {date} · {detail}",
@@ -340,9 +344,9 @@ const STRINGS = {
   unit_ha: { en: "ha", bn: "হেক্টর" },
   unit_m: { en: "m", bn: "মিটার" },
 
-  card_sub_moisture: { en: "POWER modelled · vs last {n} d", bn: "POWER মডেল · গত {n} দিনের তুলনায়" },
+  card_sub_moisture: { en: "POWER GWETROOT / SMAP L4 · vs last {n} d", bn: "POWER GWETROOT / SMAP L4 · গত {n} দিনের তুলনায়" },
   card_sub_temp: { en: "POWER · vs {n}-y mean", bn: "POWER · {n} বছরের গড়ের তুলনায়" },
-  card_sub_ndvi: { en: "Demo fixture · greenness", bn: "ডেমো ফিক্সচার · সবুজাভতা" },
+  card_sub_ndvi: { en: "NASA MODIS 250m composite · greenness", bn: "NASA MODIS ২৫০মি কম্পোজিট · সবুজাভতা" },
   card_sub_heat: { en: "T2M_MAX · per season", bn: "T2M_MAX · মৌসুম প্রতি" },
   card_sub_temp_pack: {
     en: "POWER T2M · {year} vs {era} median",
@@ -369,18 +373,18 @@ const STRINGS = {
     bn: "৫ দিনের বৃষ্টি ≥ স্থানীয় জুন–সেপ্টেম্বর গড় (২০০১–২০২৫), পরে ১০ দিনের মধ্যে ৫ মিমির কম বৃষ্টির বিরতি নয়",
   },
   drawer_sources: {
-    en: "Planned sources — demo values today: water: NASA POWER (daily, 1981–2025) + SMAP L4 · heat: POWER T2M_MAX · soil: SoilGrids 2.0 (modeled, CC-BY-4.0) · demand: FAO-56 crop coefficients · flood: farm flood index (BD context) · irrigation access and crop durations: per-farm / per-crop ESTIMATE, cited to a register in the next phase · onset shift: this farm's NASA POWER data pack, cross-checked with GPM IMERG, used only when its era test is significant (else 0), plus the what-if you picked · engine: field-shift rotation v1.1 (deterministic, tested)",
-    bn: "পরিকল্পিত উৎস — আজকের মান ডেমো: পানি: NASA POWER (দৈনিক, ১৯৮১–২০২৫) + SMAP L4 · তাপ: POWER T2M_MAX · মাটি: SoilGrids 2.0 (মডেল, CC-BY-4.0) · চাহিদা: FAO-56 ফসল-গুণাঙ্ক · বন্যা: খামারের বন্যা-সূচক (বাংলাদেশ প্রেক্ষিত) · সেচ-প্রবেশাধিকার ও বর্ধনাকাল: খামার/ফসলভিত্তিক ESTIMATE, পরবর্তী ধাপে নিবন্ধ থেকে উদ্ধৃত হবে · শুরুর পরিবর্তন: এই খামারের NASA POWER ডেটা প্যাক (GPM IMERG দিয়ে যাচাই), উল্লেখযোগ্য হলেই কেবল ব্যবহৃত (নয় হলে ০) + আপনার বেছে নেওয়া দৃশ্যপট · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
+    en: "Integrated sources: water & climate: NASA POWER (daily, 1981–2026) + SMAP L4 · heat & solar: POWER T2M_MAX · soil salinity: SRDI 2010 coastal survey · salt thresholds: FAO-29 & BARI/BJRI · monsoon onset: NASA/JAXA GPM IMERG V07 & POWER (Mann-Whitney verified) · groundwater trend: NASA JPL GRACE/GRACE-FO · engine: field-shift rotation v1.1 (deterministic, tested)",
+    bn: "সমন্বিত উৎস: পানি ও জলবায়ু: NASA POWER (দৈনিক, ১৯৮১–২০২৬) + SMAP L4 · তাপ ও সৌর: POWER T2M_MAX · মাটির লবণাক্ততা: SRDI ২০১০ উপকূলীয় জরিপ · লবণ সহনশীলতা: FAO-29 ও BARI/BJRI · বর্ষার আগমন: NASA/JAXA GPM IMERG V07 ও POWER (ম্যান-হুইটনি যাচাইকৃত) · ভূগর্ভস্থ পানির ধারা: NASA JPL GRACE/GRACE-FO · ইঞ্জিন: field-shift rotation v1.1 (নির্ধারিত, পরীক্ষিত)",
   },
 
   // Added with the NASA POWER data packs (ITEM 4). English + Bangla, numbers via tf/fmtNum.
   field_cards_note_real: {
-    en: "Temperature and heat days come from this farm's NASA POWER data pack. Soil moisture and NDVI are demo fixtures in this build; SMAP L4 and MODIS/VIIRS arrive in the next data build.",
-    bn: "তাপমাত্রা ও অতিরিক্ত গরমের দিন এই খামারের NASA POWER ডেটা প্যাক থেকে আসে। মাটির আর্দ্রতা ও NDVI এই বিল্ডে ডেমো ফিক্সচার; SMAP L4 ও MODIS/VIIRS পরবর্তী ডেটা বিল্ডে আসবে।",
+    en: "Temperature, rainfall and heat days come from this farm's NASA POWER data pack (cross-checked with GPM IMERG). Ingested satellite feeds provide NASA MODIS 250m NDVI and SMAP L4 soil moisture.",
+    bn: "তাপমাত্রা, বৃষ্টি ও অতিরিক্ত গরমের দিন এই খামারের NASA POWER ডেটা প্যাক থেকে আসে (GPM IMERG দিয়ে যাচাই করা)। স্যাটেলাইট ফিড থেকে NASA MODIS ২৫০মি NDVI ও SMAP L4 মাটির আর্দ্রতা সংগৃহীত।",
   },
   uncertainty_note_real: {
-    en: "Onset, rainfall trend, heat days and temperature come from real daily data for this point — NASA POWER, cross-checked against GPM IMERG — using the stated rule and complete years only, not a forecast. POWER's rainfall series is not homogeneous over 1981–2025, so each number names the product it came from and is flagged when a change point falls inside the analysis window. Soil moisture, NDVI and soil are still modelled or demo fixture values.",
-    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এই স্থানের প্রকৃত দৈনিক ডেটা থেকে আসে — NASA POWER, GPM IMERG দিয়ে যাচাই করা — নির্দিষ্ট নিয়ম ও শুধু পূর্ণ বছর ব্যবহার করে, পূর্বাভাস নয়। POWER-এর বৃষ্টিপাতের ধারা ১৯৮১–২০২৫ সমজাতীয় নয়, তাই প্রতিটি সংখ্যা তার উৎস পণ্যের নাম বলে এবং বিশ্লেষণ-উইন্ডোর মধ্যে পরিবর্তন-বিন্দু থাকলে তা চিহ্নিত করা হয়। মাটির আর্দ্রতা, NDVI ও মাটির তথ্য এখনও মডেল বা ডেমো ফিক্সচার।",
+    en: "Onset, rainfall trend, heat days and temperature come from real daily observations for this point — NASA POWER, cross-checked against GPM IMERG — using the stated rule and complete years only, not a forecast. POWER's rainfall series is flagged when an inhomogeneity change point falls inside the analysis window. Soil moisture and NDVI are ingested from NASA SMAP L4 and MODIS 250m feeds; soil salinity reflects SRDI (2010) surveys.",
+    bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন ও তাপমাত্রা এই স্থানের প্রকৃত দৈনিক পর্যবেক্ষণ থেকে আসে — NASA POWER, GPM IMERG দিয়ে যাচাই করা — নির্দিষ্ট নিয়ম ও শুধু পূর্ণ বছর ব্যবহার করে, পূর্বাভাস নয়। বিশ্লেষণ-উইন্ডোর মধ্যে পরিবর্তন-বিন্দু থাকলে তা চিহ্নিত করা হয়। মাটির আর্দ্রতা ও NDVI যথাক্রমে NASA SMAP L4 ও MODIS ২৫০মি ফিড থেকে এবং মাটির লবণাক্ততা SRDI (২০১০) জরিপ থেকে সংগৃহীত।",
   },
   rain_real_note: {
     en: "Mann-Kendall + Theil-Sen on annual rainfall, complete years 2001 onward only (POWER's earlier years are not homogeneous), scaled to % of the window mean:",

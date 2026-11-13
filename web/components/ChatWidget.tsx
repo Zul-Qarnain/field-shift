@@ -6,6 +6,51 @@ import { LangContext } from "@/lib/lang";
 
 type Msg = { role: "user" | "assistant"; content: string };
 
+function renderMessageContent(content: string) {
+  // Normalize markdown and multiline bold markers
+  const normalized = content
+    .replace(/\*\*\s*\n\s*\*\*/g, "\n")
+    .replace(/\*\*\*+/g, "**");
+
+  const lines = normalized.split("\n");
+
+  return (
+    <div className="space-y-1.5 leading-relaxed text-ink-hi">
+      {lines.map((line, idx) => {
+        let trimmed = line.trim();
+        if (!trimmed) return <div key={idx} className="h-1" />;
+
+        // Clean out orphaned ** at beginning or end of line if unbalanced
+        const starCount = (trimmed.match(/\*\*/g) || []).length;
+        if (starCount % 2 !== 0) {
+          trimmed = trimmed.replace(/\*\*$/, "").replace(/^\*\*/, "");
+        }
+
+        const isNumList = /^\d+\.\s+/.test(trimmed);
+        const isBullet = /^[-*•]\s+/.test(trimmed);
+
+        const parts = trimmed.split(/(\*\*.*?\*\*)/g);
+
+        return (
+          <div key={idx} className={`${isNumList || isBullet ? "pl-2 font-normal" : ""}`}>
+            {parts.map((part, pIdx) => {
+              if (part.startsWith("**") && part.endsWith("**") && part.length >= 4) {
+                return (
+                  <strong key={pIdx} className="font-semibold text-ink-hi">
+                    {part.slice(2, -2)}
+                  </strong>
+                );
+              }
+              // Strip any stray raw asterisks so they never leak into the chat
+              return <span key={pIdx}>{part.replace(/\*/g, "")}</span>;
+            })}
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 export function ChatWidget() {
   const { lang } = useContext(LangContext);
   const bn = lang === "bn";
@@ -64,12 +109,16 @@ export function ChatWidget() {
           <p className="text-ink-low">{bn ? "ফসল চক্র নিয়ে প্রশ্ন করুন।" : "Ask about crop rotation."}</p>
         )}
         {msgs.map((m, i) => (
-          <p
+          <div
             key={i}
-            className={`whitespace-pre-wrap rounded-lg px-3 py-2 ${m.role === "user" ? "ml-8 bg-inset text-ink-hi" : "mr-8 bg-elevated text-ink-mid"}`}
+            className={`rounded-xl px-3.5 py-2.5 text-sm ${
+              m.role === "user"
+                ? "ml-8 bg-action text-white font-medium"
+                : "mr-6 border border-line bg-elevated text-ink-mid shadow-sm"
+            }`}
           >
-            {m.content}
-          </p>
+            {renderMessageContent(m.content)}
+          </div>
         ))}
         {busy && <p className="text-ink-low">…</p>}
       </div>

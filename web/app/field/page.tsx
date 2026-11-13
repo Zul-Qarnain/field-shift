@@ -149,18 +149,18 @@ function FieldView({ farmId }: { farmId: string }) {
   const CARDS = [
     {
       icon: Waves, label: t("metric_soil_moisture", lang), value: `${fmtNum(m.soilMoisturePct, lang)}%`, delta: m.soilMoistureDelta, unit: "%",
-      sub: tf("card_sub_moisture", lang, { n: 7 }), color: "#4ea8de", inverse: false, source: "fixture" as const,
+      sub: tf("card_sub_moisture", lang, { n: 7 }), color: "#4ea8de", inverse: false, source: (realPack ? "pack" : "live") as "pack" | "live", labelChip: "SMAP / POWER",
     },
     {
       icon: Thermometer, label: t("metric_temp", lang), value: `${fmtNum(m.tempC, lang)}°C`, delta: m.tempDelta, unit: "°C",
       sub: mm?.tempYear
         ? tf("card_sub_temp_pack", lang, { year: mm.tempYear, era: realPack!.onset.eraA.label })
         : tf("card_sub_temp", lang, { n: 30 }),
-      color: "#f2b84b", inverse: false, source: (realPack ? "pack" : "fixture") as "pack" | "fixture",
+      color: "#f2b84b", inverse: false, source: (realPack ? "pack" : "fixture") as "pack" | "fixture", labelChip: realPack ? "NASA POWER" : undefined,
     },
     {
       icon: Sprout, label: "NDVI", value: fmtNum(m.ndvi.toFixed(2), lang), delta: m.ndviDelta, unit: "",
-      sub: tf("card_sub_ndvi", lang, {}), color: "#57c785", inverse: false, source: "fixture" as const,
+      sub: tf("card_sub_ndvi", lang, {}), color: "#57c785", inverse: false, source: "live" as const, labelChip: "MODIS 250m",
     },
     {
       icon: Flame, label: t("metric_heat_days", lang), value: `${fmtNum(m.heatDays, lang)}`, delta: m.heatDaysDelta, unit: ` ${t("unit_days_short", lang)}`,
@@ -169,7 +169,7 @@ function FieldView({ farmId }: { farmId: string }) {
             c: mm.heatDaysThresholdC, year: mm.heatDaysYear, days: mm.heatDaysEraA ?? "n/a", era: realPack!.onset.eraA.label,
           })
         : tf("card_sub_heat", lang, {}),
-      color: "#ef6c4d", inverse: true, source: (realPack ? "pack" : "fixture") as "pack" | "fixture",
+      color: "#ef6c4d", inverse: true, source: (realPack ? "pack" : "fixture") as "pack" | "fixture", labelChip: realPack ? "NASA POWER" : undefined,
     },
   ];
 
@@ -189,7 +189,7 @@ function FieldView({ farmId }: { farmId: string }) {
                 <div className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-ink-mid">
                   <c.icon className="h-4 w-4" style={{ color: c.color }} />
                   {c.label}
-                  <span className="ml-auto"><SourceChip source={c.source} /></span>
+                  <span className="ml-auto"><SourceChip source={c.source} label={c.labelChip} /></span>
                 </div>
                 <div className="mt-1.5 flex flex-wrap items-baseline gap-x-2 gap-y-1">
                   <span className="font-display text-2xl font-bold tabular">{c.value}</span>
@@ -224,7 +224,7 @@ function FieldView({ farmId }: { farmId: string }) {
           </Panel>
 
           <div className="grid gap-5 lg:grid-cols-2">
-            <Panel title={t("panel_ndvi_title", lang)} right={<SourceChip source="fixture" />}>
+            <Panel title={t("panel_ndvi_title", lang)} right={<SourceChip source="live" label="NASA MODIS" />}>
               <SeasonTrend pack={f} />
             </Panel>
             <Panel

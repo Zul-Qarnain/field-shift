@@ -3,8 +3,9 @@
 import { Suspense, useContext, useMemo, useState } from "react";
 import Link from "next/link";
 import { usePathname, useSearchParams } from "next/navigation";
-import { Home, Sprout, CalendarRange, BookOpen, Database, Search, MapPin, Zap } from "lucide-react";
+import { Home, Sprout, CalendarRange, BookOpen, Database, Search, MapPin, Zap, FileText, Sun, Moon, Globe } from "lucide-react";
 import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
+import { ThemeProvider, useTheme } from "@/lib/theme";
 import { fmtNum, t } from "@/lib/i18n";
 import { FARMS, districtName, divisionName, farmName } from "@/lib/data";
 import { ChatWidget } from "@/components/ChatWidget";
@@ -15,6 +16,7 @@ const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] =
   { href: "/plan", key: "nav_plan", icon: CalendarRange },
   { href: "/locate", key: "nav_locate", icon: MapPin },
   { href: "/quick", key: "nav_quick", icon: Zap },
+  { href: "/docs", key: "nav_docs", icon: FileText },
   { href: "/method", key: "nav_method", icon: BookOpen },
   { href: "/data", key: "nav_data", icon: Database },
 ];
@@ -22,17 +24,45 @@ const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] =
 function LangToggle() {
   const { lang, setLang } = useContext(LangContext);
   return (
-    <div className="flex items-center rounded-lg border border-line bg-inset p-0.5 text-xs font-semibold">
-      {(["bn", "en"] as Lang[]).map((l) => (
-        <button
-          key={l}
-          onClick={() => setLang(l)}
-          className={`rounded-md px-2.5 py-1.5 transition-colors ${lang === l ? "bg-action text-white" : "text-ink-mid hover:text-ink-hi"}`}
-        >
-          {l === "bn" ? "বাং" : "EN"}
-        </button>
-      ))}
+    <div className="flex items-center gap-1 rounded-xl border border-line bg-surface/90 p-1 text-xs font-medium shadow-sm">
+      <Globe className="ml-1.5 h-3.5 w-3.5 text-action" />
+      <button
+        onClick={() => setLang("bn")}
+        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+          lang === "bn"
+            ? "bg-action text-white shadow-sm"
+            : "text-ink-mid hover:text-ink-hi"
+        }`}
+        title="বাংলা ভাষায় দেখুন"
+      >
+        বাংলা
+      </button>
+      <button
+        onClick={() => setLang("en")}
+        className={`rounded-lg px-2.5 py-1 text-xs font-semibold transition-all ${
+          lang === "en"
+            ? "bg-action text-white shadow-sm"
+            : "text-ink-mid hover:text-ink-hi"
+        }`}
+        title="Switch to English"
+      >
+        English
+      </button>
     </div>
+  );
+}
+
+function ThemeToggle() {
+  const { theme, toggleTheme } = useTheme();
+  return (
+    <button
+      onClick={toggleTheme}
+      aria-label="Toggle theme"
+      title={theme === "dark" ? "Switch to light theme (লাইট থিম)" : "Switch to dark theme (ডার্ক থিম)"}
+      className="flex h-9 w-9 items-center justify-center rounded-xl border border-line bg-surface/80 text-ink-mid transition-all hover:bg-elevated hover:text-ink-hi"
+    >
+      {theme === "dark" ? <Sun className="h-4 w-4 text-amber" /> : <Moon className="h-4 w-4 text-action" />}
+    </button>
   );
 }
 
@@ -118,6 +148,7 @@ export function Shell({ children }: { children: React.ReactNode }) {
   const { lang } = langValue;
 
   return (
+    <ThemeProvider>
     <LangContext.Provider value={langValue}>
       <div className="flex min-h-screen">
         {/* Sidebar */}
@@ -175,16 +206,18 @@ export function Shell({ children }: { children: React.ReactNode }) {
               FIELD <span className="text-lime">SHIFT</span>
             </Link>
             <SearchBox />
-            <span className="hidden items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1.5 text-xs text-ink-mid sm:flex">
-              <span className="h-1.5 w-1.5 rounded-full bg-amber" />
-              {t("src_fixture", lang)}
+            <span className="hidden items-center gap-2 rounded-full border border-lime/40 bg-lime/10 px-3 py-1.5 text-xs font-medium text-lime sm:flex">
+              <span className="h-2 w-2 rounded-full bg-lime animate-pulse" />
+              <span className="text-[11px] font-mono font-semibold tracking-wide">NASA LIVE DATA</span>
             </span>
             <LangToggle />
+            <ThemeToggle />
           </header>
           <main className="flex-1">{children}</main>
         </div>
       </div>
       <ChatWidget />
     </LangContext.Provider>
+    </ThemeProvider>
   );
 }

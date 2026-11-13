@@ -34,7 +34,7 @@ describe("Bangla digits", () => {
     expect(tf("plan_valid_rotations", "en", { n: 24 })).toBe("24 valid rotations");
     expect(tf("unc_ndvi_years", "bn", { n: 24 })).toBe("NDVI রেকর্ড: ২৪ বছর");
     expect(tf("plan_irrigation_note", "bn", { n: 0.6 }).includes("০.৬")).toBe(true);
-    expect(tf("card_sub_moisture", "bn", { n: 7 })).toBe("POWER মডেল · গত ৭ দিনের তুলনায়");
+    expect(tf("card_sub_moisture", "bn", { n: 7 })).toBe("POWER GWETROOT / SMAP L4 · গত ৭ দিনের তুলনায়");
     expect(t("unc_smap_yes", "bn").includes("২০১৫")).toBe(true);
   });
 
