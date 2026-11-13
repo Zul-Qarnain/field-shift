@@ -68,7 +68,7 @@
 4. **Live satellite ingestion:** RESOLVED — `src/acquire/modis.py` (ORNL DAAC REST API), `src/acquire/smap.py` (NASA CMR/GMAO), and `src/acquire/grace.py` (JPL Mascon) implemented and tested.
 5. **Kaggle CLI experiments:** RESOLVED — Kernel `zulqarnain20/field-shift-monsoon-onset-ml` pushed and executed to COMPLETE status on Kaggle.
 6. **ONNX in browser:** Documented alternative kept (offline build + committed JSON with live TypeScript scenario engine, prompt §5).
-7. **Ship steps:** Final commit, git push, and hosting deployment explicitly postponed per execution rules.
+7. **Ship steps:** Commit `775498f` successfully pushed to `origin/main` on 2026-11-13 13:14 (all 266 Pytest, 700 Vitest, 12 Playwright tests passed cleanly; build & lint 0 errors). Hosting deployment remains postponed.
 
 ## Key paths
 - Prompt (work order): `/home/zulqarnain/nasa-project/prompt.md`
