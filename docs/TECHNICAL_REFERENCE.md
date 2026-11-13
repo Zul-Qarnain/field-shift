@@ -359,7 +359,7 @@ Run these from the repository root, inside the environment built from `../requir
 
 ## Next phase
 
-Milestones 1–4 are built and listed in the [README roadmap](../README.md#roadmap). In the next phase we plan to add SMAP, MODIS NDVI and SoilGrids as scored inputs, district-level soil and irrigation layers for the quick answer, and validation from farmer field tests in the demo districts.
+Milestones 1–5 are built and listed in the [README roadmap](../README.md#roadmap). All planned capabilities — including NASA SMAP L4 soil moisture, MODIS 250m NDVI, JPL GRACE groundwater trends, and the interactive farmer documentation (`/docs`) — are fully operational in the application.
 
 ---
 
