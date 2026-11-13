@@ -23,9 +23,9 @@
 ### 4. README / AI_USE attribution audit
 - README Use-of-AI row: added Claude Code (Anthropic); points to verification appendix.
 - AI_USE.md appendix "Requested tool acknowledgements (2026-11-13)":
-  - Repo-evidenced: Qoder CLI (Alibaba), Claude Code (Anthropic), Cursor/Grok planning.
+  - Repo-evidenced: Qoder CLI (Alibaba), Claude Code (Anthropic), Cursor/Mistral planning.
   - Team-stated, vendor verified: Codex (OpenAI), Antigravity IDE (Google), OpenCode (Anomaly/sst), Google Flow (Google DeepMind), ElevenLabs + Google voice.
-  - Corrected: Cursor = Anysphere (not SpaceX); Grok = xAI (not SpaceX); OpenCode = Anomaly/sst (not Meta).
+  - Corrected: Cursor = Anysphere (not SpaceX); Grok removed (team confirms not used — Mistral (Mistral AI) is the review agent); OpenCode = Anomaly/sst (not Meta).
   - Unverifiable, NOT published: "Muse by Meta", EntryGPT, D0, Tars/SpaceX.
 
 ### 6. Scientific, Data & Engineering Resolutions (2026-11-13 Afternoon Session)

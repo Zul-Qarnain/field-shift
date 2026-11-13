@@ -106,10 +106,10 @@ export default function MethodPage() {
             ). Supports Aman → Potato on stressed ground.
           </li>
           <li>
-            Pulse and oilseed salt tolerances (lentil, mungbean, sesame, jute, mustard) are <em>not</em> cited
-            in-app: FAO-29 publishes no ECe for them, so the engine shows them as risk lines instead of scores
-            (see the salinity entry). Any tolerance numbers for these crops need a citable source before they
-            can enter the scoring — none is claimed here.
+            Pulse and oilseed salt tolerances (lentil, mungbean, sesame, jute, mustard) have no FAO-29 table:
+            the engine scores them on <em>provisional ESTIMATE thresholds</em> in a BARI/Maas style (each
+            crop&apos;s source line is marked ESTIMATE, unverified 2026-11-13). A citable BARI threshold table
+            is still needed before these numbers can be presented as published values.
           </li>
         </ul>
         <p className="mt-2 text-[11px] leading-relaxed text-ink-low">

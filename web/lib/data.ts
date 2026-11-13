@@ -310,7 +310,7 @@ const FAO29 = (crop: string, a: number, zero: number) =>
   `FAO Irrigation & Drainage Paper 29 Rev.1 (Ayers & Westcot 1985) Table 4 — ${crop}: ECe ${a} dS/m at 100% yield, ${zero} dS/m at 0% → slope 100/(${zero}−${a})`;
 
 const BARI_MAAS = (crop: string, a: number, zero: number, source: string) =>
-  `${source} — ${crop}: ECe ${a} dS/m threshold, ${zero} dS/m at 0% yield (slope ${(100 / (zero - a)).toFixed(2)}%/dS/m)`;
+  `ESTIMATE — provisional ECe threshold, no citable published table found (unverified 2026-11-13; begun from ${source}): ${crop}: ECe ${a} dS/m threshold, ${zero} dS/m at 0% yield (slope ${(100 / (zero - a)).toFixed(2)}%/dS/m)`;
 
 export interface Crop {
   id: string;
