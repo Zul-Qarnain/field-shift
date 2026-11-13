@@ -141,6 +141,17 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </Suspense>
           </nav>
           <div className="mt-auto px-5 pb-6">
+            <div className="mb-3 rounded-xl border border-line bg-inset/80 p-3 text-xs">
+              <div className="flex items-center gap-2 font-semibold text-ink-hi">
+                <span className="flex h-5 w-5 items-center justify-center rounded-md bg-action/20 text-action text-xs">📱</span>
+                <span>{lang === "bn" ? "অ্যান্ড্রয়েড অ্যাপ (PWA)" : "Android Farmer App"}</span>
+              </div>
+              <p className="mt-1 text-[11px] text-ink-low leading-relaxed">
+                {lang === "bn"
+                  ? "মোবাইলে সরাসরি ইনস্টল করুন — অফলাইন মোডেও পরামর্শ দেখুন।"
+                  : "Install on mobile — view crop plans and SMS advice even offline."}
+              </p>
+            </div>
             <div className="rounded-xl border border-line bg-inset p-4">
               <p className="font-display text-sm font-medium leading-snug">
                 {t("shell_note_1", lang)}

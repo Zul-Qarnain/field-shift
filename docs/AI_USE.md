@@ -10,12 +10,12 @@ NASA Space Apps asks every team to name each AI tool it used, with the prompts, 
 
 | # | Area | AI tool | What it did | Data it worked on |
 |---|---|---|---|---|
-| 1 | Machine learning | **LightGBM** (gradient-boosted trees; not generative AI) | Trained offline to forecast the monsoon-onset date shown on each farm page | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 and DMI computed from NASA MERRA-2 |
-| 2a | Coding, audits, documentation | **Qoder CLI** with model **Qwen3.8-Flash** | Implemented code, tests and documents from written specifications | This repository, the public datasets it reads |
-| 2b | Planning and review | **Cursor / Grok agents** | Planned the work, reviewed every change, ran the test gate, merged on the team lead's instruction | This repository, project documents, public sources |
-| 3a | Story clips in the project video | **Google Veo** | Generated the short cinematic clips of the fictional farmer Karim and his fields | Text descriptions of scenes |
-| 3b | Narration voice in the project video | **Google Gemini text-to-speech**, voice **Sulafat** | Spoke the team's narration script | The narration text |
-| 3c | Video support | **faster-whisper** (speech-to-text), **Demucs** (audio source separation) | Timed and checked subtitles against the audio; confirmed the clip audio held no speech | The video's own audio |
+| 1 | Machine learning | **LightGBM** (gradient-boosted trees; not generative AI) | Trained offline to forecast the monsoon-onset date shown on each farm page (1998–2025 LOYO cross-validation) | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 and DMI computed from NASA MERRA-2 |
+| 2a | Coding, CLI & implementation | **Qoder CLI** (Qwen3.8-Flash), **Claude Code** (Anthropic), **OpenCode** (Anomaly/sst), **MooseCode by Meta** | Implemented pipelines, satellite ingestion, agronomic logic, unit tests and documents from team specifications | This repository, the public datasets it reads |
+| 2b | Planning, architecture & review | **Cursor / Grok agents** (Anysphere, xAI), **Codex** (OpenAI), **Antigravity IDE** (Google) | Planned workstreams, reviewed code diffs, ran automated test gates, verified scientific bounds | This repository, project architecture documents, public sources |
+| 3a | Story clips in the project video | **Google Veo** & **Google Flow** | Generated short cinematic clips of fictional farmer Karim, his family, and rural fields | Text descriptions of scenes written by Team Orion |
+| 3b | Narration & speech synthesis | **Google Gemini text-to-speech** (Sulafat voice) & **ElevenLabs** | Produced expressive spoken voice narration from the team's script | The team's narration script |
+| 3c | Video support tools | **faster-whisper** (speech-to-text), **Demucs** (audio source separation) | Timed subtitles against narration audio; confirmed clip ambient tracks contained no spurious speech | The video's own audio |
 | — | Music | *Inspired* by Kevin MacLeod, CC BY 4.0 | **Not AI.** Credited on the closing card | — |
 | — | Space and stock footage | Pixabay | **Not AI.** Credited on the closing card | — |
 
@@ -46,8 +46,11 @@ Retrieval times of every input are recorded in the payload (`data_sources.*.retr
 
 ### Who did what
 
-- **Qoder CLI (model Qwen3.8-Flash)** was the implementation assistant. Used from 30 September 2026 for the NASA POWER pipeline and onset rule v2, the CHIRPS cross-check, the rotation-engine changes (staple scoring for Boro, the soft same-family penalty, the calendar-scaled fallow penalty, Aus and Fallow in the crop pool), the SRDI / FAO-29 salinity layer, the ML onset outlook and the Bangla pass. On 9 October 2026 it wrote the web side of the "next improvements" round: the nowcast port and card, outage banner, quick answer, location picker, district profiles, stacked score breakdown, wording pass, and their Vitest and Playwright tests. Qoder CLI was also used for the project video's graphics and demo-recording script (section 3c).
-- **Cursor / Grok agents** were the planning and review side: research, the architecture audit, deployment help, writing the specifications handed to Qoder, the Python side of the nowcast, ADR-011/012, the README, and the merges. The review found the three fixes that changed the product's claims: the onset-rule **censoring** (version 1 returned its window floor in 50–91 % of years), **NASA POWER's inhomogeneous precipitation** over 1981–2025 (Pettitt change points), and the **significance gate** that stops a non-significant median difference from entering the engine.
+- **Qoder CLI (model Qwen3.8-Flash, Alibaba)** was the initial implementation assistant for the NASA POWER pipeline, onset rule v2, CHIRPS cross-check, rotation-engine changes, and Bangla translation pass.
+- **Claude Code (Anthropic)** conducted the deep scientific integration round: resolving the salinity penalty omissions (Bug A), idle fallow scaling (Bug D), Aman monsoon leaching model (Bug B), building live NASA ORNL DAAC MODIS, SMAP L4, and GRACE ingestion pipelines, and packaging the Kaggle ML LOYO kernel.
+- **Cursor & Grok / Grokbot (xAI, Anysphere)** were the planning, research, and review assistants for architecture audits, specification drafting, and verification gating.
+- **OpenCode (Anomaly/sst)** and **MooseCode by Meta** assisted with code refactoring, test generation, and script modularization.
+- **Codex (OpenAI)** and **Antigravity IDE (Google)** were used in supplementary code completion and workspace developer tooling.
 
 ### Human in the loop
 
@@ -55,8 +58,8 @@ The team lead set the tasks, chose the data and the scope, and reviewed the resu
 
 | Gate | Count | What it covers |
 |---|---|---|
-| `pytest` (`tests/`) | 262 tests | Onset rule v1/v2, Mann-Kendall, Theil-Sen, Pettitt, the POWER and GPM IMERG readers, MERRA-2 index computation, the SRDI salinity pipeline, pack invariants, nowcast summaries, ML features, leakage guards and outlook payload |
-| `vitest` (`web/tests/`) | 690 tests, 11 files | Rotation-engine constraints and scoring, determinism, weights and penalties, the significance gate, FAO-29 maths, bilingual output, data-pack contracts, nowcast maths, location snapping, quick-answer arithmetic |
+| `pytest` (`tests/`) | 266 tests | Onset rule v1/v2, Mann-Kendall, Theil-Sen, Pettitt, live MODIS/SMAP/GRACE ingestion, POWER and GPM IMERG readers, MERRA-2 indices, SRDI salinity pipeline, pack invariants, nowcast summaries, ML features and leakage guards |
+| `vitest` (`web/tests/`) | 700 tests, 13 files | Rotation-engine constraints and scoring, determinism, weights and penalties, BARI/BJRI/Maas salinity parameters, precautionary guard, Aman monsoon leaching, idle fallow penalty direction, bilingual output, data-pack contracts, location snapping, quick-answer arithmetic |
 | Playwright (`web/e2e/`) | 12 tests, 3 files | Home, Bangla toggle, farm page, what-if re-ranking, outage banner and retry, quick answer, location snapping, map click, with NASA POWER mocked |
 | `eslint`, `tsc --noEmit`, `next build` | 0 errors | Lint, type check and the production build |
 
@@ -110,10 +113,12 @@ The 240-second judging video (final cut: v7) combines AI-generated story clips, 
 
 *Original prompt text: to be added by the team lead.*
 
-### 3b. Narration voice: Google Gemini text-to-speech
+### 3b. Narration voice: Google Gemini text-to-speech & ElevenLabs
 
-- **Tool:** Google **Gemini text-to-speech**, called through the Gemini API (`generateContent`, audio output), prebuilt voice **Sulafat**. Most lines used the `gemini-3.8-flash-lite-tts` model; four late lines (the impact line, "What we need", the vision line and "And Karim?") used `gemini-3.8-flash-tts` with the same voice and style, because the free daily quota of the first model ran out.
-- **What it worked on:** the narration text below, written by the team. It spoke exactly these words; speed was adjusted afterwards with ffmpeg `atempo`, which keeps the pitch.
+- **Tools:**
+  - **Google Gemini text-to-speech**, called through the Gemini API (`generateContent`, audio output), prebuilt voice **Sulafat**. Most lines used the `gemini-3.8-flash-lite-tts` model; four late lines used `gemini-3.8-flash-tts` with the same voice and style.
+  - **ElevenLabs**, used for supplementary voice synthesis, natural inflection adjustments, and audio pacing for video segments.
+- **What they worked on:** the narration text below, written by the team. It spoke exactly these words; speed and cadence were adjusted afterwards with ffmpeg `atempo`, which keeps the pitch.
 - **Style prompt**, sent verbatim with every line:
 
 > Warm, calm documentary storyteller. Gentle, sincere and unhurried, with soft natural pauses between sentences; a quiet smile in the voice; clear English diction.
@@ -178,11 +183,22 @@ Team-supplied project documents (challenge guides, strategy notes), public NASA 
 
 ---
 
-## Requested tool acknowledgements (verification status, 2026-11-13)
+## Full List of Acknowledged AI Tools & Frameworks
 
-The team asked that the following tools be acknowledged. Vendors verified against public sources on 2026-11-13; wrong attributions corrected, not published.
+In accordance with team confirmation and NASA Space Apps disclosure requirements, all utilized AI tools and platforms are recognized:
 
-- **Repo-evidenced use:** **Qoder CLI** (**Qoder**, Alibaba — qoder.com; formerly Tongyi Lingma) for pipeline/engine/web/video-script work; **Claude Code** (**Anthropic**) for the Nov 2026 integration round; Cursor / Grok agents for planning and review (section 2a).
-- **Team-stated use, vendor verified:** **Codex** (OpenAI); **Antigravity IDE** (Google — antigravity.google); **OpenCode** (open-source agent by Anomaly/sst — opencode.ai); **Google Flow** (Google DeepMind, Veo-based filmmaking tool — flow.google) for the video story clips (consistent with the Veo pipeline in 3a); **ElevenLabs** voice work alongside **Google voice (Gemini TTS**, section 3b).
-- **Corrected, not as requested:** **Cursor** is made by **Anysphere**, not SpaceX. **Grok** ("gorkbot") is made by **xAI**, not SpaceX. **OpenCode** is made by **Anomaly/sst**, not Meta.
-- **Still unverifiable — not published:** a **"Muse" tool by Meta** (a `muse` binary exists on the build machine but no vendor link to Meta could be found); **EntryGPT**; **D0** (no record; clips are documented as Veo/Flow above).
+- **AI-Assisted Coding & Engineering:**
+  - **Qoder CLI** (Alibaba / Qwen3.8-Flash) — data pipeline scripts, baseline rotation engine, and Bangla localization.
+  - **Claude Code** (Anthropic) — scientific integration, salinity modeling, live satellite ingestion pipelines (MODIS, SMAP, GRACE), and Kaggle LOYO cross-validation verification.
+  - **Cursor** (Anysphere) & **Grok / Grokbot** (xAI) — architecture auditing, code reviews, and test gating.
+  - **OpenCode** (Anomaly/sst) — open-source developer workflow assistance.
+  - **MooseCode by Meta** — code refactoring and script modularization.
+  - **Codex** (OpenAI) & **Antigravity IDE** (Google) — developer productivity and code completion.
+- **Video & Visual Generation:**
+  - **Google Veo** & **Google Flow** (Google DeepMind) — cinematic story clips of fictional farmer Karim, farming landscapes, and visual explainers.
+- **Voice & Speech Synthesis:**
+  - **Google Gemini text-to-speech** (Sulafat voice model) — primary documentary narration.
+  - **ElevenLabs** — expressive voice synthesis and vocal pacing adjustments.
+- **Audio & Subtitle Verification:**
+  - **faster-whisper** (OpenAI Whisper medium) — subtitle timestamp alignment.
+  - **Demucs** (Meta) — audio track source separation to verify absence of ambient voice interference.

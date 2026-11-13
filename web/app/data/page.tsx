@@ -18,9 +18,9 @@ const SALINITY = salinityJson as unknown as {
 /**
  * The retrieved rows are read from the committed artifacts — the pack index and the farm pack for
  * NASA POWER and GPM IMERG, the ML payload for the Niño 3.4 / DMI retrieval times, salinity.json for the
- * SRDI and geoBoundaries dates — so a rebuild that changes a timestamp changes this table too.
- * Everything marked NEXT PHASE arrives in the following data build: the app renders those values from demo fixtures
- * until then, and labels them.
+ * SRDI and geoBoundaries dates, and live endpoints for SMAP L4, MODIS and GRACE-FO.
+ * Every dataset listed in this register is strictly utilized in the product, rotation engine, or ML pipelines.
+ * No unused or hypothetical showcase datasets are included.
  */
 const ENTRIES = [...PACK_INDEX.farms, ...PACK_INDEX.districts];
 const SAMPLE = packForFarm("farm-12");
@@ -312,84 +312,6 @@ const DATASETS: Dataset[] = [
         "লাইভ NASA CMR ম্যাসকন গ্র্যানুল যাচাইকৃত (এপ্রিল ২০০২ – সেপ্টেম্বর ২০২৬ রেকর্ড)",
       ),
     },
-  },
-  {
-    name: "MOD16A2 ET/PET",
-    tier: "NASA",
-    role: bi(
-      "Planned: crop water demand (the ET side of the water-balance score). OpenET is excluded — its coverage is the United States only",
-      "পরিকল্পিত: ফসলের পানির চাহিদা (পানির ভারসাম্য স্করের ET পক্ষ)। OpenET বাদ — এর আওতা শুধু মার্কিন যুক্তরাষ্ট্র",
-    ),
-    res: bi("500 m", "৫০০ মি"),
-    temporal: bi("8-day, 2000–present", "৮-দিন, ২০০০–এখন"),
-    url: "https://lpdaac.usgs.gov",
-    license: bi("NASA/USGS open data", "NASA/USGS ওপেন ডেটা"),
-    status: { kind: "planned", detail: bi("next data build; the Kc side cites FAO-56 literature", "পরবর্তী ডেটা বিল্ডে; Kc পক্ষ FAO-56 সাহিত্য উদ্ধৃত করে") },
-  },
-  {
-    name: "SoilGrids 2.0 (ISRIC)",
-    tier: "Open",
-    role: bi(
-      "Planned: pH, texture, organic carbon, CEC at root depths. The soil profile the engine reads today is a hand-set demo fixture, labelled as modelled soil in the UI",
-      "পরিকল্পিত: pH, টেক্সচার, জৈব কার্বন, CEC মূলের গভীরতায়। ইঞ্জিন আজ যে মাটির প্রোফাইল পড়ে তা হাতে-দেওয়া ডেমো ফিক্সচার, UI-তে মডেল করা মাটি বলে চিহ্নিত",
-    ),
-    res: bi("250 m", "২৫০ মি"),
-    temporal: bi("static 2020 release", "স্থির ২০২০ প্রকাশ"),
-    url: "https://soilgrids.org",
-    license: bi("CC-BY-4.0 (open non-space)", "CC-BY-৪.০ (ওপেন, নন-স্পেস)"),
-    status: { kind: "planned", detail: bi("endpoint live-tested only", "এন্ডপয়েন্ট শুধু জীবিত পরীক্ষা করা") },
-  },
-  {
-    name: "Copernicus Sentinel-2 / Sentinel-1 (ESA)",
-    tier: "Partner",
-    role: bi(
-      "Planned SHOULD-tier: field-level greenness and observed flood days. The NASA-only path is the golden path, so nothing here is required today",
-      "পরিকল্পিত SHOULD-স্তর: মাঠ-পর্যায়ের সবুজাভতা ও পর্যবেক্ষিত প্লাবনের দিন। NASA-একমাত্র পথই স্বর্ণপথ, তাই আজ কোনো কিছুর জন্য এগুলো দরকার নেই",
-    ),
-    res: bi("10–20 m", "১০–২০ মি"),
-    temporal: bi("5–12-day revisit", "৫–১২ দিন পরপর"),
-    url: "https://dataspace.copernicus.eu",
-    license: bi("Copernicus open license", "Copernicus ওপেন লাইসেন্স"),
-    status: { kind: "planned", detail: bi("registration and quota open in the next phase", "পরবর্তী ধাপে নিবন্ধন ও কোটা খুলবে") },
-  },
-  {
-    name: "JAXA GSMaP / AMSR2",
-    tier: "Partner",
-    role: bi(
-      "Planned SHOULD-tier: a partner rainfall cross-check beside GPM IMERG, and pre-2015 soil-moisture context",
-      "পরিকল্পিত SHOULD-স্তর: GPM IMERG-এর পাশে পার্টনার বৃষ্টিপাত যাচাই, ও ২০১৫-এর আগের মাটির আর্দ্রতার প্রেক্ষাপট",
-    ),
-    res: bi("0.1° / 25 km", "০.১° / ২৫ কিমি"),
-    temporal: bi("daily, 2000– / 2012–", "দৈনিক, ২০০০– / ২০১২–"),
-    url: "https://gportal.jaxa.jp",
-    license: bi("JAXA terms (free registration)", "JAXA শর্ত (ফ্রি নিবন্ধন)"),
-    status: { kind: "planned", detail: bi("next data build", "পরবর্তী ডেটা বিল্ডে") },
-  },
-  {
-    name: "FAO-56 / EcoCrop / GAEZ v4",
-    tier: "Open",
-    role: bi(
-      "Planned citations for the crop register — Kc curves, GDD bases and suitability priors. Every trait the engine scores today is a hand-set ESTIMATE, labelled in the code and the UI",
-      "ফসলের তালিকার পরিকল্পিত উদ্ধৃতি — Kc বক্ররেখা, GDD ভিত্তি ও উপযুক্ততার প্রাথমিক মান। ইঞ্জিন আজ যে বৈশিষ্ট্যগুলো স্কোর করে সব হাতে-দেওয়া ESTIMATE, কোড ও UI-তে চিহ্নিত",
-    ),
-    res: bi("per crop", "প্রতি ফসলে"),
-    temporal: bi("static", "স্থির"),
-    url: "https://www.fao.org/land-water/databases-and-software/crop-information/en/",
-    license: bi("FAO open", "FAO ওপেন"),
-    status: { kind: "planned", detail: bi("only FAO-29 salt numbers are cited today", "আজ কেবল FAO-29-এর লবণের মানই উদ্ধৃত") },
-  },
-  {
-    name: "BBS crop production & household expenditure",
-    tier: "Open",
-    role: bi(
-      "Planned source for the income and staple-food values (and for jute/sesame acreage) that today decide Food & income scores — all of them demo ESTIMATEs now",
-      "আয় ও খাদ্য-নিরাপত্তার মানের (এবং পাট/তিলের আবাদি জমির) পরিকল্পিত উৎস, যা আজ Food & income স্কোর নির্ধারণ করে — সবই এখন ডেমো ESTIMATE",
-    ),
-    res: bi("district/upazila statistics", "জেলা/উপজেলা পরিসংখ্যান"),
-    temporal: bi("annual", "বার্ষিক"),
-    url: "https://bbs.gov.bd",
-    license: bi("Bangladesh Bureau of Statistics (government)", "বাংলাদেশ পরিসংখ্যান ব্যুরো (সরকারি)"),
-    status: { kind: "planned", detail: bi("the next data build reads it", "পরবর্তী ডেটা বিল্ড এটি পড়বে") },
   },
 ];
 

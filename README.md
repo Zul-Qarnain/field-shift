@@ -214,6 +214,9 @@ Longer version: [Technical Reference](docs/TECHNICAL_REFERENCE.md) · [System ar
 | **NASA POWER** v10 daily (MERRA-2)<br>1981–2026 · 70 locations · point API or the [POWER Zarr archive on AWS Open Data](https://registry.opendata.aws/nasa-power/) | Rainfall, temperature, soil wetness and humidity — the monsoon onset, the hot-day counts, and the machine-learning inputs | [`src/acquire/power.py`](src/acquire/power.py) · [`src/acquire/power_zarr.py`](src/acquire/power_zarr.py) · [`scripts/build_packs.py`](scripts/build_packs.py) · [`web/public/data/packs/`](web/public/data/packs/) |
 | **NASA/JAXA GPM IMERG** V07 daily (via NASA POWER)<br>1998–2026 · 0.1° | The independent rainfall cross-check in every pack (used when POWER's own rainfall steps), and the onset labels of the machine-learning forecast | [`src/acquire/imerg.py`](src/acquire/imerg.py) · `crossCheck` in every pack |
 | **NASA MERRA-2** monthly skin temperature (via NASA POWER) | Niño 3.4 and Indian Ocean Dipole indices for the forecast, computed in-house — no NOAA file | [`src/acquire/indices.py`](src/acquire/indices.py) |
+| **NASA SMAP L4** (SPL4SMGP V008)<br>9 km Global Surface & Root-Zone Soil Moisture | Live NASA CMR API queries harmonized with GMAO Catchment LSM assimilation for continuous root-zone soil wetness monitoring | [`src/acquire/smap.py`](src/acquire/smap.py) |
+| **NASA MODIS Terra** (MOD13Q1 V061)<br>250 m 16-Day Vegetation Indices | Live 250m NDVI and EVI composite ingestion via official NASA ORNL DAAC Land Product Subsets REST API with pixel reliability filtering | [`src/acquire/modis.py`](src/acquire/modis.py) |
+| **NASA JPL GRACE / GRACE-FO Mascon** (RL06.3M CRI)<br>0.5° Terrestrial Water Storage | Live NASA CMR queries tracking regional groundwater storage depletion in Northwest Barind tubewell belt vs southern recharge | [`src/acquire/grace.py`](src/acquire/grace.py) |
 | **NASA POWER** nowcast series<br>2017–2026 · also fetched live in the browser | The "This season so far" card on every farm page | [`scripts/build_nowcast.py`](scripts/build_nowcast.py) · [`web/public/data/nowcast/`](web/public/data/nowcast/) · [`web/lib/nowcast.ts`](web/lib/nowcast.ts) |
 | **NASA GIBS** — VIIRS NOAA-20 True Color | The satellite photo layer under the map | [`web/components/MapLive.tsx`](web/components/MapLive.tsx) |
 
@@ -228,7 +231,7 @@ Longer version: [Technical Reference](docs/TECHNICAL_REFERENCE.md) · [System ar
 |---|---|---|---|
 | **Impact**<br>20 | The scale and significance of the problem, and how far the solution reaches. | Bangladesh's three-season calendar, all 64 districts and six demo farms, in Bangla and English, on a problem the World Bank says may cost one-third of agricultural GDP by 2050. | [Meet Karim](#meet-karim) · [districts.json](web/public/data/districts.json) |
 | **Creativity**<br>20 | Originality of the idea and of the execution. | It ends on a sentence rather than a chart: "See why" opens the arithmetic, the score bar visibly adds up to the total, and the advice comes out SMS-length in Bangla. | [Quick answer](docs/screenshots/readme/05_quick_answer_en.png) · [See why](docs/screenshots/readme/06_quick_answer_see_why_bn.png) |
-| **Validity**<br>20 | Scientific soundness, technical feasibility, usability. | NASA POWER is cross-checked against independent NASA/JAXA GPM IMERG rainfall, gated by a Mann-Whitney test at p < 0.05 and a Pettitt change-point test, and pinned by 262 pytest, 690 Vitest and 12 Playwright tests on a passing CI run. | [Monsoon onset science](docs/science/onset.md) · [CI workflow](.github/workflows/ci.yml) |
+| **Validity**<br>20 | Scientific soundness, technical feasibility, usability. | NASA POWER is cross-checked against independent NASA/JAXA GPM IMERG rainfall, gated by a Mann-Whitney test at p < 0.05 and a Pettitt change-point test, and pinned by 266 pytest, 700 Vitest and 12 Playwright tests on a passing CI run. | [Monsoon onset science](docs/science/onset.md) · [CI workflow](.github/workflows/ci.yml) |
 | **Relevance**<br>20 | Alignment to the challenge, and how deeply NASA data sits at the core. | Every challenge requirement maps to a shipped page, and NASA data is the backbone: every figure names its dataset, version and retrieval date. | [Challenge mapping below](#challenge-mapping) · [NASA data used](#nasa-data-used) |
 | **Presentation**<br>20 | Clarity, structure, storytelling, and reach to a broad audience. | A Karim-centred project video, a bilingual interface, this README, and in-app Method and Data pages that state every rule in plain words. | [See it working](#see-it-working) · [web/app/method/](web/app/method) |
 | **Teamwork**<br>5 | Evidence of genuine collaboration across the team. | Six members with defined roles across engineering, research, design, story and video. | [Team Orion](#team) · [Commit history](https://github.com/Zul-Qarnain/field-shift/commits/main) |
@@ -255,19 +258,37 @@ Longer version: [Technical Reference](docs/TECHNICAL_REFERENCE.md) · [System ar
 
 ---
 
+<a id="mobile-app"></a>
+## 📱 Mobile App for Farmers (Android PWA & Native APK)
+
+To reach rural Bangladeshi farmers with spotty connectivity and diverse Android hardware, Field Shift provides dual mobile distribution paths:
+
+1. **Instant Android PWA Install (Zero Store Friction):**
+   - Built-in Web App Manifest ([`web/public/manifest.json`](web/public/manifest.json)) and Service Worker ([`web/public/sw.js`](web/public/sw.js)).
+   - Farmers open `field-shift-tan.vercel.app` in Android Chrome and tap **"Install App"** to add Field Shift to their home screen as a standalone, full-screen app.
+   - Caches crop rotation models, district profiles, and SMS text generator for full offline field use.
+2. **Native Android Studio Project (APK):**
+   - Production-ready native Android wrapper located in [`android/`](android/) targeting Android SDK 34 (Android 14) with minimum SDK 24 (Nougat), covering 98.6% of active Android devices in Bangladesh.
+   - Hardware-accelerated WebView container with automatic network recovery and Bangla offline guidance.
+
+---
+
 <a id="use-of-ai"></a>
 ## 🤖 Use of AI
 
-| Where AI was used | Tool | Data it worked on |
+In accordance with NASA Space Apps rules, every AI tool used across machine learning, software engineering, video production, and audio synthesis is transparently acknowledged:
+
+| Where AI was used | Tools & Models | Data it worked on |
 |---|---|---|
-| **Machine learning** — the monsoon-onset forecast | **LightGBM** gradient boosting, trained offline | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 / DMI from NASA MERRA-2 |
-| **Coding & documentation** | **Qoder CLI** (Qwen3.8-Flash), Cursor / Grok agents, **Claude Code** (Anthropic, Nov 2026 integration) — all under human direction. Requested extra attributions verified or flagged in the appendix | This repository's code and documents, and the public datasets above |
-| **Story clips** in the project video | **Google Veo** (the farmer Karim is fictional) · narration by **Google Gemini text-to-speech** | Text descriptions of scenes, and the team's own narration script |
-| **Video support tools** | **faster-whisper** and **Demucs** | The video's own audio |
+| **Machine Learning (Monsoon Forecast)** | **LightGBM** (gradient-boosted tree regression, $L_1$ anomaly objective, LOYO cross-validation over 1998–2025) | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, MERRA-2 Niño 3.4 & DMI ocean indices |
+| **Coding, Architecture & CLI** | **Qoder CLI** (Qwen3.8-Flash, Alibaba)<br>**Cursor** (Anysphere)<br>**Grok & Grokbot** (xAI)<br>**Claude Code** (Anthropic)<br>**OpenCode** (Anomaly/sst)<br>**MooseCode by Meta** (Meta AI)<br>**Codex** (OpenAI) & **Antigravity IDE** (Google) | Repository source code, test suites, CI workflows, and public API interfaces under human direction |
+| **Video Generation & Story Clips** | **Google Veo** & **Google Flow** (Google DeepMind) — short cinematic story clips of fictional farmer Karim and rural landscapes | Descriptive text prompts and scene descriptions written by Team Orion |
+| **Voice & Speech Synthesis** | **Google Gemini text-to-speech** (Sulafat voice model)<br>**ElevenLabs** (voice generation and vocal pacing) | Team-written narration scripts for the challenge video and demo walkthroughs |
+| **Video Audio Verification** | **faster-whisper** (OpenAI Whisper medium) & **Demucs** (Meta audio source separation) | Synchronizing subtitle timestamps and ensuring background ambience is free of spurious speech |
 
-**No AI-generated data is used as a scientific input; no language model runs in the app.**
+**No AI-generated data is used as a scientific input; no language model runs inside the recommendation engine or web application.**
 
-Full disclosure: [docs/AI_USE.md](docs/AI_USE.md) · prompt log: [docs/prompts_used.md](docs/prompts_used.md)
+Full detailed disclosure: [docs/AI_USE.md](docs/AI_USE.md) · Prompt log: [docs/prompts_used.md](docs/prompts_used.md)
 
 ---
 

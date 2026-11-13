@@ -1,0 +1,34 @@
+{
+  "name": "Field Shift — Adapting Farms with NASA Data",
+  "short_name": "Field Shift",
+  "description": "Smart crop rotation planner for Bangladesh farmers using NASA satellite data and machine learning.",
+  "start_url": "/quick",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#0f172a",
+  "theme_color": "#166534",
+  "categories": ["agriculture", "weather", "productivity"],
+  "lang": "bn",
+  "icons": [
+    {
+      "src": "/icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Quick Answer (দ্রুত উত্তর)",
+      "short_name": "Quick",
+      "description": "Find top crop rotations for your district on one screen",
+      "url": "/quick"
+    },
+    {
+      "name": "My Farm (আমার খামার)",
+      "short_name": "Farm",
+      "description": "View satellite data and season outlook for your farm",
+      "url": "/field"
+    }
+  ]
+}
