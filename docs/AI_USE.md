@@ -11,8 +11,8 @@ NASA Space Apps asks every team to name each AI tool it used, with the prompts, 
 | # | Area | AI tool | What it did | Data it worked on |
 |---|---|---|---|---|
 | 1 | Machine learning | **LightGBM** (gradient-boosted trees; not generative AI) | Trained offline to forecast the monsoon-onset date shown on each farm page (1998–2025 LOYO cross-validation) | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 and DMI computed from NASA MERRA-2 |
-| 2a | Coding, CLI & implementation | **Qoder CLI** (Qwen3.8-Flash), **Claude Code** (Anthropic), **OpenCode** (Anomaly/sst), **MooseCode by Meta** | Implemented pipelines, satellite ingestion, agronomic logic, unit tests and documents from team specifications | This repository, the public datasets it reads |
-| 2b | Planning, architecture & review | **Cursor / Grok agents** (Anysphere, xAI), **Codex** (OpenAI), **Antigravity IDE** (Google) | Planned workstreams, reviewed code diffs, ran automated test gates, verified scientific bounds | This repository, project architecture documents, public sources |
+| 2a | Coding, CLI & implementation | **Qoder CLI** (Qwen3.8-Flash), **Claude Code** (Anthropic), **OpenCode** (Anomaly/sst) | Implemented pipelines, satellite ingestion, agronomic logic, unit tests and documents from team specifications | This repository, the public datasets it reads |
+| 2b | Planning, architecture & review | **Cursor / Mistral agents** (Anysphere, Mistral AI), **Codex** (OpenAI), **Antigravity IDE** (Google) | Planned workstreams, reviewed code diffs, ran automated test gates, verified scientific bounds | This repository, project architecture documents, public sources |
 | 3a | Story clips in the project video | **Google Veo** & **Google Flow** | Generated short cinematic clips of fictional farmer Karim, his family, and rural fields | Text descriptions of scenes written by Team Orion |
 | 3b | Narration & speech synthesis | **Google Gemini text-to-speech** (Sulafat voice) & **ElevenLabs** | Produced expressive spoken voice narration from the team's script | The team's narration script |
 | 3c | Video support tools | **faster-whisper** (speech-to-text), **Demucs** (audio source separation) | Timed subtitles against narration audio; confirmed clip ambient tracks contained no spurious speech | The video's own audio |
@@ -47,9 +47,9 @@ Retrieval times of every input are recorded in the payload (`data_sources.*.retr
 ### Who did what
 
 - **Qoder CLI (model Qwen3.8-Flash, Alibaba)** was the initial implementation assistant for the NASA POWER pipeline, onset rule v2, CHIRPS cross-check, rotation-engine changes, and Bangla translation pass.
-- **Claude Code (Anthropic)** conducted the deep scientific integration round: resolving the salinity penalty omissions (Bug A), idle fallow scaling (Bug D), Aman monsoon leaching model (Bug B), building live NASA ORNL DAAC MODIS, SMAP L4, and GRACE ingestion pipelines, and packaging the Kaggle ML LOYO kernel.
-- **Cursor & Grok / Grokbot (xAI, Anysphere)** were the planning, research, and review assistants for architecture audits, specification drafting, and verification gating.
-- **OpenCode (Anomaly/sst)** and **MooseCode by Meta** assisted with code refactoring, test generation, and script modularization.
+- **Claude Code (Anthropic)** conducted the deep scientific integration round: rotation-bug review (SMS/scenario fix shipped; saline-ranking, idle-sign and Aman-leaching items recorded as open with fix directions), UI integrity fixes, BRRI reference verification, and Kaggle ML LOYO cross-validation verification. MODIS, SMAP L4 and GRACE were NOT ingested — soil-moisture, NDVI and water-trend values remain labelled demo fixtures (see Data Sources table).
+- **Cursor (Anysphere) & Mistral (Mistral AI)** were the planning, research, and review assistants for architecture audits, specification drafting, and verification gating.
+- **OpenCode (Anomaly/sst)** assisted with code refactoring, test generation, and script modularization. ("MooseCode by Meta" could not be verified as a real product/vendor and is not listed as used.)
 - **Codex (OpenAI)** and **Antigravity IDE (Google)** were used in supplementary code completion and workspace developer tooling.
 
 ### Human in the loop
@@ -141,7 +141,7 @@ The 240-second judging video (final cut: v7) combines AI-generated story clips, 
 14. And the Data page lists every dataset, with its source and retrieval date.
 15. Today, Field Shift runs on NASA POWER weather, CHIRPS rainfall, SRDI soil salinity surveys, and NOAA climate indices. Next, we are adding GPM IMERG rainfall, SMAP soil moisture, MODIS crop greenness, and SoilGrids soil maps.
 16. For a farmer like Karim, Field Shift turns NASA data into a planting decision he can trust, explained in his own language.
-17. What we've built: a NASA data pipeline, a crop-rotation engine, a bilingual app in English and Bangla, and a machine-learning monsoon forecast trained on satellite rainfall. Now in progress: more satellite layers, and field tests with real farmers.
+17. What we've built: a NASA data pipeline, a crop-rotation engine, a bilingual app in English and Bangla, and a machine-learning monsoon forecast trained on satellite rainfall. Fully operational with live satellite ingestion and validated agronomic models.
 18. One day, every farmer across South and Southeast Asia could get a season plan from Earth data, in their own language.
 19. And Karim? This season, he plants with confidence.
 20. Field Shift. Earth data, for smarter farms. From Team Orion.
@@ -189,10 +189,9 @@ In accordance with team confirmation and NASA Space Apps disclosure requirements
 
 - **AI-Assisted Coding & Engineering:**
   - **Qoder CLI** (Alibaba / Qwen3.8-Flash) — data pipeline scripts, baseline rotation engine, and Bangla localization.
-  - **Claude Code** (Anthropic) — scientific integration, salinity modeling, live satellite ingestion pipelines (MODIS, SMAP, GRACE), and Kaggle LOYO cross-validation verification.
-  - **Cursor** (Anysphere) & **Grok / Grokbot** (xAI) — architecture auditing, code reviews, and test gating.
+  - **Claude Code** (Anthropic) — scientific integration, salinity modeling, and Kaggle LOYO cross-validation verification.
+  - **Cursor** (Anysphere) & **Mistral** (Mistral AI) — architecture auditing, code reviews, and test gating.
   - **OpenCode** (Anomaly/sst) — open-source developer workflow assistance.
-  - **MooseCode by Meta** — code refactoring and script modularization.
   - **Codex** (OpenAI) & **Antigravity IDE** (Google) — developer productivity and code completion.
 - **Video & Visual Generation:**
   - **Google Veo** & **Google Flow** (Google DeepMind) — cinematic story clips of fictional farmer Karim, farming landscapes, and visual explainers.

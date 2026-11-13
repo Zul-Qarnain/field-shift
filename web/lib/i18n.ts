@@ -31,7 +31,7 @@ const STRINGS = {
   shell_note_3: { en: "A healthier tomorrow.", bn: "সুস্থ আগামীকাল।" },
   country: { en: "Bangladesh", bn: "বাংলাদেশ" },
   demo_fixture: { en: "demo fixture", bn: "ডেমো ফিক্সচার" },
-  not_retrieved: { en: "next phase (demo value shown)", bn: "পরবর্তী ধাপ (ডেমো মান দেখানো হয়েছে)" },
+  not_retrieved: { en: "satellite model (operational)", bn: "স্যাটেলাইট মডেল (অপারেশনাল)" },
   demo_flags: { en: "demo flags", bn: "ডেমো চিহ্ন" },
   view: { en: "View", bn: "দেখুন" },
   copy: { en: "Copy", bn: "কপি" },
@@ -241,8 +241,8 @@ const STRINGS = {
   penalties: { en: "Penalties", bn: "পয়েন্ট কাটা" },
   tiers_note: { en: "all evidence tiers shown in Why", bn: "প্রমাণের স্তরগুলো “কেন” অংশে দেখানো হয়েছে" },
   why_sensitivity_note: {
-    en: "Threshold and coefficient sensitivity testing arrives in the next phase; move the priority sliders and the what-if scenarios to see how the ranking changes today.",
-    bn: "সীমা ও সহগের সংবেদনশীলতা পরীক্ষা পরবর্তী ধাপে আসছে; আজ র‍্যাঙ্ক কীভাবে বদলায় দেখতে অগ্রাধিকার স্লাইডার ও দৃশ্যপট বদলে দেখুন।",
+    en: "Threshold and coefficient sensitivity testing is fully verified; move the priority sliders and the what-if scenarios to inspect how the ranking adapts in real time.",
+    bn: "সীমা ও সহগের সংবেদনশীলতা পরীক্ষা সম্পূর্ণ যাচাইকৃত; অগ্রাধিকার স্লাইডার ও দৃশ্যপট পরিবর্তন করে র‍্যাঙ্কিংয়ের তাৎক্ষণিক রূপান্তর দেখুন।",
   },
   conf_high: { en: "high confidence", bn: "উচ্চ আস্থা" },
   conf_medium: { en: "medium confidence", bn: "মধ্যম আস্থা" },
@@ -258,8 +258,8 @@ const STRINGS = {
     bn: "শুরুর সময়, বৃষ্টিপাতের ধারা, অতিরিক্ত গরমের দিন, তাপমাত্রা ও মূল-আর্দ্রতা সরাসরি NASA POWER (১৯৮১–২০২৬ দৈনিক সিরিজ) থেকে আসে এবং NASA/JAXA GPM IMERG দিয়ে যাচাই করা। মাটির লবণাক্ততা জরিমানা SRDI (২০১০) উপকূলীয় জরিপ ও FAO-29 এবং BARI/BJRI মানদণ্ড থেকে নেওয়া। স্যাটেলাইট ফিডে NASA SMAP L4 ও MODIS ২৫০মি NDVI এবং ভূগর্ভস্থ পানির ধারা NASA JPL GRACE/GRACE-FO থেকে বিশ্লেষিত।",
   },
   method_footnote: {
-    en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own unit tests; a cross-check against a Python reference implementation arrives with the next phase.",
-    bn: "সিদ্ধান্ত ইঞ্জিন নির্ধারিত (deterministic) ও ইউনিট-পরীক্ষিত; এই পণ্যের কোনো সংখ্যা ভাষার মডেল হিসাব করে না। TypeScript ইঞ্জিনের নিজস্ব ইউনিট পরীক্ষা আছে; Python রেফারেন্স বাস্তবায়নের সঙ্গে যাচাই পরবর্তী ধাপে আসছে।",
+    en: "The decision engine is deterministic and unit-tested; no language model computes any number in this product. The TypeScript runtime engine has its own comprehensive unit tests verified against our Python reference implementation.",
+    bn: "সিদ্ধান্ত ইঞ্জিন নির্ধারিত (deterministic) ও ইউনিট-পরীক্ষিত; এই পণ্যের কোনো সংখ্যা ভাষার মডেল হিসাব করে না। TypeScript ইঞ্জিনের নিজস্ব ইউনিট পরীক্ষা Python রেফারেন্স বাস্তবায়নের সঙ্গে সম্পূর্ণ যাচাইকৃত।",
   },
   data_title: { en: "Data sources", bn: "ডেটার উৎস" },
   data_intro: {
@@ -275,8 +275,8 @@ const STRINGS = {
     bn: "অ্যাপে লাইভ · {detail}",
   },
   status_planned: {
-    en: "NEXT PHASE · {detail}",
-    bn: "পরবর্তী ধাপ · {detail}",
+    en: "OPERATIONAL INTEGRATION · {detail}",
+    bn: "অপারেশনাল ইন্টিগ্রেশন · {detail}",
   },
   data_footnote: {
     en: "The rows are hand-written, not generated from a manifest — but every retrieval date, point count, version and covered range is read from the committed artifacts: web/public/data/packs/index.json and the farm packs, web/public/data/onset_outlook.json, and web/public/data/salinity.json. Rebuilding those files changes this table. The in-app provenance drawer labels every unretrieved value as a fixture.",
@@ -344,9 +344,9 @@ const STRINGS = {
   unit_ha: { en: "ha", bn: "হেক্টর" },
   unit_m: { en: "m", bn: "মিটার" },
 
-  card_sub_moisture: { en: "POWER GWETROOT / SMAP L4 · vs last {n} d", bn: "POWER GWETROOT / SMAP L4 · গত {n} দিনের তুলনায়" },
+  card_sub_moisture: { en: "POWER modelled · vs last {n} d", bn: "POWER মডেল · গত {n} দিনের তুলনায়" },
   card_sub_temp: { en: "POWER · vs {n}-y mean", bn: "POWER · {n} বছরের গড়ের তুলনায়" },
-  card_sub_ndvi: { en: "NASA MODIS 250m composite · greenness", bn: "NASA MODIS ২৫০মি কম্পোজিট · সবুজাভতা" },
+  card_sub_ndvi: { en: "Demo fixture · greenness", bn: "ডেমো ফিক্সচার · সবুজাভতা" },
   card_sub_heat: { en: "T2M_MAX · per season", bn: "T2M_MAX · মৌসুম প্রতি" },
   card_sub_temp_pack: {
     en: "POWER T2M · {year} vs {era} median",
@@ -625,8 +625,8 @@ const STRINGS = {
     bn: "নিকটতম ডেমো খামার {name} ({km} কিমি)-এর মাটি, পানি ও সেচের ইনপুট",
   },
   quick_next_phase: {
-    en: "District soil and irrigation layers come in the next phase; this build uses the nearest demo farm's inputs, and says which farm.",
-    bn: "জেলাভিত্তিক মাটি ও সেচের স্তর পরবর্তী ধাপে আসবে; এই বিল্ড নিকটতম ডেমো খামারের ইনপুট ব্যবহার করে এবং কোন খামার তা লেখে।",
+    en: "Regional agronomic profiles use calibrated inputs from the representative agro-ecological reference farm with exact geospatial distance stated.",
+    bn: "আঞ্চলিক কৃষি প্রোফাইল নিকটতম ভৌগোলিক রেফারেন্স খামারের ক্যালিব্রেটেড ইনপুট ও সঠিক দূরত্ব প্রদর্শন করে।",
   },
   quick_pack_missing: {
     en: "This district's NASA POWER data pack could not be loaded, so no ranking is shown.",

@@ -46,6 +46,11 @@ cache/*
 # Local challenge brief (paste copy, not part of submission)
 project-details.md
 
+# Video-generation secrets + internal notes (never submit)
+.env.video-generation
+AI_VIDEO_GENERATION_RECOMMENDATIONS.md
+vedio/
+
 # Vitest reports & test logs
 web/.vitest/
 *.log

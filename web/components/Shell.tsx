@@ -38,54 +38,70 @@ const NAV: { href: string; key: Parameters<typeof t>[0]; icon: typeof Home }[] =
   { href: "/data", key: "nav_data", icon: Database },
 ];
 
+interface BeforeInstallPromptEvent extends Event {
+  prompt: () => Promise<void>;
+  userChoice: Promise<{ outcome: "accepted" | "dismissed" }>;
+}
+
+function isStandaloneMode(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return window.matchMedia("(display-mode: standalone)").matches;
+  } catch {
+    return false;
+  }
+}
+
+function isIosDevice(): boolean {
+  if (typeof window === "undefined") return false;
+  try {
+    return /iPad|iPhone|iPod/.test(navigator.userAgent) &&
+      !(window as unknown as { MSStream?: unknown }).MSStream;
+  } catch {
+    return false;
+  }
+}
+
 function InstallBanner() {
   const { lang } = useContext(LangContext);
   const bn = lang === "bn";
-  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
-  const [show, setShow] = useState(false);
-  const [installed, setInstalled] = useState(false);
-  const [isIos, setIsIos] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState<BeforeInstallPromptEvent | null>(null);
+  const [show, setShow] = useState<boolean>(() => isIosDevice() && !isStandaloneMode());
+  const [installed, setInstalled] = useState<boolean>(isStandaloneMode);
+  const [isIos] = useState<boolean>(isIosDevice);
 
   useEffect(() => {
-    if (typeof window === "undefined") return;
-
-    if (window.matchMedia("(display-mode: standalone)").matches) {
-      setInstalled(true);
-      return;
-    }
-
+    if (installed) return;
     const handler = (e: Event) => {
       e.preventDefault();
-      setDeferredPrompt(e);
+      setDeferredPrompt(e as BeforeInstallPromptEvent);
       setShow(true);
     };
-
-    window.addEventListener("beforeinstallprompt", handler);
-    window.addEventListener("appinstalled", () => {
+    const onInstalled = () => {
       setInstalled(true);
       setShow(false);
       setDeferredPrompt(null);
-    });
+    };
 
-    const isIosDevice = /iPad|iPhone|iPod/.test(navigator.userAgent) && !(window as any).MSStream;
-    if (isIosDevice) {
-      setIsIos(true);
-      setShow(true);
-    } else {
+    window.addEventListener("beforeinstallprompt", handler);
+    window.addEventListener("appinstalled", onInstalled);
+
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    if (!isIos) {
       // Auto prompt banner on mobile / desktop after a short moment
-      const timer = setTimeout(() => {
+      timer = setTimeout(() => {
         if (!window.matchMedia("(display-mode: standalone)").matches) {
           setShow(true);
         }
       }, 1200);
-      return () => {
-        window.removeEventListener("beforeinstallprompt", handler);
-        clearTimeout(timer);
-      };
     }
 
-    return () => window.removeEventListener("beforeinstallprompt", handler);
-  }, []);
+    return () => {
+      window.removeEventListener("beforeinstallprompt", handler);
+      window.removeEventListener("appinstalled", onInstalled);
+      if (timer !== undefined) clearTimeout(timer);
+    };
+  }, [installed, isIos]);
 
   const handleInstall = async () => {
     if (deferredPrompt) {

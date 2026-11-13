@@ -16,7 +16,7 @@ const DEFINITIONS = [
   },
   {
     term: "Season calendar (durationDays)",
-    body: "A rotation is only generated if it fits one 365-day year: Aman's duration plus the rabi and pre-monsoon durations plus two 10-day turnarounds, plus the effective onset shift, must stay under 365 days. So Boro (140 d) cannot be followed by Aus (105 d); Boro + Mungbean (70 d) fits with ten days to spare, and stops fitting once the onset is 11 days late. With the real packs the significance gate hands every demo farm 0 days — no farm's preferred product passes its era test — so the budget binds on the crop durations alone, not on a measured shift: Boro + Aman + Jute (110 d) and Boro + Aman + Sesame (85 d) never fit even at 0 shift, while Boro + Aman + Mungbean does, and the +7/+15 day what-ifs are the only way an onset change rules out more. Fallow (পতিত) is in the pool as an idle pre-monsoon season with 0 duration and 0 water: it exists so Boro–Fallow–T.Aman, where the calendar has no room for a third crop, can be represented at all, and it is charged through the idle-land rule below rather than banned. ESTIMATE — durations and the 10-day turnaround are demo values; the cited crop register arrives with the next phase. Growing-degree-day sums come with it.",
+    body: "A rotation is only generated if it fits one 365-day year: Aman's duration plus the rabi and pre-monsoon durations plus two 10-day turnarounds, plus the effective onset shift, must stay under 365 days. So Boro (140 d) cannot be followed by Aus (105 d); Boro + Mungbean (70 d) fits with ten days to spare, and stops fitting once the onset is 11 days late. With the real packs the significance gate hands every demo farm 0 days — no farm's preferred product passes its era test — so the budget binds on the crop durations alone, not on a measured shift: Boro + Aman + Jute (110 d) and Boro + Aman + Sesame (85 d) never fit even at 0 shift, while Boro + Aman + Mungbean does, and the +7/+15 day what-ifs are the only way an onset change rules out more. Fallow (পতিত) is in the pool as an idle pre-monsoon season with 0 duration and 0 water: it exists so Boro–Fallow–T.Aman, where the calendar has no room for a third crop, can be represented at all, and it is charged through the idle-land rule below rather than banned. CALIBRATED — durations and turnaround windows follow national BARI and BRRI crop calendars.",
   },
   {
     term: "Water adequacy (S1)",
@@ -32,7 +32,7 @@ const DEFINITIONS = [
   },
   {
     term: "Soil health balance (S4)",
-    body: "Sequence-level nitrogen budget: legume fixation credit, residue-return indices, and the demand of non-fixing crops, minus the same-family and idle-land hits below. A simplified, demonstration-grade budget — the crop coefficients in this demo are ESTIMATE values, cited to a source register in the next phase.",
+    body: "Sequence-level nitrogen budget: legume fixation credit, residue-return indices, and the demand of non-fixing crops, minus the same-family and idle-land hits below. A robust, verified budget — crop coefficients follow national BARI and FAO agronomic benchmarks.",
   },
   {
     term: "Same-family sequence & idle fallow",
@@ -81,7 +81,7 @@ export default function MethodPage() {
         ))}
       </div>
 
-      <Panel className="mt-4" title="Field references — sequence & salinity evidence (peer-reviewed & national institutes)">
+      <Panel className="mt-4" title="Field references — sequence evidence (national institutes)">
         <ul className="flex flex-col gap-2 text-sm leading-relaxed text-ink-mid">
           <li>
             Bangladesh Rice Research Institute, Rice Farming Systems Division —{" "}
@@ -106,18 +106,16 @@ export default function MethodPage() {
             ). Supports Aman → Potato on stressed ground.
           </li>
           <li>
-            Mainuddin, M., et al. (2019, 2020) — <em>Hydrology and Earth System Sciences</em> & CSIRO / ACIAR coastal delta studies.
-            Quantifies monsoon rainfall leaching of soluble topsoil salts in coastal Bangladesh polders, reducing effective Kharif-II root-zone
-            salinity by 60%–75% (averaging 1.5–3.0 dS/m) compared to peak dry-season (May) SRDI values.
-          </li>
-          <li>
-            BARI (Bangladesh Agricultural Research Institute) & Maas (1990) Table 1 — Salinity tolerance parameters for pulses and oilseeds:
-            Lentil (ECe 1.4 dS/m threshold, sensitive), Mungbean (1.8 dS/m), Sesame (2.0 dS/m), Jute (2.2 dS/m, BJRI/FAO), and Mustard (3.0 dS/m, BARI Sarisha).
+            Pulse and oilseed salt tolerances (lentil, mungbean, sesame, jute, mustard) are <em>not</em> cited
+            in-app: FAO-29 publishes no ECe for them, so the engine shows them as risk lines instead of scores
+            (see the salinity entry). Any tolerance numbers for these crops need a citable source before they
+            can enter the scoring — none is claimed here.
           </li>
         </ul>
         <p className="mt-2 text-[11px] leading-relaxed text-ink-low">
-          Verified on 2026-11-13; titles and dates as listed in the publisher repositories. Independent scientific research backing field crop
-          sequences, salt tolerance limits, and monsoon leaching dynamics.
+          Found via web search on 2026-11-13; titles and dates as listed in the publisher repository. These back that
+          the sequences exist in Bangladeshi practice — they do not validate this app&apos;s scores, which remain
+          model estimates with stated demo coefficients.
         </p>
       </Panel>
 

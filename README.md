@@ -2,6 +2,11 @@
 <a id="top"></a>
 <img src="assets/banner.png" alt="Field Shift — Earth data for smarter farms. Team Orion, NASA Space Apps 2026." width="100%">
 
+# 🌾 Field Shift — by Team Orion
+### NASA Space Apps Challenge 2026 (Barishal Local Event)
+**Team Orion:** Mohammad Shihab Hossain (Lead), Sheikh Shymom Islam, Roy Bipro, Durjoy Saha, Protiti Sahajee Prachi, Nafiz Iqbal  
+*American International University-Bangladesh (AIUB)*
+
 <br>
 
 [![CI](https://github.com/Zul-Qarnain/field-shift/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/Zul-Qarnain/field-shift/actions/workflows/ci.yml)
@@ -281,7 +286,7 @@ In accordance with NASA Space Apps rules, every AI tool used across machine lear
 | Where AI was used | Tools & Models | Data it worked on |
 |---|---|---|
 | **Machine Learning (Monsoon Forecast)** | **LightGBM** (gradient-boosted tree regression, $L_1$ anomaly objective, LOYO cross-validation over 1998–2025) | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, MERRA-2 Niño 3.4 & DMI ocean indices |
-| **Coding, Architecture & CLI** | **Qoder CLI** (Qwen3.8-Flash, Alibaba)<br>**Cursor** (Anysphere)<br>**Grok & Grokbot** (xAI)<br>**Claude Code** (Anthropic)<br>**OpenCode** (Anomaly/sst)<br>**MooseCode by Meta** (Meta AI)<br>**Codex** (OpenAI) & **Antigravity IDE** (Google) | Repository source code, test suites, CI workflows, and public API interfaces under human direction |
+| **Coding, Architecture & CLI** | **Qoder CLI** (Qwen3.8-Flash, Alibaba)<br>**Cursor** (Anysphere)<br>**Mistral** (Mistral AI)<br>**Claude Code** (Anthropic)<br>**OpenCode** (Anomaly/sst)<br>**Codex** (OpenAI) & **Antigravity IDE** (Google) | Repository source code, test suites, CI workflows, and public API interfaces under human direction |
 | **Video Generation & Story Clips** | **Google Veo** & **Google Flow** (Google DeepMind) — short cinematic story clips of fictional farmer Karim and rural landscapes | Descriptive text prompts and scene descriptions written by Team Orion |
 | **Voice & Speech Synthesis** | **Google Gemini text-to-speech** (Sulafat voice model)<br>**ElevenLabs** (voice generation and vocal pacing) | Team-written narration scripts for the challenge video and demo walkthroughs |
 | **Video Audio Verification** | **faster-whisper** (OpenAI Whisper medium) & **Demucs** (Meta audio source separation) | Synchronizing subtitle timestamps and ensuring background ambience is free of spurious speech |
