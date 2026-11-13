@@ -90,14 +90,14 @@ export function ChatWidget() {
       <button
         onClick={() => setOpen(true)}
         aria-label={bn ? "সহকারীকে জিজ্ঞাসা করুন" : "Ask the assistant"}
-        className="fixed bottom-4 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-action text-white shadow-drawer"
+        className="fixed bottom-18 right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-action text-white shadow-drawer sm:bottom-4"
       >
         <MessageCircle size={20} />
       </button>
     );
 
   return (
-    <div className="fixed inset-x-4 bottom-4 z-40 flex max-h-[70vh] flex-col rounded-xl border border-line bg-surface shadow-drawer sm:left-auto sm:w-96">
+    <div className="fixed inset-x-4 bottom-18 z-40 flex max-h-[70vh] flex-col rounded-xl border border-line bg-surface shadow-drawer sm:bottom-4 sm:left-auto sm:w-96">
       <div className="flex items-center justify-between border-b border-line px-4 py-3">
         <span className="font-display text-sm font-bold text-ink-hi">{bn ? "ফিল্ড শিফট সহকারী" : "Field Shift assistant"}</span>
         <button onClick={() => setOpen(false)} aria-label={bn ? "বন্ধ করুন" : "Close"} className="text-ink-low hover:text-ink-hi">

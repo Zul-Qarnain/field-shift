@@ -3,10 +3,15 @@ const CACHE_NAME = "field-shift-v1";
 const OFFLINE_URLS = [
   "/",
   "/quick",
+  "/field",
+  "/plan",
   "/locate",
+  "/docs",
   "/data",
   "/method",
   "/icon.svg",
+  "/icon-192.png",
+  "/icon-512.png",
   "/manifest.json"
 ];
 
