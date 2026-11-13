@@ -79,7 +79,7 @@ export function RotationCard({
 
       <div className="mt-3 flex flex-col gap-1.5">
         {top3.map((c) => (
-          <ComponentBar key={c.key} k={c.key} label={label(c)} value={c.value} />
+          <ComponentBar key={c.key} k={c.key} label={label(c)} value={c.value} weight={c.weight} />
         ))}
       </div>
 

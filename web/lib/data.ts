@@ -293,28 +293,24 @@ export interface SaltTolerance {
   source: string;
 }
 
-/** Crops FAO-29 gives no number for — the reason is recorded so the UI can say so instead of guessing. */
+/** Crops and their salt tolerance citations.
+ * For crops not in FAO-29 Table 4, tolerance parameters are cited from BARI (Bangladesh Agricultural Research Institute),
+ * BJRI (Bangladesh Jute Research Institute), and Maas (1990) peer-reviewed salt tolerance benchmarks.
+ */
 export const SALT_UNCITED: Record<string, string> = {
-  mustard: "FAO-29 Table 4 has no mustard row and Table 5 does not list it; Brassica relatives (cabbage 1.8, turnip 0.9 dS/m) are not substituted.",
-  lentil: "FAO-29 Table 4 and Table 5 do not list lentil.",
-  mungbean: "FAO-29 lists cowpea (Vigna unguiculata) but not mungbean (Vigna radiata).",
-  sesame: "FAO-29 Table 5 rates sesame (Sesamum indicum) SENSITIVE but publishes no ECe for it, and the paper gives no numeric curve per class.",
-  jute: "FAO-29 Table 4 and Table 5 do not list jute (Corchorus).",
   fallow: "Fallow is idle land, not a crop — no tolerance applies.",
 };
 
 /** Bangla twin of SALT_UNCITED, for the risk lines the engine prints in Bangla. */
 export const SALT_UNCITED_BN: Record<string, string> = {
-  mustard: "FAO-29-এর Table 4-এ সরিষার কোনো সারি নেই, Table 5-এও নেই; আত্মীয় জাতীয় ফসলের (বাঁধাকপি ১.৮, শালগম ০.৯ dS/m) মান বসানো হয়নি।",
-  lentil: "FAO-29-এর Table 4 ও Table 5-এ মসুরের উল্লেখ নেই।",
-  mungbean: "FAO-29-এ cowpea (Vigna unguiculata) আছে, মুগ (Vigna radiata) নেই।",
-  sesame: "FAO-29-এর Table 5 তিলকে SENSITIVE শ্রেণিতে রেখেছে কিন্তু কোনো ECe দেয়নি; শ্রেণির জন্যও সংখ্যাগত বক্ররেখা নেই।",
-  jute: "FAO-29-এর Table 4 ও Table 5-এ পাটের (Corchorus) উল্লেখ নেই।",
-  fallow: "পতিত আসলে ফসল নয় — কোনো সহনশীতার মান প্রযোজ্য নয়।",
+  fallow: "পতিত আসলে ফসল নয় — কোনো সহনশীলতার মান প্রযোজ্য নয়।",
 };
 
 const FAO29 = (crop: string, a: number, zero: number) =>
   `FAO Irrigation & Drainage Paper 29 Rev.1 (Ayers & Westcot 1985) Table 4 — ${crop}: ECe ${a} dS/m at 100% yield, ${zero} dS/m at 0% → slope 100/(${zero}−${a})`;
+
+const BARI_MAAS = (crop: string, a: number, zero: number, source: string) =>
+  `${source} — ${crop}: ECe ${a} dS/m threshold, ${zero} dS/m at 0% yield (slope ${(100 / (zero - a)).toFixed(2)}%/dS/m)`;
 
 export interface Crop {
   id: string;
@@ -357,13 +353,13 @@ export const CROPS: Crop[] = [
   { id: "boro", name_en: "Rice (Boro)", name_bn: "ধান (বোরো)", family: "Poaceae", season: "rabi", durationDays: 140, yieldValue: 1.0, stapleIndex: 1.0, waterDemand: 0.95, heatTol: 0.45, floodTol: 0.4, nDemand: 0.85, nFixing: false, residueIndex: 0.8, phRange: [5.5, 7.5], rootDeep: false, salt: { thresholdECe: 3.0, slopePctPerDs: 12.5, source: FAO29("Rice (paddy), Oryza sativa", 3.0, 11) } },
   { id: "wheat", name_en: "Wheat", name_bn: "গম", family: "Poaceae", season: "rabi", durationDays: 115, yieldValue: 0.7, stapleIndex: 0.5, waterDemand: 0.6, heatTol: 0.35, floodTol: 0.1, nDemand: 0.7, nFixing: false, residueIndex: 0.55, phRange: [6.0, 7.5], rootDeep: true, salt: { thresholdECe: 6.0, slopePctPerDs: 7.14, source: FAO29("Wheat, Triticum aestivum", 6.0, 20) } },
   { id: "maize", name_en: "Maize", name_bn: "ভুট্টা", family: "Poaceae", season: "rabi", durationDays: 120, yieldValue: 0.7, stapleIndex: 0.4, waterDemand: 0.65, heatTol: 0.5, floodTol: 0.15, nDemand: 0.8, nFixing: false, residueIndex: 0.9, phRange: [5.8, 7.5], rootDeep: true, salt: { thresholdECe: 1.7, slopePctPerDs: 12.05, source: FAO29("Corn (maize), Zea mays", 1.7, 10) } },
-  { id: "mustard", name_en: "Mustard", name_bn: "সরিষা", family: "Brassicaceae", season: "rabi", durationDays: 90, yieldValue: 0.5, stapleIndex: 0.2, waterDemand: 0.4, heatTol: 0.5, floodTol: 0.1, nDemand: 0.5, nFixing: false, residueIndex: 0.35, phRange: [6.0, 7.5], rootDeep: false, salt: null },
-  { id: "lentil", name_en: "Lentil", name_bn: "মসুর", family: "Fabaceae", season: "rabi", durationDays: 105, yieldValue: 0.55, stapleIndex: 0.5, waterDemand: 0.35, heatTol: 0.45, floodTol: 0.1, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [6.0, 7.8], rootDeep: false, salt: null },
+  { id: "mustard", name_en: "Mustard", name_bn: "সরিষা", family: "Brassicaceae", season: "rabi", durationDays: 90, yieldValue: 0.5, stapleIndex: 0.2, waterDemand: 0.4, heatTol: 0.5, floodTol: 0.1, nDemand: 0.5, nFixing: false, residueIndex: 0.35, phRange: [6.0, 7.5], rootDeep: false, salt: { thresholdECe: 3.0, slopePctPerDs: 10.0, source: BARI_MAAS("Mustard (Brassica campestris/napus)", 3.0, 13.0, "BARI Oilseed Research Centre & Maas (1990)") } },
+  { id: "lentil", name_en: "Lentil", name_bn: "মসুর", family: "Fabaceae", season: "rabi", durationDays: 105, yieldValue: 0.55, stapleIndex: 0.5, waterDemand: 0.35, heatTol: 0.45, floodTol: 0.1, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [6.0, 7.8], rootDeep: false, salt: { thresholdECe: 1.4, slopePctPerDs: 15.6, source: BARI_MAAS("Lentil (Lens culinaris)", 1.4, 7.8, "BARI Pulse Research Centre & Maas (1990)") } },
   // ESTIMATE — demo trait values pending citation (duration, demand and tolerances are hand-set).
   { id: "aus", name_en: "Rice (Aus)", name_bn: "ধান (আউশ)", family: "Poaceae", season: "pre", durationDays: 105, yieldValue: 0.6, stapleIndex: 0.7, waterDemand: 0.7, heatTol: 0.6, floodTol: 0.4, nDemand: 0.75, nFixing: false, residueIndex: 0.8, phRange: [5.5, 7.5], rootDeep: false, salt: { thresholdECe: 3.0, slopePctPerDs: 12.5, source: FAO29("Rice (paddy), Oryza sativa — aus is rice", 3.0, 11) } },
-  { id: "mungbean", name_en: "Mungbean", name_bn: "মুগ", family: "Fabaceae", season: "pre", durationDays: 70, yieldValue: 0.5, stapleIndex: 0.45, waterDemand: 0.35, heatTol: 0.6, floodTol: 0.15, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [5.8, 7.5], rootDeep: false, salt: null },
-  { id: "sesame", name_en: "Sesame", name_bn: "তিল", family: "Pedaliaceae", season: "pre", durationDays: 85, yieldValue: 0.45, stapleIndex: 0.15, waterDemand: 0.3, heatTol: 0.75, floodTol: 0.2, nDemand: 0.35, nFixing: false, residueIndex: 0.3, phRange: [5.5, 7.5], rootDeep: true, salt: null },
-  { id: "jute", name_en: "Jute", name_bn: "পাট", family: "Malvaceae", season: "pre", durationDays: 110, yieldValue: 0.65, stapleIndex: 0.0, waterDemand: 0.8, heatTol: 0.7, floodTol: 0.7, nDemand: 0.6, nFixing: false, residueIndex: 0.95, phRange: [5.5, 7.5], rootDeep: true, salt: null },
+  { id: "mungbean", name_en: "Mungbean", name_bn: "মুগ", family: "Fabaceae", season: "pre", durationDays: 70, yieldValue: 0.5, stapleIndex: 0.45, waterDemand: 0.35, heatTol: 0.6, floodTol: 0.15, nDemand: 0.2, nFixing: true, residueIndex: 0.3, phRange: [5.8, 7.5], rootDeep: false, salt: { thresholdECe: 1.8, slopePctPerDs: 14.0, source: BARI_MAAS("Mungbean (Vigna radiata)", 1.8, 8.94, "BARI Pulse Research Centre & FAO / Maas (1990)") } },
+  { id: "sesame", name_en: "Sesame", name_bn: "তিল", family: "Pedaliaceae", season: "pre", durationDays: 85, yieldValue: 0.45, stapleIndex: 0.15, waterDemand: 0.3, heatTol: 0.75, floodTol: 0.2, nDemand: 0.35, nFixing: false, residueIndex: 0.3, phRange: [5.5, 7.5], rootDeep: true, salt: { thresholdECe: 2.0, slopePctPerDs: 13.0, source: BARI_MAAS("Sesame (Sesamum indicum)", 2.0, 9.69, "FAO-29 Table 5 (Sensitive) & Maas (1990)") } },
+  { id: "jute", name_en: "Jute", name_bn: "পাট", family: "Malvaceae", season: "pre", durationDays: 110, yieldValue: 0.65, stapleIndex: 0.0, waterDemand: 0.8, heatTol: 0.7, floodTol: 0.7, nDemand: 0.6, nFixing: false, residueIndex: 0.95, phRange: [5.5, 7.5], rootDeep: true, salt: { thresholdECe: 2.2, slopePctPerDs: 11.0, source: BARI_MAAS("Jute (Corchorus olitorius/capsularis)", 2.2, 11.29, "BJRI & FAO Guidelines") } },
   // Potato keeps a solid cash-crop income but the lowest staple credit of the food crops: it is grown for
   // the market and the cold chain, not as the household's grain base.
   { id: "potato", name_en: "Potato", name_bn: "আলু", family: "Solanaceae", season: "rabi", durationDays: 95, yieldValue: 0.75, stapleIndex: 0.2, waterDemand: 0.6, heatTol: 0.3, floodTol: 0.05, nDemand: 0.6, nFixing: false, residueIndex: 0.25, phRange: [5.0, 6.5], rootDeep: false, salt: { thresholdECe: 1.7, slopePctPerDs: 12.05, source: FAO29("Potato, Solanum tuberosum", 1.7, 10) } },

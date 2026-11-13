@@ -1,8 +1,8 @@
 "use client";
 
-import { useContext, useMemo, useState } from "react";
+import { Suspense, useContext, useMemo, useState } from "react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useSearchParams } from "next/navigation";
 import { Home, Sprout, CalendarRange, BookOpen, Database, Search, MapPin, Zap } from "lucide-react";
 import { LangContext, usePersistedLang, type Lang } from "@/lib/lang";
 import { fmtNum, t } from "@/lib/i18n";
@@ -83,8 +83,37 @@ function SearchBox() {
   );
 }
 
-export function Shell({ children }: { children: React.ReactNode }) {
+function NavLinks() {
   const pathname = usePathname();
+  const params = useSearchParams();
+  const { lang } = useContext(LangContext);
+  // Keep the farm context when moving between farm-scoped pages (was: sidebar reset to farm-12).
+  const farm = params.get("farm");
+  const hrefFor = (href: string) =>
+    farm && (href === "/field" || href === "/plan") ? `${href}?farm=${encodeURIComponent(farm)}` : href;
+  return (
+    <>
+      {NAV.map(({ href, key, icon: Icon }) => {
+        const hrefWithFarm = hrefFor(href);
+        const active = pathname === href;
+        return (
+          <Link
+            key={key}
+            href={hrefWithFarm}
+            className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
+              active ? "bg-action text-white" : "text-ink-mid hover:bg-surface hover:text-ink-hi"
+            }`}
+          >
+            <Icon className="h-4.5 w-4.5" />
+            {t(key, lang)}
+          </Link>
+        );
+      })}
+    </>
+  );
+}
+
+export function Shell({ children }: { children: React.ReactNode }) {
   const langValue = usePersistedLang();
   const { lang } = langValue;
 
@@ -107,21 +136,9 @@ export function Shell({ children }: { children: React.ReactNode }) {
             </span>
           </Link>
           <nav className="flex flex-col gap-1 px-3">
-            {NAV.map(({ href, key, icon: Icon }) => {
-              const active = pathname === href;
-              return (
-                <Link
-                  key={key}
-                  href={href}
-                  className={`flex items-center gap-3 rounded-xl px-4 py-2.5 text-sm font-medium transition-colors ${
-                    active ? "bg-action text-white" : "text-ink-mid hover:bg-surface hover:text-ink-hi"
-                  }`}
-                >
-                  <Icon className="h-4.5 w-4.5" />
-                  {t(key, lang)}
-                </Link>
-              );
-            })}
+            <Suspense>
+              <NavLinks />
+            </Suspense>
           </nav>
           <div className="mt-auto px-5 pb-6">
             <div className="rounded-xl border border-line bg-inset p-4">

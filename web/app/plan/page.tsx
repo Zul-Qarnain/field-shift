@@ -47,7 +47,7 @@ function PlanView({ farmId }: { farmId: string }) {
   const results = useMemo(() => generateRotations(pack, priorities, scenario, pool), [pack, priorities, scenario, pool]);
   const top = results[0] as RotationResult | undefined;
   const advisory = top ? advisoryText(pack, top, lang) : "";
-  const sms = top ? smsText(pack, top, lang) : "";
+  const sms = top ? smsText(pack, top, lang, scenario) : "";
   const isBaseline = scenario === DEFAULT_SCENARIO;
 
   return (

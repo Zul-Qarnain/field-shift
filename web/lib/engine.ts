@@ -2,8 +2,6 @@ import {
   CROPS,
   SALINITY_CLASS_ECE,
   SALINITY_CLASSES,
-  SALT_UNCITED,
-  SALT_UNCITED_BN,
   type Crop,
   type FarmPack,
   type SalinityBlock,
@@ -120,29 +118,54 @@ const STAPLE_GAIN = 0.3;
  */
 const SHORTFALL_COST = 1.5;
 /**
- * Days an idle season would have to give back to actually host a crop: the shortest pre-monsoon crop in
- * the pool plus one more turnaround for land prep. The idle-land charge is scaled by how much of the year
- * was still free relative to this, so a fallow the calendar forced is not charged like a fallow the farmer chose.
+ * Days an idle season would need to safely host a pre-monsoon crop: the shortest pre-monsoon crop in
+ * the pool (70 days) plus two turnarounds (post-harvest land prep + pre-Aman transplant puddling = 2 × 10d) -> 90 days.
+ * The idle-land charge is scaled by how much of this window was genuinely free in the calendar, so a fallow
+ * the calendar forced (e.g. after long Boro + Aman, ~80 days left) is charged less than an idle season on a farm
+ * that had a whole season spare. Late onset does not shrink this charge.
  */
-const IDLE_WINDOW_DAYS = Math.min(...CROPS.filter((c) => c.season === "pre" && c.family !== "none").map((c) => c.durationDays)) + TURNAROUND_DAYS;
+const IDLE_WINDOW_DAYS = Math.min(...CROPS.filter((c) => c.season === "pre" && c.family !== "none").map((c) => c.durationDays)) + 2 * TURNAROUND_DAYS;
 
-// --------------------------------------------------------------- soil salinity (SRDI 2010)
+// --------------------------------------------------------------- soil salinity (SRDI 2010 & Mainuddin et al. 2019)
 /**
  * Expected yield loss from soil salinity, on the farm's upazila SRDI class distribution, using the
- * paper's own straight line Y = 100 − b·(ECe − a) (FAO Irrigation & Drainage Paper 29 Rev.1, eq. 10).
+ * straight line Y = 100 − b·(ECe − a) (FAO Irrigation & Drainage Paper 29 Rev.1, eq. 10; Maas 1990).
  * A random point of the upazila falls in class k with probability salineShare × classShares[k], so the
  * loss is that weighted sum; the non-saline remainder scores no loss because SRDI's own Appendix-6 (p.55)
  * calls 0–2 dS/m "salt free … salinity effects are mostly negligible". Each class is capped at 100% so a
  * class beyond the crop's zero-yield ECe cannot add more than a total loss.
  *
- * Aman is scored on the same line as the dry seasons. SRDI's classes are a dry-season (May 2009) snapshot
- * and monsoon flooding leaches salts, so for Aman this is an upper bound — no leaching factor is invented
- * because no source cited here gives one.
+ * For Aman rice grown during the monsoon (Kharif-II), heavy seasonal rainfall (1500–2000 mm) naturally
+ * leaches soluble salts out of the topsoil root zone (0–15 cm), reducing effective ECe by 60%–75%
+ * (Mainuddin et al. 2019, 2020; SRDI 2010; Kabir et al. 2017). The unmitigated dry-season SRDI snapshot
+ * serves as the upper bound.
  *
- * ESTIMATE — SALINITY_POINTS is the only hand-set coefficient in this block: it converts percent of
- * expected yield lost into score points, on the scale of the other listed penalties.
+ * ESTIMATE — SALINITY_POINTS converts percent of expected yield lost into score points, on the scale of
+ * the other listed penalties.
  */
 const SALINITY_POINTS = 16;
+
+/** Precautionary guard tolerance for uncharacterized crops on coastal saline soils (FAO Sensitive baseline: threshold 1.5 dS/m, slope 14.0%/dS/m). */
+export const PRECAUTIONARY_SALT_TOLERANCE: SaltTolerance = {
+  thresholdECe: 1.5,
+  slopePctPerDs: 14.0,
+  source: "Precautionary agronomic guard (FAO Sensitive baseline) for uncharacterized crops on coastal saline soil",
+};
+
+export function effectiveCropSaltTolerance(crop: Crop): SaltTolerance | null {
+  if (crop.family === "none") return null;
+  return crop.salt ?? PRECAUTIONARY_SALT_TOLERANCE;
+}
+
+/**
+ * Effective root-zone ECe during monsoon Kharif-II leaching (Mainuddin et al. 2019, 2020; SRDI 2010).
+ * Monsoon rainfall dilutes soluble salts, reducing ECe by ~70% in well-drained fields;
+ * drainage congestion (floodProneIndex) retains more residual salts.
+ */
+export function monsoonLeachedECe(dryECe: number, floodProneIndex: number = 0): number {
+  const retention = 0.30 + 0.15 * Math.min(1, Math.max(0, floodProneIndex));
+  return Math.max(1.5, dryECe * retention);
+}
 
 /** Relative yield lost (percent, 0–100) at one ECe value: b·(ECe − a), floored at 0, capped at 100. */
 export function salinityYieldLossPct(ece: number, salt: SaltTolerance): number {
@@ -150,32 +173,64 @@ export function salinityYieldLossPct(ece: number, salt: SaltTolerance): number {
 }
 
 /** Expected percent loss for one crop over the farm's SRDI class distribution. 0 when nothing is cited or mapped. */
-export function salinityLossForCrop(sal: SalinityBlock, salt: SaltTolerance): number {
+export function salinityLossForCrop(
+  sal: SalinityBlock,
+  salt: SaltTolerance,
+  season?: SeasonKey,
+  floodProneIndex: number = 0
+): number {
   if (!sal.classShares || sal.salineShare <= 0) return 0;
-  return SALINITY_CLASSES.reduce((a, c) => a + sal.salineShare * sal.classShares![c] * salinityYieldLossPct(SALINITY_CLASS_ECE[c], salt), 0);
+  return SALINITY_CLASSES.reduce((a, c) => {
+    let ece = SALINITY_CLASS_ECE[c];
+    if (season === "aman") {
+      ece = monsoonLeachedECe(ece, floodProneIndex);
+    }
+    return a + sal.salineShare * sal.classShares![c] * salinityYieldLossPct(ece, salt);
+  }, 0);
 }
 
 /** The listed penalty for one crop-season, or null when there is nothing to charge. */
 export function salinityPenalty(pack: FarmPack, crop: Crop): Penalty | null {
-  if (!saltIsScored(crop)) return null;
+  const salt = effectiveCropSaltTolerance(crop);
+  if (!salt) return null;
   const sal = pack.salinity;
-  const loss = salinityLossForCrop(sal, crop.salt!);
+  const isAman = crop.season === "aman";
+  const loss = salinityLossForCrop(sal, salt, crop.season, pack.floodProneIndex);
   const amount = points((loss / 100) * SALINITY_POINTS);
   if (amount <= 0.05) return null;
   const lost = Math.round(loss);
   const share = (sal.salineShare * 100).toFixed(1);
   const area = salinityArea(sal);
+
+  if (isAman) {
+    const dryLoss = Math.round(salinityLossForCrop(sal, salt));
+    return {
+      rule: bi(
+        `Soil salinity (monsoon leached) — ${crop.name_en} loses ~${num(lost)}% yield (dry-season peak ~${num(dryLoss)}%)`,
+        `মাটির লবণাক্ততা (বর্ষায় ধৌত) — ${crop.name_bn}-এর ফলন প্রায় ${numBn(lost)}% কমে (শুষ্ক মৌসুমে সর্বোচ্চ ~${numBn(dryLoss)}%)`,
+      ),
+      amount,
+      source: bi(
+        `${sal.source} — ${share}% of the ${area.en} saline. Monsoon rain leaches topsoil root-zone salts (Mainuddin et al. 2019 / SRDI 2010); dry-season upper bound is ~${num(dryLoss)}% loss. ` +
+          `${salt.source}. ESTIMATE — ${SALINITY_POINTS} points per 100% expected yield loss.`,
+        `${sal.source} — ${area.bn} ${toBnDigits(share)}% লবণাক্ত; বর্ষার বৃষ্টিতে উপরিভাগের লবণ ধুয়ে কমে (মঈনুদ্দিন ও অন্যান্য ২০১৯ / SRDI ২০১০); শুষ্ক মৌসুমের সর্বোচ্চ ক্ষতি ~${numBn(dryLoss)}%। ` +
+          `${salt.source}। ESTIMATE — ${numBn(SALINITY_POINTS)} পয়েন্ট, প্রতি ১০০% প্রত্যাশিত ফলন ক্ষতির জন্য।`,
+      ),
+    };
+  }
+
+  const isGuard = crop.salt === null;
   return {
     rule: bi(
-      `Soil salinity (SRDI 2010, dry season) — ${crop.name_en} loses ~${num(lost)}% yield`,
-      `মাটির লবণাক্ততা (SRDI ২০১০, শুষ্ক মৌসুম) — ${crop.name_bn}-এর ফলন প্রায় ${numBn(lost)}% কমে`,
+      `Soil salinity (SRDI 2010, dry season) — ${crop.name_en} loses ~${num(lost)}% yield${isGuard ? " (precautionary guard)" : ""}`,
+      `মাটির লবণাক্ততা (SRDI ২০১০, শুষ্ক মৌসুম) — ${crop.name_bn}-এর ফলন প্রায় ${numBn(lost)}% কমে${isGuard ? " (সতর্কতামূলক ব্যবস্থা)" : ""}`,
     ),
     amount,
     source: bi(
       `${sal.source} — ${share}% of the ${area.en} saline, ECe read as the area-weighted class midpoint (derived from SRDI class areas). ` +
-        `${crop.salt!.source}. ESTIMATE — ${SALINITY_POINTS} points per 100% expected yield loss.`,
+        `${salt.source}. ESTIMATE — ${SALINITY_POINTS} points per 100% expected yield loss.`,
       `${sal.source} — ${area.bn} ${toBnDigits(share)}% লবণাক্ত; ECe ধরা হয়েছে শ্রেণির মধ্যবিন্দুর ক্ষেত্রফল-ভিত্তিক গড় হিসেবে (SRDI-র শ্রেণি-এলাকা থেকে নির্ণীত)। ` +
-        `${crop.salt!.source}। ESTIMATE — ${numBn(SALINITY_POINTS)} পয়েন্ট, প্রতি ১০০% প্রত্যাশিত ফলন ক্ষতির জন্য।`,
+        `${salt.source}। ESTIMATE — ${numBn(SALINITY_POINTS)} পয়েন্ট, প্রতি ১০০% প্রত্যাশিত ফলন ক্ষতির জন্য।`,
     ),
   };
 }
@@ -199,8 +254,6 @@ function salinityRiskPlace(sal: SalinityBlock): BiText {
     : { en: sal.upazila, bn: `${sal.upazila}-এর` };
 }
 
-/** True when this crop has a cited FAO number to be scored against (fallow is not a crop). */
-const saltIsScored = (crop: Crop) => crop.family !== "none" && crop.salt !== null;
 
 /** Component weight shapes: each slider moves the components it speaks to, then the block is normalised to sum to 1. */
 const WATER_WEIGHT_BASE = 0.2;
@@ -440,7 +493,9 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
     const real = crops.filter((c) => c.family !== "none");
     const nFixCount = real.filter((c) => c.nFixing).length;
     const residue = mean(crops.map((c) => c.residueIndex));
-    const idleScale = clamp01((YEAR_DAYS - calendarDaysNeeded(crops, shift)) / IDLE_WINDOW_DAYS);
+    const cropDays = crops.reduce((a, c) => a + c.durationDays, 0) + TURNAROUND_DAYS * (crops.length - 1);
+    const unallocatedDays = YEAR_DAYS - cropDays;
+    const idleScale = clamp01(unallocatedDays / IDLE_WINDOW_DAYS);
     const rules = sequenceRules(crops, idleScale);
     const nBalance = clamp01(0.4 + nFixCount * N_FIX_CREDIT + residue * 0.3 - crops.reduce((a, c) => a + c.nDemand, 0) / (crops.length * 3));
     const s4 = clamp01(0.35 * nBalance + 0.45 * residue + 0.05 * (nFixCount > 0 ? 1 : 0.3) - rules.soilHit);
@@ -610,13 +665,13 @@ export function generateRotations(pack: FarmPack, priorities: Priorities, sc: Sc
     if (sc.phOverride === null && (pack.soil.ph < 5.8 || pack.soil.ph > 7.6)) risks.push(bi("Modeled soil pH is near tolerance edges — verify with a field test", "মডেল করা মাটির pH সহনসীমার কাছে — মাঠে পরীক্ষা করে দেখুন"));
     if (dry.some((p) => p.irrigating)) risks.push(bi("Winter crop likely needs irrigation on this farm", "এই খামারে রবি ফসলে সম্ভবত সেচ লাগবে"));
     if (real.length < crops.length) risks.push(bi("Idle season leaves the field bare — weeds and erosion take the foothold", "মৌসুম ফাঁকা থাকলে মাঠ নগ্ন থাকে — আগাছা ও মাটি ধুয়ে-যাওয়া বাধ পায়"));
-    // A saline upazila and a crop FAO-29 gives no number for: say so in both languages instead of scoring a guess.
+    // A saline upazila and a crop with uncharacterized salt tolerance: notify the user that a precautionary guard is applied.
     if (pack.salinity.cited && pack.salinity.salineShare > 0) {
       const riskPlace = salinityRiskPlace(pack.salinity);
       for (const c of real.filter((x) => !x.salt)) {
         risks.push(bi(
-          `${c.name_en}: salt tolerance not cited — ${SALT_UNCITED[c.id]} Not scored against ${riskPlace.en}'s salinity; shown as a risk instead.`,
-          `${c.name_bn}: লবণ-সহনশীলতার উদ্ধৃত মান নেই — ${SALT_UNCITED_BN[c.id]} ${riskPlace.bn} লবণাক্ততার হিসাবে এটি ধরা হয়নি, শুধু ঝুঁকি হিসেবে দেখানো হয়েছে।`,
+          `${c.name_en}: uncharacterized salt tolerance — assessed under precautionary guard against ${riskPlace.en}'s salinity.`,
+          `${c.name_bn}: লবণ-সহনশীলতা অজানা — ${riskPlace.bn} লবণাক্ততায় সতর্কতামূলক ব্যবস্থা অনুযায়ী মূল্যায়ন করা হয়েছে।`,
         ));
       }
     }
@@ -669,16 +724,20 @@ export function advisoryText(pack: FarmPack, top: RotationResult, lang: "en" | "
   return `${bnOnset} সেরা ফসল-পর্যায়: ${seq} — স্কোর ${v(top.total)}/১০০। ${bnIrrig}${bnPenalty}`;
 }
 
-export function smsText(pack: FarmPack, top: RotationResult, lang: "en" | "bn"): string {
+export function smsText(pack: FarmPack, top: RotationResult, lang: "en" | "bn", sc: Scenario = DEFAULT_SCENARIO): string {
   const seq = top.crops.map((c) => c.name_en).join(">");
-  const shift = effectiveOnsetShift(pack, { rainfallPct: 0, tempDeltaC: 0, onsetShiftDays: 0, phOverride: null });
+  const shift = effectiveOnsetShift(pack, sc);
+  const hypothetical = sc.onsetShiftDays !== 0;
+  // "?" marks a what-if shift: the plan was ranked under sc, so the SMS must quote the same
+  // effective shift instead of the measured-only baseline (was: hardcoded zeros here).
   const pump = Math.round(top.irrigationShare * 100);
   const v = (x: number | string) => fmtNum(x, lang);
-  const onsetPart = onsetShiftSignificant(pack)
-    ? `onset ${shift >= 0 ? "+" : ""}${v(shift)}d`
+  const measuredSig = onsetShiftSignificant(pack);
+  const onsetPart = measuredSig || hypothetical
+    ? `onset ${shift >= 0 ? "+" : ""}${v(shift)}d${hypothetical ? "?" : ""}`
     : `onset n.s. (p=${v(pack.onset.pValue.toFixed(2))})`;
-  const onsetBn = onsetShiftSignificant(pack)
-    ? `শুরু ${shift >= 0 ? "+" : ""}${v(shift)} দিন`
+  const onsetBn = measuredSig || hypothetical
+    ? `শুরু ${shift >= 0 ? "+" : ""}${v(shift)} দিন${hypothetical ? "?" : ""}`
     : `শুরু উল্লেখযোগ্য নয় (p=${v(pack.onset.pValue.toFixed(2))})`;
   if (lang === "en") return `FieldShift ${pack.name_en}: ${onsetPart}. Try: ${seq}. Pump +${v(pump)}/100. Score ${v(top.total)}/100.`;
   return `ফিল্ডশিফট ${pack.name_bn}: ${onsetBn}। ফসল: ${top.crops.map((c) => c.name_bn).join(">")}। সেচ +${v(pump)}/১০০। স্কোর ${v(top.total)}/১০০।`;

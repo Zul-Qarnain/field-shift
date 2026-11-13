@@ -261,7 +261,7 @@ Longer version: [Technical Reference](docs/TECHNICAL_REFERENCE.md) · [System ar
 | Where AI was used | Tool | Data it worked on |
 |---|---|---|
 | **Machine learning** — the monsoon-onset forecast | **LightGBM** gradient boosting, trained offline | NASA/JAXA GPM IMERG rainfall, NASA POWER weather, Niño 3.4 / DMI from NASA MERRA-2 |
-| **Coding & documentation** | **Qoder CLI** (Qwen3.8-Flash), plus Cursor / Grok agents — all under human direction | This repository's code and documents, and the public datasets above |
+| **Coding & documentation** | **Qoder CLI** (Qwen3.8-Flash), Cursor / Grok agents, **Claude Code** (Anthropic, Nov 2026 integration) — all under human direction. Requested extra attributions verified or flagged in the appendix | This repository's code and documents, and the public datasets above |
 | **Story clips** in the project video | **Google Veo** (the farmer Karim is fictional) · narration by **Google Gemini text-to-speech** | Text descriptions of scenes, and the team's own narration script |
 | **Video support tools** | **faster-whisper** and **Demucs** | The video's own audio |
 

@@ -340,9 +340,9 @@ const STRINGS = {
   unit_ha: { en: "ha", bn: "হেক্টর" },
   unit_m: { en: "m", bn: "মিটার" },
 
-  card_sub_moisture: { en: "SMAP L4 · vs last {n} d", bn: "SMAP L4 · গত {n} দিনের তুলনায়" },
+  card_sub_moisture: { en: "POWER modelled · vs last {n} d", bn: "POWER মডেল · গত {n} দিনের তুলনায়" },
   card_sub_temp: { en: "POWER · vs {n}-y mean", bn: "POWER · {n} বছরের গড়ের তুলনায়" },
-  card_sub_ndvi: { en: "MODIS/VIIRS · greenness", bn: "MODIS/VIIRS · সবুজাভতা" },
+  card_sub_ndvi: { en: "Demo fixture · greenness", bn: "ডেমো ফিক্সচার · সবুজাভতা" },
   card_sub_heat: { en: "T2M_MAX · per season", bn: "T2M_MAX · মৌসুম প্রতি" },
   card_sub_temp_pack: {
     en: "POWER T2M · {year} vs {era} median",

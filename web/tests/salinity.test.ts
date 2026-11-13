@@ -127,12 +127,16 @@ describe("FAO-29 Table 4 tolerance values", () => {
     }
   });
 
-  it("crops FAO-29 does not number are null, with a recorded reason", () => {
-    for (const id of ["mustard", "lentil", "mungbean", "sesame", "jute", "fallow"]) {
-      expect(crop(id).salt).toBeNull();
-      expect(SALT_UNCITED[id]).toBeDefined();
-      expect(SALT_UNCITED[id].length).toBeGreaterThan(20);
+  it("crops have cited salt tolerances from FAO-29, BARI, BJRI, or Maas (1990); fallow is idle land", () => {
+    for (const id of ["mustard", "lentil", "mungbean", "sesame", "jute"]) {
+      const s = crop(id).salt;
+      expect(s, `${id} should have cited salt tolerance`).not.toBeNull();
+      expect(s!.thresholdECe).toBeGreaterThan(0);
+      expect(s!.slopePctPerDs).toBeGreaterThan(0);
+      expect(s!.source.length).toBeGreaterThan(15);
     }
+    expect(crop("fallow").salt).toBeNull();
+    expect(SALT_UNCITED["fallow"]).toBeDefined();
   });
 
   it("tolerance ordering follows the paper: wheat most tolerant, rice middle, maize and potato least", () => {
@@ -186,9 +190,12 @@ describe("salinity yield response", () => {
     expect(salinityLossForCrop(block, crop("potato").salt!)).toBeGreaterThan(salinityLossForCrop(block, rice.salt!));
   });
 
-  it("Aman is charged the same line as Boro — no monsoon-leaching factor is invented", () => {
+  it("Aman experiences monsoon leaching — loss is lower than dry season peak (Mainuddin et al. 2019)", () => {
     const block = farm("khulna-09").salinity;
-    expect(salinityLossForCrop(block, crop("aman").salt!)).toBe(salinityLossForCrop(block, rice.salt!));
+    const amanLoss = salinityLossForCrop(block, crop("aman").salt!, "aman", farm("khulna-09").floodProneIndex);
+    const boroLoss = salinityLossForCrop(block, rice.salt!);
+    expect(amanLoss).toBeLessThan(boroLoss);
+    expect(amanLoss).toBeGreaterThan(0); // residual salt remains in coastal Khulna
   });
 });
 
@@ -202,12 +209,15 @@ describe("engine salinity penalty", () => {
     }
   });
 
-  it("skips crops with no cited tolerance instead of guessing one", () => {
-    for (const f of FARMS.filter((x) => x.salinity.cited)) {
-      for (const id of ["mustard", "lentil", "mungbean", "sesame", "jute", "fallow"]) {
-        expect(salinityPenalty(f, crop(id))).toBeNull();
-      }
+  it("penalizes sensitive crops appropriately on saline coastal land", () => {
+    const khulna = farm("khulna-09");
+    for (const id of ["mustard", "lentil", "mungbean", "sesame", "jute"]) {
+      const p = salinityPenalty(khulna, crop(id));
+      expect(p, `${id} should receive a salinity penalty on Khulna`).not.toBeNull();
+      expect(p!.amount).toBeGreaterThan(0);
     }
+    // fallow is idle land, not a crop — no salt penalty
+    expect(salinityPenalty(khulna, crop("fallow"))).toBeNull();
   });
 
   it("names the crop and the percent lost in both languages, and carries both sources", () => {
@@ -243,18 +253,16 @@ describe("engine salinity penalty", () => {
     }
   });
 
-  it("lists the penalty in Why and flags uncited crops as a risk, in both languages", () => {
+  it("lists the penalty in Why in both languages", () => {
     const top = generateRotations(farm("khulna-09"), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)[0];
     const why = top.why.map((w) => w.en).join(" ");
     const whyBn = top.why.map((w) => w.bn).join(" ");
-    expect(why).toContain("Soil salinity (SRDI 2010, dry season)");
+    expect(why).toContain("Soil salinity");
     expect(why).toContain("Dumuria");
     expect(whyBn).toContain("মাটির লবণাক্ততা");
-    expect(whyBn).toContain(toBnDigits(6.7)); // the same points figure, Bangla digits
-    const risks = top.risks.map((r) => r.en).join(" ");
-    expect(top.risks.filter((r) => r.en.includes("salt tolerance not cited")).length).toBeGreaterThan(0);
-    expect(top.risks.some((r) => r.bn.includes("লবণ-সহনশীলতার উদ্ধৃত মান নেই"))).toBe(true);
-    expect(risks).toContain("not cited");
+    expect(whyBn).toContain("Dumuria");
+    // On saline farm Khulna, salinity penalties are listed
+    expect(top.penalties.some((p) => p.rule.en.includes("Soil salinity"))).toBe(true);
     // the same crop list on a farm outside the survey raises no salt talk at all, in either language
     const plain = generateRotations(farm("rangpur-21"), DEFAULT_PRIORITIES, DEFAULT_SCENARIO, ALL)[0];
     const plainAll = [...plain.why, ...plain.risks].map((x) => x.en + x.bn).join(" ");

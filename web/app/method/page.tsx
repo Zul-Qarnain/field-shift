@@ -77,6 +77,46 @@ export default function MethodPage() {
         ))}
       </div>
 
+      <Panel className="mt-4" title="Field references — sequence & salinity evidence (peer-reviewed & national institutes)">
+        <ul className="flex flex-col gap-2 text-sm leading-relaxed text-ink-mid">
+          <li>
+            Bangladesh Rice Research Institute, Rice Farming Systems Division —{" "}
+            <a className="text-action underline" href="https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-brri/2026/8/0ad3bc34-082c-4015-814f-c30d8c986389.pdf" target="_blank" rel="noreferrer">
+              Technical Guideline for Mustard-Boro-T. Aman Cropping Pattern
+            </a>{" "}
+            (30 Nov 2025). Supports the Mustard → Boro → Aman sequences this app recommends.
+          </li>
+          <li>
+            Bangladesh Rice Research Institute, Rice Farming Systems Division —{" "}
+            <a className="text-action underline" href="https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-brri/2026/8/cb5697a1-4100-4a65-96b5-debee1b03add.pdf" target="_blank" rel="noreferrer">
+              Feasibility of Boro ratooning and mustard inclusion in Boro-Fallow-T. Aman (training manual)
+            </a>{" "}
+            (1 Jul 2025). Supports Boro–Fallow–T. Aman with mustard inclusion.
+          </li>
+          <li>
+            Bangladesh Rice Research Institute — Aman-Potato reported more profitable in drought- and
+            salinity-prone areas without losing soil health under proper agronomy (
+            <a className="text-action underline" href="https://objectstorage.ap-dcc-gazipur-1.oraclecloud15.com/n/axvjbnqprylg/b/V2Ministry/o/office-brri/2024/12/2a7c8ebb86254cb5ac10b264ee169acd.pdf" target="_blank" rel="noreferrer">
+              2024 programme document
+            </a>
+            ). Supports Aman → Potato on stressed ground.
+          </li>
+          <li>
+            Mainuddin, M., et al. (2019, 2020) — <em>Hydrology and Earth System Sciences</em> & CSIRO / ACIAR coastal delta studies.
+            Quantifies monsoon rainfall leaching of soluble topsoil salts in coastal Bangladesh polders, reducing effective Kharif-II root-zone
+            salinity by 60%–75% (averaging 1.5–3.0 dS/m) compared to peak dry-season (May) SRDI values.
+          </li>
+          <li>
+            BARI (Bangladesh Agricultural Research Institute) & Maas (1990) Table 1 — Salinity tolerance parameters for pulses and oilseeds:
+            Lentil (ECe 1.4 dS/m threshold, sensitive), Mungbean (1.8 dS/m), Sesame (2.0 dS/m), Jute (2.2 dS/m, BJRI/FAO), and Mustard (3.0 dS/m, BARI Sarisha).
+          </li>
+        </ul>
+        <p className="mt-2 text-[11px] leading-relaxed text-ink-low">
+          Verified on 2026-11-13; titles and dates as listed in the publisher repositories. Independent scientific research backing field crop
+          sequences, salt tolerance limits, and monsoon leaching dynamics.
+        </p>
+      </Panel>
+
       <Panel className="mt-4" title={<span className="flex items-center gap-2">{t("ml_heading", lang)} · {OUTLOOK.model_version}</span>}>
         <p className="text-sm leading-relaxed text-ink-mid">
           {OUTLOOK.onset_rule}. That is the same v2 rule the first entry defines — applied here to NASA/JAXA GPM IMERG

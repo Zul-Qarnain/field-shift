@@ -175,3 +175,14 @@ Team-supplied project documents (challenge guides, strategy notes), public NASA 
 - [`prompts_used.md`](prompts_used.md) — the coding prompt log
 - [`science/onset_ml.md`](science/onset_ml.md) — the machine-learning method
 - [`FIELD_SHIFT_SYSTEM_ARCHITECTURE.md`](FIELD_SHIFT_SYSTEM_ARCHITECTURE.md) — ADR-006 keeps the decision path free of language models
+
+---
+
+## Requested tool acknowledgements (verification status, 2026-11-13)
+
+The team asked that the following tools be acknowledged. Vendors verified against public sources on 2026-11-13; wrong attributions corrected, not published.
+
+- **Repo-evidenced use:** **Qoder CLI** (**Qoder**, Alibaba — qoder.com; formerly Tongyi Lingma) for pipeline/engine/web/video-script work; **Claude Code** (**Anthropic**) for the Nov 2026 integration round; Cursor / Grok agents for planning and review (section 2a).
+- **Team-stated use, vendor verified:** **Codex** (OpenAI); **Antigravity IDE** (Google — antigravity.google); **OpenCode** (open-source agent by Anomaly/sst — opencode.ai); **Google Flow** (Google DeepMind, Veo-based filmmaking tool — flow.google) for the video story clips (consistent with the Veo pipeline in 3a); **ElevenLabs** voice work alongside **Google voice (Gemini TTS**, section 3b).
+- **Corrected, not as requested:** **Cursor** is made by **Anysphere**, not SpaceX. **Grok** ("gorkbot") is made by **xAI**, not SpaceX. **OpenCode** is made by **Anomaly/sst**, not Meta.
+- **Still unverifiable — not published:** a **"Muse" tool by Meta** (a `muse` binary exists on the build machine but no vendor link to Meta could be found); **EntryGPT**; **D0** (no record; clips are documented as Veo/Flow above).

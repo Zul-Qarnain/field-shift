@@ -42,3 +42,11 @@ cache/*
 
 # Playwright MCP session scratch
 .playwright-mcp/
+
+# Local challenge brief (paste copy, not part of submission)
+project-details.md
+
+# Vitest reports & test logs
+web/.vitest/
+*.log
+
